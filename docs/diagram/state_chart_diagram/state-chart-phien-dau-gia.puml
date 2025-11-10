@@ -1,0 +1,51 @@
+@startuml StateChartPhienDauGia
+' --- Cài đặt Sơ đồ ---
+skinparam state {
+    BackgroundColor PaleGreen
+    BorderColor Green
+    FontColor Black
+}
+skinparam note {
+    BackgroundColor WhiteSmoke
+    BorderColor RoyalBlue
+}
+
+' --- Định nghĩa các Trạng thái ---
+
+' 1. Trạng thái ban đầu
+[*] --> Active
+
+' 2. Trạng thái chính
+state Active as "Đang hoạt động" {
+    ' Tự chuyển tiếp: các sự kiện xảy ra bên trong trạng thái
+    ' không làm thay đổi trạng thái chính
+    Active -> Active : [Bidder ra giá (UC-05)]
+    Active -> Active : [Tự động gia hạn]
+}
+
+' 3. Các trạng thái kết thúc (Final States)
+' Đây là các trạng thái cuối cùng, kết thúc vòng đời của phiên đấu giá
+state Sold as "Đã bán (Có người thắng)"
+state Expired as "Hết hạn (Không có bid)"
+state Removed as "Đã bị gỡ"
+
+' === Các Chuyển tiếp (Transitions) ===
+
+' Từ trạng thái "Đang hoạt động"
+Active -right-> Sold : [Sự kiện: Hết giờ] / [Điều kiện: Có người ra giá]
+' Ghi chú cho sự kiện chuyển tiếp
+note on link
+  Kích hoạt "Quy trình Hoàn tất Đơn hàng" (UC-12)
+end note
+
+Active -down-> Expired : [Sự kiện: Hết giờ] / [Điều kiện: Không có người ra giá]
+
+Active -down-> Removed : [Sự kiện: Admin gỡ bài]
+
+' === Kết thúc Vòng đời ===
+' Khi đã vào các trạng thái cuối, vòng đời của "phiên đấu giá" kết thúc.
+Sold --> [*]
+Expired --> [*]
+Removed --> [*]
+
+@enduml

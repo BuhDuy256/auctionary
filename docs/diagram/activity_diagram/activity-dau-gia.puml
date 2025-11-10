@@ -1,0 +1,82 @@
+@startuml ActivityDauGia
+' --- Cài đặt Sơ đồ ---
+skinparam activity {
+    BackgroundColor PaleGreen
+    BorderColor Green
+}
+skinparam swimlane {
+    BackgroundColor WhiteSmoke
+    BorderColor RoyalBlue
+}
+
+' --- Bắt đầu Sơ đồ ---
+|Seller|
+start
+:Đăng sản phẩm đấu giá (UC-08);
+:Thiết lập thông tin
+(Tên, Ảnh, Giá, Thời gian);
+
+|System|
+:Lưu sản phẩm;
+:Bắt đầu phiên đấu giá;
+
+|Bidder|
+:Tìm kiếm sản phẩm (UC-03);
+:Xem chi tiết sản phẩm (UC-04);
+
+' --- Vòng lặp Đấu giá ---
+while (Hệ thống kiểm tra: Còn thời gian?) is (Còn)
+    |Bidder|
+    if (Muốn ra giá?) then (Có)
+        :Thực hiện ra giá (UC-05);
+        
+        |System|
+        :Kiểm tra tính hợp lệ
+        (Giá > Giá hiện tại + Bước giá?
+         Bidder > 80% điểm?);
+        
+        if (Hợp lệ?) then (Có)
+            :Ghi nhận lượt ra giá;
+            :Cập nhật giá cao nhất;
+            :Gửi email thông báo
+            (cho Seller, cho người giữ giá cũ);
+
+            ' Logic gia hạn tự động
+            if (Ra giá trong 5 phút cuối?) then (Có)
+                :Tự động gia hạn thêm 10 phút;
+            endif
+        
+        else (Không)
+            :Báo lỗi cho Bidder;
+        endif
+    else (Không)
+        ' Bidder có thể chỉ xem hoặc đặt câu hỏi
+        if (Muốn hỏi đáp?) then (Có)
+            :Đặt câu hỏi (UC-07);
+            
+            |System|
+            :Gửi câu hỏi cho Seller;
+        endif
+    endif
+endwhile (Hết)
+
+' --- Kết thúc Đấu giá ---
+|System|
+:Đánh dấu "Kết thúc";
+if (Có người ra giá?) then (Có)
+    :Xác định người thắng cuộc;
+    :Gửi email thông báo Thắng/Thua
+    (cho Bidder thắng, cho Seller);
+    
+    |Bidder|
+    :Chuyển sang "Hoàn tất đơn hàng" (UC-12);
+    
+    |Seller|
+    :Chuyển sang "Hoàn tất đơn hàng" (UC-12);
+else (Không)
+    :Đánh dấu "Không thành công";
+    :Gửi email thông báo cho Seller;
+endif
+
+stop
+@enduml
