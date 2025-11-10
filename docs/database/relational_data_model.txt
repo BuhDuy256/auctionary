@@ -1,20 +1,21 @@
-users(user_id, full_name, email, password, positive_reviews, negative_reviews, status, created_at) # rbac
+users(user_id, full_name, email, password, positive_reviews, negative_reviews, status, password_updated_at, failed_login_attempts, last_login_at, created_at) # rbac
 roles(role_id, name) # rbac
 permissions(permission_id, name) # rbac
 users_roles(user_id, role_id) # rbac
 roles_permissions(role_id, permission_id) # rbac
-category(category_id, name, left, right) # nested set module
+category(category_id, name, left, right, slug, parent_id) # nested set module
 products(product_id, category_id, seller_id, highest_bidder_id, name, current_price, buy_now_price, start_price, step_price, start_time, end_time, auto_extend, status)
-product_descriptions(description_id, product_id, content, created_at)
+product_descriptions(description_id, product_id, author_id, content, lang, created_at)
 product_images(image_id, product_id, image_url)
 watchlist(user_id, product_id)
 auto_bids(auto_bid_id, product_id, bidder_id, max_amount, created_at)
+bids(bid_id, product_id, bidder_id, amount, is_auto, created_at)
 product_rejections(rejection_id, product_id, bidder_id, reason, created_at)
 questions(question_id, product_id, asker_id, question_text, answer_text, asked_at, answered_at) # Chat 1 - 1
-orders(order_id, product_id, winner_id, seller_id, final_price, status, created_at)
-review(review_id, order_id, reviewer_id, reviewered_id, rating, comment, created_at)
-user_otps(otp_id, user_id, otp_code, expires_at)
-upgrade_request(request_id, user_id, status, created_at, approved_at)
+orders(order_id, product_id, winner_id, seller_id, final_price, status, cancellation_reason, created_at)
+reviews(review_id, order_id, reviewer_id, reviewered_id, rating, comment, created_at)
+user_otps(otp_id, user_id, otp_code, purpose, expires_at, consumed_at)
+upgrade_requests(request_id, user_id, status, created_at, approved_at)
 order_chat(message_id, order_id, sender_id, receiver_id, content, created_at)
-notifications(notification_id, user_id, type, content, is_read, created_at)
+notifications(notification_id, user_id, type, channel, content, is_read, read_at, action_url, created_at)
 invoices(invoice_id, order_id, buyer_address, payment_status, shipping_invoice, created_at, updated_at)
