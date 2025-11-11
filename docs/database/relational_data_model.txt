@@ -11,9 +11,9 @@ product_descriptions(description_id, product_id, author_id, content, lang, creat
 product_images(image_id, product_id, image_url)
 watchlist(user_id, product_id)
 product_rejections(rejection_id, product_id, bidder_id, reason, created_at)
-questions(question_id, product_id, asker_id, question_text, answer_text, asked_at, answered_at) # Chat 1 - 1
-orders(order_id, product_id, winner_id, seller_id, final_price, status, cancellation_reason, created_at)
-reviews(review_id, order_id, reviewer_id, reviewered_id, rating, comment, created_at)
+questions(question_id, product_id, asker_id, question_text, answer_text, asked_at, answered_at) # 1 - 1
+orders(order_id, product_id, winner_id, seller_id, final_price, status, cancellation_reason, shipping_address, payment_proof_url, shipping_tracking_code, created_at)
+reviews(review_id, order_id, reviewer_id, reviewered_id, rating, content, created_at)
 user_otps(otp_id, user_id, otp_code, purpose, expires_at, consumed_at)
 upgrade_requests(request_id, user_id, status, created_at, approved_at)
 order_chat(message_id, order_id, sender_id, receiver_id, content, created_at)

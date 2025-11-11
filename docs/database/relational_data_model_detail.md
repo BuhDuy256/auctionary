@@ -221,7 +221,7 @@
 ### `orders`
 (`order_id`, `product_id`, `winner_id`, `seller_id`, `final_price`, `status`, `cancellation_reason`, `created_at`)
 
-* **Data Type:** `order_id` (INT), `product_id` (INT), `winner_id` (INT), `seller_id` (INT), `final_price` (DECIMAL), `status` (ENUM('pending', 'contract_provided', 'payment_confirmed', 'shipped', 'completed', 'cancelled')), `cancellation_reason` (TEXT), `created_at` (TIMESTAMP)
+* **Data Type:** `order_id` (INT), `product_id` (INT), `winner_id` (INT), `seller_id` (INT), `final_price` (DECIMAL), `status` (ENUM('pending', 'contract_provided', 'payment_confirmed', 'shipped', 'completed', 'cancelled')), `cancellation_reason` (TEXT), `shipping_address` (TsEXT), `payment_proof_url` (VARCHAR), `shipping_tracking_code` (VARCHAR), `created_at` (TIMESTAMP)
 * **PK:** `order_id`
 * **FK:**
     * `product_id` → `products(product_id)`
@@ -232,14 +232,17 @@
     * `final_price`: NOT NULL
     * `status`: NOT NULL, DEFAULT 'pending'
     * `cancellation_reason`: Nullable
+    * `shipping_address`: NOT NULL
+    * `payment_proof_url`: NOT NULL
+    * `shipping_tracking_code`: NOT NULL
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
 
 ---
 
 ### `reviews`
-(`review_id`, `order_id`, `reviewer_id`, `reviewered_id`, `rating`, `comment`, `created_at`)
+(`review_id`, `order_id`, `reviewer_id`, `reviewered_id`, `rating`, `content`, `created_at`)
 
-* **Data Type:** `review_id` (INT), `order_id` (INT), `reviewer_id` (INT), `reviewered_id` (INT), `rating` (INT), `comment` (TEXT), `created_at` (TIMESTAMP)
+* **Data Type:** `review_id` (INT), `order_id` (INT), `reviewer_id` (INT), `reviewered_id` (INT), `rating` (INT), `content` (TEXT), `created_at` (TIMESTAMP)
 * **PK:** `review_id`
 * **FK:**
     * `order_id` → `orders(order_id)`
@@ -248,7 +251,7 @@
 * **Constraint:**
     * `rating`: NOT NULL
     * `CHECK (rating = 1 OR rating = -1)`
-    * `comment`: Nullable
+    * `content`: Nullable
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
     * `UNIQUE (order_id, reviewer_id, reviewered_id)` - ensures each review direction only has 1 record
 
