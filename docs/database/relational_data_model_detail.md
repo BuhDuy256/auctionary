@@ -62,26 +62,31 @@
 
 ---
 
-### `category` # nested set module
-(`category_id`, `name`, `left`, `right`, `slug`, `parent_id`)
+### `categories`
+(`category_id`, `name`, `slug`, `parent_id`)
 
-* **Data Type:** `category_id` (INT), `name` (VARCHAR), `left` (INT), `right` (INT), `slug` (VARCHAR), `parent_id` (INT)
+* **Data Type:** `category_id` (INT), `name` (VARCHAR), `parent_id` (INT), `slug` (VARCHAR)
 * **PK:** `category_id`
 * **FK:** `parent_id` → `category(category_id)`
-* **Constraint:**
+* **Constraint in DB:**
     * `name`: NOT NULL
-    * `left`: NOT NULL, UNIQUE
-    * `right`: NOT NULL, UNIQUE
-    * `slug`: Nullable
     * `parent_id`: Nullable
+    * `slug`: Nullable
     * `CHECK ("left" < "right")`
+    * UNIQUE(parent_id, slug) => a category with different parent can have the same slug
+* **Constraint in Application:**
+    * A child category must have a parent with parent_id = null
+* **Trigger:**
+    * auto_generate_slug() when inserting and updating
+* **Notes:**
+    * What is a slug? Read document: https://itnext.io/whats-a-slug-f7e74b6c23e0
 
 ---
 
 ### `products`
-(`product_id`, `category_id`, `seller_id`, `highest_bidder_id`, `name`, `current_price`, `buy_now_price`, `start_price`, `step_price`, `start_time`, `end_time`, `auto_extend`, `status`)
+(`product_id`, `category_id`, `seller_id`, `highest_bidder_id`, `name`, `current_price`, `buy_now_price`, `start_price`, `step_price`, `start_time`, `end_time`, `bid_count`, `auto_extend`, `status`)
 
-* **Data Type:** `product_id` (INT), `category_id` (INT), `seller_id` (INT), `highest_bidder_id` (INT), `name` (VARCHAR), `current_price` (DECIMAL), `buy_now_price` (DECIMAL), `start_price` (DECIMAL), `step_price` (DECIMAL), `start_time` (TIMESTAMP), `end_time` (TIMESTAMP), `auto_extend` (BOOLEAN), `status` (ENUM('active', 'sold', 'expired', 'removed'))
+* **Data Type:** `product_id` (INT), `category_id` (INT), `seller_id` (INT), `highest_bidder_id` (INT), `name` (VARCHAR), thumbnail_url (STRING) `current_price` (DECIMAL), `buy_now_price` (DECIMAL), `start_price` (DECIMAL), `step_price` (DECIMAL), `start_time` (TIMESTAMP), `end_time` (TIMESTAMP), bid_count (INT), `auto_extend` (BOOLEAN), `status` (ENUM('active', 'sold', 'expired', 'removed'))
 * **PK:** `product_id`
 * **FK:**
     * `category_id` → `category(category_id)`
@@ -96,6 +101,7 @@
     * `step_price`: NOT NULL
     * `start_time`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
     * `end_time`: NOT NULL
+    * `bid_count`: DEFAULT VALUE = 0
     * `auto_extend`: NOT NULL, DEFAULT false
     * `status`: NOT NULL, DEFAULT 'active'
     * `CHECK (end_time > start_time)`
@@ -103,6 +109,43 @@
     * `CHECK (start_price > 0)`
     * `CHECK (current_price >= start_price)`
     * `CHECK (buy_now_price IS NULL OR buy_now_price >= start_price)`
+
+---
+
+### `auto_bids`
+(`auto_bid_id`, `product_id`, `bidder_id`, `max_amount`, `created_at`)
+
+* **Data Type:** `auto_bid_id` (INT), `product_id` (INT), `bidder_id` (INT), `max_amount` (DECIMAL), `created_at` (TIMESTAMP)
+* **PK:** `auto_bid_id`
+* **FK:**
+    * `product_id` → `products(product_id)`
+    * `bidder_id` → `users(user_id)`
+* **Constraint:**
+    * `max_amount`: NOT NULL
+    * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+    * `UNIQUE (product_id, bidder_id)`
+* **Index:**
+    * INDEX (product_id, created_at ASC) - tie-breaker for equal max amounts (earlier bid wins)
+* **Trigger**:
+    * When a valid entity was added to the auto_bids table, the bids_count in table products will increase 1 (Trigger: auto_increase_bid_cnt)
+
+---
+
+### `bids`
+(`bid_id`, `product_id`, `bidder_id`, `amount`, `is_auto`, `created_at`)
+
+* **Data Type:** `bid_id` (INT), `product_id` (INT), `bidder_id` (INT), `amount` (DECIMAL), `is_auto` (BOOLEAN), `created_at` (TIMESTAMP)
+* **PK:** `bid_id`
+* **FK:**
+    * `product_id` → `products(product_id)`
+    * `bidder_id` → `users(user_id)`
+* **Constraint:**
+    * `amount`: NOT NULL, CHECK (amount > 0)
+    * `is_auto`: NOT NULL, DEFAULT false
+    * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+* **Index:**
+    * INDEX (product_id, created_at DESC) - helps fast query bid history by product
+    * INDEX (bidder_id) - supports query bid history by bidder
 
 ---
 
@@ -141,41 +184,6 @@
     * `user_id` → `users(user_id)`
     * `product_id` → `products(product_id)`
 * **Constraint:** (None)
-
----
-
-### `auto_bids`
-(`auto_bid_id`, `product_id`, `bidder_id`, `max_amount`, `created_at`)
-
-* **Data Type:** `auto_bid_id` (INT), `product_id` (INT), `bidder_id` (INT), `max_amount` (DECIMAL), `created_at` (TIMESTAMP)
-* **PK:** `auto_bid_id`
-* **FK:**
-    * `product_id` → `products(product_id)`
-    * `bidder_id` → `users(user_id)`
-* **Constraint:**
-    * `max_amount`: NOT NULL
-    * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
-    * `UNIQUE (product_id, bidder_id)`
-* **Index:**
-    * INDEX (product_id, created_at ASC) - tie-breaker for equal max amounts (earlier bid wins)
-
----
-
-### `bids`
-(`bid_id`, `product_id`, `bidder_id`, `amount`, `is_auto`, `created_at`)
-
-* **Data Type:** `bid_id` (INT), `product_id` (INT), `bidder_id` (INT), `amount` (DECIMAL), `is_auto` (BOOLEAN), `created_at` (TIMESTAMP)
-* **PK:** `bid_id`
-* **FK:**
-    * `product_id` → `products(product_id)`
-    * `bidder_id` → `users(user_id)`
-* **Constraint:**
-    * `amount`: NOT NULL, CHECK (amount > 0)
-    * `is_auto`: NOT NULL, DEFAULT false
-    * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
-* **Index:**
-    * INDEX (product_id, created_at DESC) - helps fast query bid history by product
-    * INDEX (bidder_id) - supports query bid history by bidder
 
 ---
 
