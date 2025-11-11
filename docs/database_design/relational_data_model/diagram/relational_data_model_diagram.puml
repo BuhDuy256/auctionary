@@ -123,15 +123,15 @@ class product_rejections {
   created_at
 }
 
-' Questions
-class questions {
-  <u>question_id</u>
+' Comments
+class product_comments {
+  <u>comment_id</u>
   product_id
-  asker_id
-  question_text
-  answer_text
-  asked_at
-  answered_at
+  user_id
+  content
+  parent_id
+  created_at
+  updated_at
 }
 
 ' Orders
@@ -242,9 +242,10 @@ users ||--o{ watchlist
 products ||--o{ product_rejections
 users ||--o{ product_rejections : bidder
 
-' Questions
-products ||--o{ questions
-users ||--o{ questions : asker
+' Comments
+products ||--o{ product_comments
+users ||--o{ product_comments : user
+product_comments ||--o{ product_comments : parent_id
 
 ' Order Relationships
 products ||--o| orders

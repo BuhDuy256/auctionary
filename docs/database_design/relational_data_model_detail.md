@@ -248,19 +248,21 @@
 
 ---
 
-### `questions` # Chat 1 - 1
-(`question_id`, `product_id`, `asker_id`, `question_text`, `answer_text`, `asked_at`, `answered_at`)
+### `product_comments`
+(`comment_id`, `product_id`, `user_id`, `content`, `parent_id`, `created_at`)
 
-* **Data Type:** `question_id` (INT), `product_id` (INT), `asker_id` (INT), `question_text` (TEXT), `answer_text` (TEXT), `asked_at` (TIMESTAMP), `answered_at` (TIMESTAMP)
-* **PK:** `question_id`
-* **FK:**
+* **Date Type:** `comment_id` (INT), `product_id` (INT), `user_id` (INT),`content` (TEXT), `parent_id` (INT), `created_at` (TIMESTAMP), updated_at(TIMESTAMP)
+* **PK:** `comment_id`
+* **FK:** 
     * `product_id` → `products(product_id)`
-    * `asker_id` → `users(user_id)`
+    * `user_id` → `users(user_id)`
+    * `parent_id` → `product_comments(comment_id)`
+
 * **Constraint:**
-    * `question_text`: NOT NULL
-    * `answer_text`: Nullable
-    * `asked_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
-    * `answered_at`: Nullable
+    * `content`: NOT NULL
+    * `parent_id`: Nullable
+    * `created_at`: NOT NULL, DEFAULT CURRENT_STAMP
+    * `updated_at`: Nullable
 
 ---
 
