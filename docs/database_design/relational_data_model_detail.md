@@ -221,7 +221,7 @@
 ### `orders`
 (`order_id`, `product_id`, `winner_id`, `seller_id`, `final_price`, `status`, `cancellation_reason`, `created_at`)
 
-* **Data Type:** `order_id` (INT), `product_id` (INT), `winner_id` (INT), `seller_id` (INT), `final_price` (DECIMAL), `status` (ENUM('pending', 'contract_provided', 'payment_confirmed', 'shipped', 'completed', 'cancelled')), `cancellation_reason` (TEXT), `shipping_address` (TsEXT), `payment_proof_url` (VARCHAR), `shipping_tracking_code` (VARCHAR), `created_at` (TIMESTAMP)
+* **Data Type:** `order_id` (INT), `product_id` (INT), `winner_id` (INT), `seller_id` (INT), `final_price` (DECIMAL), `status` (ENUM('pending', 'contract_provided', 'payment_confirmed', 'shipped', 'completed', 'cancelled')), `cancellation_reason` (TEXT), `created_at` (TIMESTAMP)
 * **PK:** `order_id`
 * **FK:**
     * `product_id` → `products(product_id)`
@@ -232,10 +232,29 @@
     * `final_price`: NOT NULL
     * `status`: NOT NULL, DEFAULT 'pending'
     * `cancellation_reason`: Nullable
-    * `shipping_address`: NOT NULL
-    * `payment_proof_url`: NOT NULL
-    * `shipping_tracking_code`: NOT NULL
-    * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
+    * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP 
+
+---
+
+### `invoices`
+(invoice_id, order_id, shipping_address, payment_proof_url, shipping_tracking_code, created_at)
+
+* **Data Type:**
+    * `invoice_id` (INT, PK)
+    * `order_id` (INT, FK -> orders, UNIQUE)
+    * `shipping_address` (TEXT, Nullable)     
+    * `payment_proof_url` (VARCHAR, Nullable) 
+    * `shipping_tracking_code` (VARCHAR, Nullable) 
+    * `created_at` (TIMESTAMP)
+    * `updated_at` (TIMESTAMP)
+* **PK:** `invoice_id`
+* **FK:** `order_id` → `orders(order_id)`
+* **Constraint:**
+    * order_id: UNIQUE (Rất quan trọng, để đảm bảo mối quan hệ 1-1 với bảng orders).
+    * shipping_address: Nullable (Cho phép NULL).
+    * payment_proof_url: Nullable (Cho phép NULL).
+    * shipping_tracking_code: Nullable (Cho phép NULL).
+    * created_at: NOT NULL, DEFAULT CURRENT_TIMESTAMP
 
 ---
 
@@ -260,7 +279,7 @@
 ### `user_otps`
 (`otp_id`, `user_id`, `otp_code`, `purpose`, `expires_at`, `consumed_at`)
 
-* **Data Type:** `otp_id` (INT), `user_id` (INT), `otp_code` (VARCHAR), `purpose` (ENUM('signup', 'reset_password', 'other')), `expires_at` (TIMESTAMP), `consumed_at` (TIMESTAMP)
+* **Data Type:** `otp_id` (INT), `user_id` (INT), `otp_code` (VARCHAR), `purpose` (ENUM('signup', 'reset_password', 'other')), `created_at` (TIMESTAMP), `expires_at` (TIMESTAMP), `consumed_at` (TIMESTAMP)
 * **PK:** `otp_id`
 * **FK:** `user_id` → `users(user_id)`
 * **Constraint:**
@@ -314,19 +333,3 @@
     * `read_at`: Nullable
     * `action_url`: Nullable
     * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
-
----
-
-### `invoices`
-(`invoice_id`, `order_id`, `buyer_address`, `payment_status`, `shipping_invoice`, `created_at`, `updated_at`)
-
-* **Data Type:** `invoice_id` (INT), `order_id` (INT), `buyer_address` (TEXT), `payment_status` (VARCHAR), `shipping_invoice` (VARCHAR), `created_at` (TIMESTAMP), `updated_at` (TIMESTAMP)
-* **PK:** `invoice_id`
-* **FK:** `order_id` → `orders(order_id)`
-* **Constraint:**
-    * `order_id`: UNIQUE
-    * `buyer_address`: NOT NULL
-    * `payment_status`: NOT NULL
-    * `shipping_invoice`: Nullable
-    * `created_at`: NOT NULL, DEFAULT CURRENT_TIMESTAMP
-    * `updated_at`: Nullable
