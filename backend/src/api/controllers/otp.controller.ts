@@ -1,7 +1,11 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import * as authService from "../../services/auth.service";
 
-export const verifyOTP = async (req: Request, res: Response) => {
+export const verifyOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { user_id, otp } = req.body;
 
@@ -17,13 +21,15 @@ export const verifyOTP = async (req: Request, res: Response) => {
       },
     });
   } catch (error: any) {
-    res.status(400).json({
-      message: error.message || "Failed to verify OTP",
-    });
+    next(error);
   }
 };
 
-export const resendOTP = async (req: Request, res: Response) => {
+export const resendOTP = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { user_id } = req.body;
 
@@ -31,8 +37,6 @@ export const resendOTP = async (req: Request, res: Response) => {
 
     res.status(200).json(result);
   } catch (error: any) {
-    res.status(400).json({
-      message: error.message || "Failed to resend OTP",
-    });
+    next(error);
   }
 };
