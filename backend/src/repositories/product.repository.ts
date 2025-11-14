@@ -12,6 +12,7 @@ export interface PaginatedResult<T> {
         totalPages: number;
     };
 }
+
 function escapeQuery(q: string) {
     return q
         .replace(/[-:!&|]+/g, " ")

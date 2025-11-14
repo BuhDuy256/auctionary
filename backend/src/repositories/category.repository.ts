@@ -43,7 +43,6 @@ export const getCategoryIds = async (slug: string): Promise<number[]> => {
 
     if (!category) return [];
 
-    // Nếu là parent: gồm chính nó + các child
     if (category.parent_id === null) {
         const children = await prisma.categories.findMany({
             where: { parent_id: category.category_id },
@@ -52,11 +51,10 @@ export const getCategoryIds = async (slug: string): Promise<number[]> => {
 
         return [
             category.category_id,
-            ...children.map(c => c.category_id)
+            ...children.map(c => c.category_id) // If no "..." syntax, it will return a nested array. Ex: [1, [2,3,4]]. We want [1,2,3,4]
         ];
     }
 
-    // Nếu là child
     return [category.category_id];
 };
 
