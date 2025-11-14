@@ -6,10 +6,10 @@ export const searchProducts = async (query: any) => {
     // Handle empty q & category in validate middleware
 
     if (category) {
-        const result = await productRepository.findByCategory(category, page, limit);
+        const result = await productRepository.findByCategory(category, Number(page), Number(limit));
         // Don't need to throw NotFoundError here, just return empty result and let frontend handle it
         // if (result.data.length === 0) {
-        //     throw new NotFoundError(`No products found for category: ${category}`);
+        //     throw new NotFoundError(`No products found for category: ${categorySlug}`);
         // }
         return result;
     }

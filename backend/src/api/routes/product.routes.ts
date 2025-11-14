@@ -6,5 +6,5 @@ import * as productController from "../controllers/product.controller";
 const router = Router();
 
 router.get("/", validate(productSearchQuerySchema, 'query'), productController.searchProducts);
-
+// router.post("/", validate(createProductSchema, 'body'), productController.createProduct);
 export default router;

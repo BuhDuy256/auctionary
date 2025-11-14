@@ -1,6 +1,7 @@
+// product.repository.ts
 import prisma from "../database/prisma"
 import { toSlug } from "../utils/slug.util";
-import { NotFoundError } from "../errors";
+import { getCategoryIds } from "./category.repository";
 
 export interface PaginatedResult<T> {
     data: T[];
@@ -11,12 +12,19 @@ export interface PaginatedResult<T> {
         totalPages: number;
     };
 }
+function escapeQuery(q: string) {
+    return q
+        .replace(/[-:!&|]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+}
 
-export const fullTextSearch = async (q: string, page: number = 1, limit: number = 10): Promise<PaginatedResult<any>> => {
+export const fullTextSearch = async (q: string, page: number, limit: number) => {
+    const safeQ = escapeQuery(q);
     const offset = (page - 1) * limit;
 
     const [products, totalCount] = await Promise.all([
-        prisma.$queryRaw<any[]>`
+        prisma.$queryRaw`
             SELECT 
                 product_id,
                 thumbnail_url,
@@ -27,22 +35,21 @@ export const fullTextSearch = async (q: string, page: number = 1, limit: number 
                 start_time,
                 end_time,
                 bid_count,
-                ts_rank(fts, websearch_to_tsquery('english', ${q})) as relevance
+                ts_rank(fts, websearch_to_tsquery('english', ${safeQ})) AS relevance
             FROM products
             WHERE 
-                fts @@ websearch_to_tsquery('english', ${q})
+                fts @@ websearch_to_tsquery('english', ${safeQ})
                 AND status = 'active'
                 AND end_time > NOW()
             ORDER BY relevance DESC
-            LIMIT ${limit} 
-            OFFSET ${offset}
+            LIMIT ${limit}::bigint
+            OFFSET ${offset}::bigint
         `,
-        // Count total
-        prisma.$queryRaw<[{ count: bigint }]>`
+        prisma.$queryRaw<{ count: bigint }[]>`
             SELECT COUNT(*) as count
             FROM products
             WHERE 
-                fts @@ websearch_to_tsquery('english', ${q})
+                fts @@ websearch_to_tsquery('english', ${safeQ})
                 AND status = 'active'
                 AND end_time > NOW()
         `
@@ -61,25 +68,19 @@ export const fullTextSearch = async (q: string, page: number = 1, limit: number 
     };
 };
 
-export const findByCategory = async (category: string, page: number, limit: number): Promise<PaginatedResult<any>> => {
-    const slug = toSlug(category);
+
+export const findByCategory = async (categorySlug: string, page: number, limit: number): Promise<PaginatedResult<any>> => {
+    const slug = toSlug(categorySlug);
     const offset = (page - 1) * limit;
 
-    const categoryExists = await prisma.categories.findFirst({
-        where: { slug },
-        select: { category_id: true }
-    });
-
-    if (!categoryExists) {
-        throw new NotFoundError(`Category '${category}' not found`);
-    }
+    const categoryIds = await getCategoryIds(slug);
 
     const [products, total] = await Promise.all([
         prisma.products.findMany({
             where: {
-                categories: { slug },
+                category_id: { in: categoryIds },
                 status: 'active',
-                end_time: { gt: new Date() },
+                end_time: { gt: new Date() }
             },
             select: {
                 product_id: true,
@@ -95,19 +96,20 @@ export const findByCategory = async (category: string, page: number, limit: numb
                     select: {
                         category_id: true,
                         name: true,
-                        slug: true,
+                        slug: true
                     }
                 },
             },
             orderBy: { created_at: 'desc' },
             take: limit,
-            skip: offset,
+            skip: offset
         }),
+
         prisma.products.count({
             where: {
-                categories: { slug },
+                category_id: { in: categoryIds },
                 status: 'active',
-                end_time: { gt: new Date() },
+                end_time: { gt: new Date() }
             }
         })
     ]);
