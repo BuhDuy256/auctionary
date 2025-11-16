@@ -1,0 +1,1 @@
+export const allowedSortFields = ["endTime", "price"] as const;

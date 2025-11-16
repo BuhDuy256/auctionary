@@ -2,6 +2,7 @@
 import prisma from "../database/prisma"
 import { toSlug } from "../utils/slug.util";
 import { getCategoryIds } from "./category.repository";
+import { SortOption } from "../api/schemas/product.schema";
 
 export interface PaginatedResult<T> {
     data: T[];
@@ -20,32 +21,45 @@ function escapeQuery(q: string) {
         .trim();
 }
 
-export const fullTextSearch = async (q: string, page: number, limit: number) => {
-    const safeQ = escapeQuery(q);
+export const fullTextSearch = async (q: string | undefined, page: number, limit: number, sort?: SortOption) => {
+    const safeQ = escapeQuery(q || "");
     const offset = (page - 1) * limit;
 
+    let orderByClause = 'ORDER BY ';
+    if (sort && Array.isArray(sort) && sort.length > 0) {
+        const orderParts = sort.map((item) => {
+            const dbField = item.field === 'endTime' ? 'end_time' : item.field === 'price' ? 'current_price' : 'created_at';
+            return `${dbField} ${item.direction.toUpperCase()}`;
+        });
+        orderByClause += orderParts.join(', ');
+    } else {
+        orderByClause += 'relevance DESC';
+    }
+
+    const queryStr = `
+        SELECT 
+            product_id,
+            thumbnail_url,
+            name,
+            current_price,
+            highest_bidder_id,
+            status,
+            start_time,
+            end_time,
+            bid_count,
+            ts_rank(fts, websearch_to_tsquery('english', $1)) AS relevance
+        FROM products
+        WHERE 
+            fts @@ websearch_to_tsquery('english', $1)
+            AND status = 'active'
+            AND end_time > NOW()
+        ${orderByClause}
+        LIMIT $2
+        OFFSET $3
+    `;
+
     const [products, totalCount] = await Promise.all([
-        prisma.$queryRaw`
-            SELECT 
-                product_id,
-                thumbnail_url,
-                name,
-                current_price,
-                highest_bidder_id,
-                status,
-                start_time,
-                end_time,
-                bid_count,
-                ts_rank(fts, websearch_to_tsquery('english', ${safeQ})) AS relevance
-            FROM products
-            WHERE 
-                fts @@ websearch_to_tsquery('english', ${safeQ})
-                AND status = 'active'
-                AND end_time > NOW()
-            ORDER BY relevance DESC
-            LIMIT ${limit}::bigint
-            OFFSET ${offset}::bigint
-        `,
+        prisma.$queryRawUnsafe(queryStr, safeQ, limit, offset),
         prisma.$queryRaw<{ count: bigint }[]>`
             SELECT COUNT(*) as count
             FROM products
@@ -69,12 +83,19 @@ export const fullTextSearch = async (q: string, page: number, limit: number) => 
     };
 };
 
-
-export const findByCategory = async (categorySlug: string, page: number, limit: number): Promise<PaginatedResult<any>> => {
+export const findByCategory = async (categorySlug: string, page: number, limit: number, sort?: SortOption): Promise<PaginatedResult<any>> => {
     const slug = toSlug(categorySlug);
     const offset = (page - 1) * limit;
 
     const categoryIds = await getCategoryIds(slug);
+
+    let orderBy: any = { created_at: 'desc' };
+    if (sort && Array.isArray(sort) && sort.length > 0) {
+        orderBy = sort.map((item) => {
+            const dbField = item.field === 'endTime' ? 'end_time' : item.field === 'price' ? 'current_price' : 'created_at';
+            return { [dbField]: item.direction };
+        });
+    }
 
     const [products, total] = await Promise.all([
         prisma.products.findMany({
@@ -101,7 +122,7 @@ export const findByCategory = async (categorySlug: string, page: number, limit: 
                     }
                 },
             },
-            orderBy: { created_at: 'desc' },
+            orderBy: orderBy,
             take: limit,
             skip: offset
         }),
