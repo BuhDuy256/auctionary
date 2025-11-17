@@ -38,6 +38,7 @@ export const createProductSchema = z.object({
     name: z.string().min(1).max(500),
     parent_category_id: z.number().int().positive(),
     category_id: z.number().int().positive(),
+    seller_id: z.number().int().positive(),
     thumbnail: z.string().min(1),
     images: z.array(z.string()).min(2),
     start_price: z.number().positive(),

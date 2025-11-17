@@ -19,9 +19,10 @@ export const searchProducts = async (query: any) => {
     return await productRepository.fullTextSearch(q, page, limit, sort);
 };
 
-export const createProduct = async (userId: number, data: {
+export const createProduct = async (data: {
     name: string;
     category_id: number;
+    seller_id: number;
     start_price: number;
     step_price: number;
     buy_now_price?: number;
@@ -34,7 +35,7 @@ export const createProduct = async (userId: number, data: {
     const product = await productRepository.createProduct({
         name: data.name,
         category_id: data.category_id,
-        seller_id: userId,
+        seller_id: data.seller_id,
         start_price: data.start_price,
         step_price: data.step_price,
         buy_now_price: data.buy_now_price,
@@ -50,5 +51,10 @@ export const createProduct = async (userId: number, data: {
         name: product.name,
         status: product.status
     };
+};
+
+export const getProductById = async (productId: number) => {
+    const product = await productRepository.findById(productId);
+    return product;
 };
 

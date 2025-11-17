@@ -197,3 +197,7 @@ export const createProduct = async (data: {
         return product;
     });
 };
+
+export const findById = async (productId: number) => {
+    
+};

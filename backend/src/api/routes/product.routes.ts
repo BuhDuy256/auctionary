@@ -9,4 +9,5 @@ const router = Router();
 router.get("/", validate(searchProductSchema, 'query'), productController.searchProducts);
 // router.post("/", requireAuth, validate(createProductSchema, 'body'), productController.createProduct);
 router.post("/", validate(createProductSchema, 'body'), productController.createProduct);
+router.get("/:productId", productController.getProductById);
 export default router;

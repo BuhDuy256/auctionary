@@ -26,8 +26,7 @@ export const createProduct = async (
     next: NextFunction
 ) => {
     try {
-        const userId = 3; // Temporary hardcoded user ID
-        const result = await productService.createProduct(userId, request.body);
+        const result = await productService.createProduct(request.body);
         
         response.status(201).json({
             success: true,
@@ -38,3 +37,21 @@ export const createProduct = async (
         next(error);
     }
 };
+
+export const getProductById = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+) => {
+    try {
+        const result = await productService.getProductById(Number(request.params.productId));
+        
+        response .status(200).json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error('[getProductById] Error:', error);
+        next(error);
+    }
+}
