@@ -51,11 +51,6 @@ export const getProductDetailById = async (productId: number) => {
     return product;
 };
 
-export const getHighestBidById = async (productId: number) => {
-    const highestBidder = await productRepository.findHighestBidById(productId);
-    return highestBidder;
-};
-
 export const getProductCommentsById = async (productId: number, query: any) => {
     const { page, limit } = getProductCommentsSchema.parse(query);
     const comments = await productRepository.findCommentsById(productId, page, limit);

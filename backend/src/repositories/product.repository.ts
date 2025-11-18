@@ -3,6 +3,7 @@ import prisma from "../database/prisma"
 import { toSlug } from "../utils/slug.util";
 import { getCategoryIds } from "./category.repository";
 import { SortOption } from "../api/schemas/product.schema";
+import { toNum } from "../utils/number.util";
 
 export interface PaginatedResult<T> {
     data: T[];
@@ -44,16 +45,6 @@ export interface ProductDetail {
             slug: string;
         };
     };
-}
-
-export interface HighestBidder {
-    current_price: number;
-    highest_bidder: {
-        id: number;
-        full_name: string;
-        positive_reviews: number;
-        negative_reviews: number;
-    }
 }
 
 export interface ProductComment {
@@ -304,9 +295,6 @@ export const createProduct = async (data: {
     });
 };
 
-const toNum = (value: any): number =>
-    value && typeof value.toNumber === 'function' ? value.toNumber() : Number(value) || 0;
-
 export const findDetailById = async (productId: number): Promise<ProductDetail | null> => {
     const product = await prisma.products.findUnique({
         where: { product_id: productId },
@@ -404,33 +392,6 @@ export const findDetailById = async (productId: number): Promise<ProductDetail |
         }
     };
 };
-
-export const findHighestBidById = async (productId: number): Promise<HighestBidder> => {
-    const currentBid = await prisma.products.findUnique({
-        where: { product_id: productId },
-        select: {
-            current_price: true,
-            users_products_highest_bidder_idTousers: {
-                select: {
-                    id: true,
-                    full_name: true,
-                    positive_reviews: true,
-                    negative_reviews: true
-                }
-            }
-        }
-    });
-
-    return {
-        current_price: toNum(currentBid?.current_price),
-        highest_bidder: {
-            id: currentBid?.users_products_highest_bidder_idTousers?.id ?? 0,
-            full_name: currentBid?.users_products_highest_bidder_idTousers?.full_name ?? '',
-            positive_reviews: currentBid?.users_products_highest_bidder_idTousers?.positive_reviews ?? 0,
-            negative_reviews: currentBid?.users_products_highest_bidder_idTousers?.negative_reviews ?? 0,
-        }
-    }
-}
 
 export const findCommentsById = async (productId: number, page: number, limit: number): Promise<PaginatedResult<ProductComment>> => {
     const offset = (page - 1) * limit;

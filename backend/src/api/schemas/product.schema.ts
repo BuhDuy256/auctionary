@@ -57,5 +57,5 @@ export const getProductCommentsSchema = z.object({
 
 export type ProductSearchQuery = z.infer<typeof searchProductSchema>;
 export type SortOption = z.infer<typeof sortOptionSchema>;
-export type CreateProductDto = z.infer<typeof createProductSchema>;
+export type CreateProduct = z.infer<typeof createProductSchema>;
 export type GetProductCommentsQuery = z.infer<typeof getProductCommentsSchema>;
