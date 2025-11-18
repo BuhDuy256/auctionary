@@ -178,3 +178,17 @@ export const resetPassword = async (
     next(error);
   }
 };
+
+export const googleLoginController = async (req: Request, res: Response) => {
+  try {
+    const { credential } = req.body; // Google trả về token trong trường 'credential'
+    const result = await authService.loginWithGoogle(
+      credential,
+      req.headers["user-agent"],
+      req.ip
+    );
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};

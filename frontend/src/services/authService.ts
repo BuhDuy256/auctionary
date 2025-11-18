@@ -45,6 +45,10 @@ export const signup = async (signupData: SignupData) => {
   return apiClient.post("/auth/signup", signupData, false);
 };
 
+export const loginWithGoogle = async (credential: string) => {
+  return apiClient.post("/auth/google-login", { credential }, false);
+};
+
 /**
  * Verifies the token from localStorage and returns user data.
  * @returns {Promise<object>} The user data.

@@ -76,6 +76,28 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tạo bảng lưu thông tin mạng xã hội (Hỗ trợ Google, Facebook, GitHub...)
+CREATE TABLE social_accounts (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    provider VARCHAR(50) NOT NULL, -- 'google', 'facebook', 'github'
+    provider_id VARCHAR(255) NOT NULL, -- ID duy nhất từ Google/Facebook gửi về
+    email VARCHAR(255), -- Email từ mạng xã hội (để tham chiếu)
+    name VARCHAR(255),  -- Tên hiển thị trên mạng xã hội
+    avatar_url VARCHAR(500),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Liên kết với bảng users
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    
+    -- Đảm bảo một tài khoản Google chỉ liên kết 1 lần
+    UNIQUE(provider, provider_id) 
+);
+
+-- Index để tìm kiếm nhanh
+CREATE INDEX idx_social_provider ON social_accounts(provider, provider_id);
+CREATE INDEX idx_social_user ON social_accounts(user_id);
+
 -- Trigger function: Update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -249,6 +271,8 @@ CREATE TABLE categories (
     UNIQUE(parent_id, slug),
     CHECK (parent_id IS NULL OR parent_id != category_id)
 );
+
+CREATE INDEX idx_category_id on categories(category_id);
 
 -- Function: Check 2-level hierarchy constraint
 CREATE OR REPLACE FUNCTION check_category_two_levels()
@@ -866,6 +890,9 @@ FROM users u
 LEFT JOIN products p ON u.id = p.seller_id
 LEFT JOIN bids b ON u.id = b.bidder_id
 GROUP BY u.id;
+
+ALTER TABLE products
+DROP COLUMN start_time;
 
 -- ============================================
 -- 19. COMPLETION MESSAGE

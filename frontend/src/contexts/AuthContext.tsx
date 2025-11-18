@@ -90,6 +90,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return authService.signup(formData);
   };
 
+  const loginWithGoogle = async (credential: string): Promise<any> => {
+    try {
+      const response = await authService.loginWithGoogle(credential);
+
+      localStorage.setItem("token", response.data.accessToken);
+
+      setUser(response.data.user);
+
+      return response;
+    } catch (error) {
+      console.error("Google login error in context:", error);
+      throw error;
+    }
+  };
+
   const logout = async (): Promise<void> => {
     try {
       await authService.logout();
@@ -127,6 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signup,
       forgotPassword,
       resetPassword,
+      loginWithGoogle,
       logout,
     }),
     [user, isLoading]

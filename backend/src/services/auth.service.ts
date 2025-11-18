@@ -1,6 +1,7 @@
 import * as userRepo from "../repositories/user.repository";
 import * as otpRepo from "../repositories/otp.repository";
 import * as tokenRepo from "../repositories/token.repository";
+import * as socialRepo from "../repositories/socialAccount.repository";
 import { hashPassword, comparePassword } from "../utils/hash.util";
 import { generateOTP, isOTPExpired } from "../utils/otp.util";
 import { sendOTPEmail, sendWelcomeEmail } from "./email.service";
@@ -11,6 +12,8 @@ import {
   hashToken,
   getRefreshTokenExpiry,
 } from "../utils/jwt.util";
+import * as googleService from "./google.service";
+
 const OTP_EXPIRY_MINUTES = 15;
 
 export const signupUser = async (userData: any) => {
@@ -60,7 +63,10 @@ export const loginUser = async (
     throw new Error("Invalid email");
   }
 
-  const isPasswordValid = await comparePassword(password, user.password);
+  const isPasswordValid = await comparePassword(
+    password,
+    user.password as string
+  );
   if (!isPasswordValid) {
     throw new Error("Invalid password");
   }
@@ -312,5 +318,58 @@ export const getAuthenticatedUser = async (userId: number) => {
     negative_reviews: user.negative_reviews,
     roles: roles, // ['bidder', 'seller', 'admin']
     created_at: user.created_at,
+  };
+};
+
+/* 
+    OAuth 2.0 
+*/
+
+export const loginWithGoogle = async (
+  credential: string,
+  deviceInfo?: string,
+  ipAddress?: string
+) => {
+  // 1. Xác thực token với Google
+  const googlePayload = await googleService.verifyGoogleToken(credential);
+
+  if (!googlePayload || !googlePayload.email) {
+    throw new Error("Google account invalid or missing email");
+  }
+
+  const { email, name, picture, sub: googleId } = googlePayload;
+
+  // 2. Tìm hoặc tạo User (Logic DB đã được chuyển sang Repository)
+  const user = await socialRepo.findOrCreateUserFromSocial(
+    "google",
+    googleId,
+    email,
+    name || null,
+    picture || null
+  );
+
+  const userPayload = { id: user.id, email: user.email, roles: [] };
+  const accessToken = generateAccessToken(userPayload);
+  const refreshToken = generateRefreshToken(userPayload);
+
+  // 4. Lưu refresh token
+  await tokenRepo.createRefreshToken(
+    user.id,
+    hashToken(refreshToken),
+    getRefreshTokenExpiry(),
+    deviceInfo,
+    ipAddress
+  );
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      full_name: user.full_name,
+      avatar: picture, // Hoặc user.avatar nếu bạn lưu avatar vào bảng user
+      is_verified: true,
+    },
   };
 };

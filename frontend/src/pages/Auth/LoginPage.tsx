@@ -7,6 +7,7 @@ import Button from "../../components/ui/Button"; // Assuming Button/Input are in
 import Input from "../../components/ui/Input";
 import { useAuth } from "../../hooks/useAuth"; // Assuming hook is in contexts/
 import "./AuthForms.css"; // 7. Import common CSS for forms
+import { useGoogleLogin } from "@react-oauth/google";
 
 // 2. Get Site Key from .env (Vite)
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
@@ -14,7 +15,7 @@ const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 export default function LoginPage() {
   const navigate = useNavigate();
   const recaptchaRef = useRef<ReCAPTCHA>(null);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   // 3. Update state according to schema: username -> email
   const [email, setEmail] = useState("");
@@ -70,6 +71,26 @@ export default function LoginPage() {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setIsLoading(true);
+        await loginWithGoogle(tokenResponse.access_token);
+
+        toast.success("Login with Google successful!");
+        navigate("/"); // Điều hướng về trang chủ ngay
+      } catch (err: any) {
+        console.error("Google Login Failed:", err);
+        toast.error("Google login failed. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => {
+      toast.error("Google login failed.");
+    },
+  });
 
   return (
     // 6. Use AuthLayout, pass in the title
@@ -131,6 +152,24 @@ export default function LoginPage() {
       >
         Forgot password?
       </a>
+
+      <div className="divider">
+        <span>OR</span>
+      </div>
+
+      <Button
+        variant="secondary"
+        onClick={() => handleGoogleLogin()} // Gọi hàm của hook
+        disabled={isLoading}
+        className="google-login-button"
+      >
+        <img
+          src="/assets/Google__G__logo.svg.webp"
+          alt="G"
+          style={{ width: 18, height: 18, marginRight: 8 }}
+        />
+        Continue with Google
+      </Button>
     </AuthLayout>
   );
 }

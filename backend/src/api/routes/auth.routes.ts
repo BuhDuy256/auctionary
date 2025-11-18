@@ -29,6 +29,8 @@ router.post(
   authController.login
 );
 
+router.post("/google-login", authController.googleLoginController);
+
 router.post("/refresh", authController.refreshToken);
 router.post("/logout", authController.logout);
 
