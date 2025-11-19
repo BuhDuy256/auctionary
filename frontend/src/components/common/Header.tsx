@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"; // 1. Import hook useAuth
-import "./Header.css"; // 2. Import CSS
+import "./Header.css";
 import Button from "../ui/Button";
 
 const Header: React.FC = () => {
@@ -20,7 +20,7 @@ const Header: React.FC = () => {
         {/* 4. Logo (bên trái) - Nhấn vào sẽ về trang chủ */}
         <Link to="/" className="header-logo">
           <img
-            src="/assets/auctionary_logo.png" // Bạn cần có logo ở public/assets
+            src="/assets/auctionary_logo.svg" // Bạn cần có logo ở public/assets
             alt="Auctionary Logo"
             onError={(e) =>
               (e.currentTarget.src =

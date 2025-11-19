@@ -1,14 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
-import StatusPageLayout from "../components/layout/StatusPageLayout";
+import StatusPageLayout from "../layouts/StatusPageLayout";
 
 export default function UnauthorizedPage() {
   const navigate = useNavigate();
   const handleGoBack = () => navigate(-1);
-  const handleGoHome = () => navigate("/");
 
   return (
-    // 2. Sử dụng layout
     <StatusPageLayout
       icon="🚫"
       title="Access Denied"

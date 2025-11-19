@@ -1,14 +1,23 @@
+.input-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .input-field {
+  width: 100%;
   background-color: #fafafa;
   border: 1px solid #dbdbdb;
   border-radius: 6px;
   padding: 12px;
+  padding-right: 40px;
   margin-bottom: 8px;
   font-size: 14px;
-  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
   color: #000;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
-    Arial, sans-serif;
+  font-family: "Verdana", sans-serif;
 }
 
 .input-field:focus {
@@ -17,8 +26,65 @@
   box-shadow: 0 0 0 1px #a8a8a8;
 }
 
-/* ✨ NEW: Placeholder color */
-.input-field::placeholder {
-  color: #8e8e8e;
+.password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 10px;
+  margin-top: -4px;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
   opacity: 1;
+  filter: brightness(0.65);
+  transition: opacity 0.2s ease;
+}
+
+.password-toggle-btn:hover .eye-icon {
+  opacity: 1;
+}
+
+.password-toggle-btn:focus,
+.password-toggle-btn:active {
+  outline: none !important;
+  background: transparent !important;
+}
+
+.input-field:-webkit-autofill,
+.input-field:-webkit-autofill:hover,
+.input-field:-webkit-autofill:focus,
+.input-field:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #000 !important;
+  caret-color: #000 !important;
+  border-radius: 6px !important;
+  font-family: "Verdana", sans-serif !important;
+  font-size: 14px !important;
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
 }

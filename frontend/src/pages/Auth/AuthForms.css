@@ -73,3 +73,11 @@
   gap: 8px;
   width: 100%;
 }
+
+.recaptcha-container {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  transform: scale(0.95);
+  transform-origin: center;
+}

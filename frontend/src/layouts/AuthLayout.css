@@ -20,7 +20,7 @@
 
 /* Common box, merges .login-box and .signup-box */
 .auth-box {
-  width: 420px; /* Standardized size */
+  width: 420px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,8 +30,12 @@
   padding: 32px 40px;
   border-radius: 12px;
   box-sizing: border-box;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   transition: box-shadow 0.3s ease-in-out;
+}
+
+.auth-box:hover {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .auth-logo {
@@ -71,14 +75,6 @@
   margin: 10px 0 5px 0;
   text-align: center;
   animation: shake 0.4s ease-in-out;
-}
-
-.recaptcha-container {
-  margin-top: 16px;
-  display: flex;
-  justify-content: center;
-  transform: scale(0.95); /* Slightly shrink reCAPTCHA */
-  transform-origin: center;
 }
 
 /* Animations (Kept) */

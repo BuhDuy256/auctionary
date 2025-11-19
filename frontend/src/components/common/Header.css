@@ -4,7 +4,6 @@
   border-bottom: 1px solid #dbdbdb;
   padding: 12px 24px;
   box-sizing: border-box;
-  /* Tạo bóng mờ nhẹ */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
@@ -12,7 +11,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* Giới hạn chiều rộng và căn giữa */
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -26,6 +24,14 @@
   color: #000000;
   font-size: 22px;
   font-weight: 700;
+}
+
+.header-logo:hover,
+.header-logo:visited,
+.header-logo:active,
+.header-logo:focus {
+  text-decoration: none;
+  color: #000000;
 }
 
 .header-logo img {

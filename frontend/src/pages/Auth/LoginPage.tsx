@@ -175,7 +175,7 @@ export default function LoginPage() {
         Forgot password?
       </a>
       <div className="divider">
-        <span>OR</span>
+        <span>OR Continue with</span>
       </div>
       <div className="social-button-group">
         <Button

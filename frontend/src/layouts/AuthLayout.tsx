@@ -24,7 +24,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, children }) => {
       <main className="auth-main-content">
         <div className="auth-box">
           <img
-            src="/assets/auctionary_logo.png" // Change logo here
+            src="/assets/auctionary_logo.svg" // Change logo here
             alt="Auctionary Logo"
             className="auth-logo"
           />
