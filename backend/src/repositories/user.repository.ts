@@ -43,6 +43,17 @@ export const findById = async (userId: number) => {
   return user;
 };
 
+export const getPositiveNegativeReviewsById = async (userId: number) => {
+  const user = await prisma.users.findUnique({
+    where: { id: userId },
+    select: {
+      positive_reviews: true,
+      negative_reviews: true,
+    },
+  });
+  return user;
+};
+
 export const findByIdWithRoles = async (userId: number) => {
   const user = await prisma.users.findUnique({
     where: { id: userId },

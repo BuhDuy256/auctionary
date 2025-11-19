@@ -417,7 +417,6 @@ CREATE TABLE bids (
     product_id INT NOT NULL,
     bidder_id INT NOT NULL,
     amount NUMERIC(15, 2) NOT NULL,
-    is_auto BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE,
     FOREIGN KEY (bidder_id) REFERENCES users(id) ON DELETE CASCADE,

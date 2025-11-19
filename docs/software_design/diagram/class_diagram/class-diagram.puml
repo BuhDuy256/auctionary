@@ -183,7 +183,7 @@ package "Domain Entities" <<Rectangle>> {
         - autoBidId: number
         - productId: number
         - bidderId: number
-        - maxAmount: number
+        - maxPrice: number
         - createdAt: Date
         --
         + calculateNextBid(currentPrice: number, stepPrice: number): number
@@ -389,7 +389,7 @@ package "Business Services" <<Rectangle>> {
         - notificationService: NotificationService
         --
         + placeBid(bidderId: number, productId: number, amount: number): Promise<Bid>
-        + setAutoBid(bidderId: number, productId: number, maxAmount: number): Promise<AutoBid>
+        + setAutoBid(bidderId: number, productId: number, maxPrice: number): Promise<AutoBid>
         + processAutoBids(productId: number): Promise<void>
         + getBidHistory(productId: number): Promise<Bid[]>
         + rejectBidder(productId: number, bidderId: number, reason: string): Promise<void>

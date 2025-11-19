@@ -67,7 +67,7 @@ ProductService -> ProductService : end_time = NOW() + INTERVAL '7 days'
 ' Insert product
 ProductService -> ProductRepo : createProduct(product_data)
 activate ProductRepo
-ProductRepo -> DB : INSERT INTO products (\n  category_id, seller_id, name, thumbnail_url,\n  current_price, buy_now_price, start_price, step_price,\n  start_time, end_time, auto_extend, status\n) VALUES (\n  :category_id, :seller_id, :name, :images[0],\n  :start_price, :buy_now_price, :start_price, :step_price,\n  CURRENT_TIMESTAMP, :end_time, :auto_extend, 'active'\n)
+ProductRepo -> DB : INSERT INTO products (\n  category_id, seller_id, name, thumbnail_url,\n  current_price, buy_now_price, start_price, step_price,\n  created_at, end_time, auto_extend, status\n) VALUES (\n  :category_id, :seller_id, :name, :images[0],\n  :start_price, :buy_now_price, :start_price, :step_price,\n  CURRENT_TIMESTAMP, :end_time, :auto_extend, 'active'\n)
 activate DB
 DB --> ProductRepo : product_id (newly created)
 deactivate DB
@@ -193,8 +193,8 @@ note right of DB
   - auto_extend (BOOLEAN): Enable/disable auto-extend
   - fts (TSVECTOR): Full-text search index
   - status: 'active' (initially)
-  - start_time: CURRENT_TIMESTAMP
-  - end_time: start_time + 7 days (default)
+  - created_at: CURRENT_TIMESTAMP
+  - end_time: created_at + 7 days (default)
   - current_price = start_price (initially)
   
   **product_descriptions:**

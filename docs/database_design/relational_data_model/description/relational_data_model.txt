@@ -4,7 +4,7 @@ permissions(permission_id, name) # rbac
 users_roles(user_id, role_id) # rbac
 roles_permissions(role_id, permission_id) # rbac
 categories(category_id, name, slug, parent_id) # 2-level only, ON DELETE RESTRICT from products, ck_category_two_levels
-products(product_id, category_id, seller_id, highest_bidder_id, name, thumbnail_url, current_price, buy_now_price, start_price, step_price, start_time, end_time, bid_count, auto_extend, status, fts) # fts=tsvector for full-text search, trigger: products_fts_update()
+products(product_id, category_id, seller_id, highest_bidder_id, name, thumbnail_url, current_price, buy_now_price, start_price, step_price, created_at, end_time, bid_count, auto_extend, status, fts) # fts=tsvector for full-text search, trigger: products_fts_update()
 auto_bids(auto_bid_id, product_id, bidder_id, max_amount, created_at)
 bids(bid_id, product_id, bidder_id, amount, is_auto, created_at)
 product_descriptions(description_id, product_id, author_id, content, lang, version, created_at) # append-only, triggers FTS update

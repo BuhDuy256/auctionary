@@ -69,7 +69,7 @@ class products {
   buy_now_price
   start_price
   step_price
-  start_time
+  created_at
   end_time
   bid_count
   auto_extend

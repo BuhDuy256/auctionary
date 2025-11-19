@@ -39,13 +39,13 @@ SearchService -> ProductRepo : fullTextSearch(keyword, category_id, sort_by, pag
 activate ProductRepo
 
 alt keyword is NOT empty - Full-text search
-    ProductRepo -> DB : SELECT p.product_id, p.name, p.thumbnail_url,\np.current_price, p.buy_now_price, p.start_time, p.end_time,\np.bid_count, p.status, c.name as category_name,\nu_seller.full_name as seller_name,\nu_bidder.full_name as highest_bidder_name,\nts_rank(p.fts, plainto_tsquery('english', :keyword)) as rank,\n(p.start_time > :new_threshold) as is_new\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nJOIN users u_seller ON p.seller_id = u_seller.user_id\nLEFT JOIN users u_bidder ON p.highest_bidder_id = u_bidder.user_id\nWHERE p.status = 'active'\nAND p.fts @@ plainto_tsquery('english', :keyword)\n[AND p.category_id = :category_id OR c.parent_id = :category_id]\nORDER BY\n  CASE :sort_by\n    WHEN 'end_time_desc' THEN p.end_time\n    WHEN 'price_asc' THEN p.current_price\n    ELSE rank\n  END [DESC/ASC]\nLIMIT :limit OFFSET :offset
+    ProductRepo -> DB : SELECT p.product_id, p.name, p.thumbnail_url,\np.current_price, p.buy_now_price, p.created_at, p.end_time,\np.bid_count, p.status, c.name as category_name,\nu_seller.full_name as seller_name,\nu_bidder.full_name as highest_bidder_name,\nts_rank(p.fts, plainto_tsquery('english', :keyword)) as rank,\n(p.created_at > :new_threshold) as is_new\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nJOIN users u_seller ON p.seller_id = u_seller.user_id\nLEFT JOIN users u_bidder ON p.highest_bidder_id = u_bidder.user_id\nWHERE p.status = 'active'\nAND p.fts @@ plainto_tsquery('english', :keyword)\n[AND p.category_id = :category_id OR c.parent_id = :category_id]\nORDER BY\n  CASE :sort_by\n    WHEN 'end_time_desc' THEN p.end_time\n    WHEN 'price_asc' THEN p.current_price\n    ELSE rank\n  END [DESC/ASC]\nLIMIT :limit OFFSET :offset
     activate DB
     DB --> ProductRepo : List of matching products with rank & is_new flag
     deactivate DB
 
 else keyword is empty - Browse by category
-    ProductRepo -> DB : SELECT p.product_id, p.name, p.thumbnail_url,\np.current_price, p.buy_now_price, p.start_time, p.end_time,\np.bid_count, p.status, c.name as category_name,\nu_seller.full_name as seller_name,\nu_bidder.full_name as highest_bidder_name,\n(p.start_time > :new_threshold) as is_new\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nJOIN users u_seller ON p.seller_id = u_seller.user_id\nLEFT JOIN users u_bidder ON p.highest_bidder_id = u_bidder.user_id\nWHERE p.status = 'active'\n[AND (p.category_id = :category_id OR c.parent_id = :category_id)]\nORDER BY\n  CASE :sort_by\n    WHEN 'end_time_desc' THEN p.end_time\n    WHEN 'price_asc' THEN p.current_price\n    ELSE p.start_time\n  END [DESC/ASC]\nLIMIT :limit OFFSET :offset
+    ProductRepo -> DB : SELECT p.product_id, p.name, p.thumbnail_url,\np.current_price, p.buy_now_price, p.created_at, p.end_time,\np.bid_count, p.status, c.name as category_name,\nu_seller.full_name as seller_name,\nu_bidder.full_name as highest_bidder_name,\n(p.created_at > :new_threshold) as is_new\nFROM products p\nJOIN categories c ON p.category_id = c.category_id\nJOIN users u_seller ON p.seller_id = u_seller.user_id\nLEFT JOIN users u_bidder ON p.highest_bidder_id = u_bidder.user_id\nWHERE p.status = 'active'\n[AND (p.category_id = :category_id OR c.parent_id = :category_id)]\nORDER BY\n  CASE :sort_by\n    WHEN 'end_time_desc' THEN p.end_time\n    WHEN 'price_asc' THEN p.current_price\n    ELSE p.created_at\n  END [DESC/ASC]\nLIMIT :limit OFFSET :offset
     activate DB
     DB --> ProductRepo : List of products with is_new flag
     deactivate DB
@@ -78,7 +78,7 @@ note right of Browser
   - Giá hiện tại (current_price)
   - Thông tin bidder đang giữ giá cao nhất (highest_bidder_name)
   - Giá mua ngay (buy_now_price) - nếu có
-  - Ngày đăng sản phẩm (start_time)
+  - Ngày đăng sản phẩm (created_at)
   - Thời gian còn lại (end_time - NOW())
   - Số lượt ra giá (bid_count)
   - Category name (clickable -> browse category)
