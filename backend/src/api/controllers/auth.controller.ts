@@ -55,7 +55,7 @@ export const login = async (
       },
     });
   } catch (error: any) {
-    next(error);
+    return next(error);
   }
 };
 

@@ -16,13 +16,25 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   hasRole: (role: string) => boolean;
+
   login: (
     email: string,
     password: string,
     recaptchaToken: string
-  ) => Promise<any>; // Trả về Awaited<AxiosResponse<any>>
+  ) => Promise<any>;
+
   signup: (formData: SignupData) => Promise<any>;
   logout: () => Promise<void>;
+
+  forgotPassword: (email: string) => Promise<any>;
+  resetPassword: (
+    email: string,
+    otp: string,
+    newPassword: string
+  ) => Promise<any>;
+
+  loginWithGoogle: (credential: string) => Promise<any>;
+  loginWithFacebook: (accessToken: string) => Promise<any>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
