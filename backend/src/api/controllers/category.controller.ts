@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import * as categoryService from "../../services/category.services";
+import * as categoryService from "../../services/category.service";
 import { formatResponse } from "../../utils/response.util";
 import { logger } from "../../utils/logger.util";
 

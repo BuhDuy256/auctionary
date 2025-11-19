@@ -421,7 +421,6 @@ export const loginWithFacebook = async (
 
   return {
     accessToken: jwtAccessToken,
-    refreshToken: jwtRefreshToken,
     user: {
       id: user.id,
       email: user.email,

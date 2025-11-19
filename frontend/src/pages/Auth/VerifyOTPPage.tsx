@@ -9,7 +9,7 @@ import "./VerifyOTPPage.css";
 
 interface LocationState {
   email?: string;
-  user_id?: number;
+  userId?: number;
   message?: string;
 }
 
@@ -19,8 +19,9 @@ const VerifyOTPPage: React.FC = () => {
 
   // Get email, user_id and message from navigation state
   const state = location.state as LocationState;
+  console.log(state);
   const email = state?.email;
-  const userId = state?.user_id;
+  const userId = state?.userId;
   const customMessage = state?.message;
 
   // Form state

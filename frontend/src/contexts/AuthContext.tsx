@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import type { User } from "../types/user";
 
 export interface SignupData {
-  full_name: string;
+  fullName: string;
   email: string;
   password: string;
   address?: string;
@@ -108,7 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       localStorage.setItem("token", response.accessToken);
 
-      setUser(response.user);
+      setUser(response.data.user);
+      console.log(response);
 
       return response;
     } catch (error) {
@@ -121,8 +122,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await authService.loginWithFacebook(accessToken);
 
-      localStorage.setItem("token", response.accessToken);
-      setUser(response.user);
+      localStorage.setItem("token", response.data.accessToken);
+      setUser(response.data.user);
 
       return response;
     } catch (error) {

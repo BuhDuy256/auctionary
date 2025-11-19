@@ -49,7 +49,7 @@ export default function LoginPage() {
         navigate("/verify-otp", {
           state: {
             email: email,
-            user_id: response.data.user.id, // Pass user_id for OTP verification
+            userId: response.data.user.id, // Pass userId for OTP verification
             message:
               "Your account is not verified. A new verification code has been sent to your email.",
           },

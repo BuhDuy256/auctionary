@@ -18,7 +18,7 @@ export default function SignupPage() {
 
   // 3. Update state according to new schema
   const [formData, setFormData] = useState({
-    full_name: "",
+    fullName: "",
     email: "",
     password: "",
     confirm_password: "", // Still needed for UI validation
@@ -88,9 +88,9 @@ export default function SignupPage() {
       <form className="auth-form" onSubmit={handleSignup}>
         {/* 8. Update fields according to new schema */}
         <Input
-          name="full_name"
+          name="fullName"
           placeholder="Full Name"
-          value={formData.full_name}
+          value={formData.fullName}
           onChange={handleChange}
           disabled={isLoading}
           required

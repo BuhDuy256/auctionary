@@ -4,7 +4,7 @@ import apiClient from "./apiClient";
 // Define the shape of signup data based on your schema
 // This matches the interface in AuthContext
 export interface SignupData {
-  full_name: string;
+  fullName: string;
   email: string;
   password: string;
   address?: string;
@@ -88,7 +88,7 @@ export const logout = async () => {
  * @throws {Error} If verification fails
  */
 export const verifyOTP = async (userId: number, otp: string) => {
-  return apiClient.post("/auth/verify-otp", { user_id: userId, otp }, false);
+  return apiClient.post("/auth/verify-otp", { userId, otp }, false);
 };
 
 /**
