@@ -143,11 +143,13 @@ export const getHighestBidById = async (
   return await bidRepository.findHighestBidById(productId);
 };
 
-export const placeBid = async (
-  productId: number,
-  bidderId: number,
-  placedMaxPrice: number
-): Promise<void> => {
+export const placeBid = async (body: {
+  productId: number;
+  bidderId: number;
+  maxAmount: number;
+}): Promise<void> => {
+  const { productId, bidderId, maxAmount: placedMaxPrice } = body;
+
   await validateBidderRating(bidderId);
 
   const productBidInfo = await productRepository.getProductBidInfo(productId);
@@ -186,10 +188,11 @@ export const placeBid = async (
 };
 
 export const getBidHistory = async (
-  productId: number,
-  page: number,
-  limit: number
+  params: any,
+  query: any
 ): Promise<PaginatedResult<BidHistoryItem>> => {
+  const productId = Number(params.id);
+  const { page, limit } = query;
   const history = await bidRepository.findBidHistoryByProductId(
     productId,
     page,

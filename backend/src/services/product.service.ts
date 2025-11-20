@@ -1,14 +1,9 @@
 import * as productRepository from "../repositories/product.repository";
 import { SortOption } from "../api/schemas/product.schema";
 
-export const searchProducts = async (
-  q: string | undefined,
-  category: string | undefined,
-  page: number,
-  limit: number,
-  sort?: SortOption,
-  exclude?: number
-) => {
+export const searchProducts = async (query: any) => {
+  const { q, category, page, limit, sort, exclude } = query;
+
   if (category) {
     return await productRepository.findByCategory(
       category,
@@ -61,19 +56,15 @@ export const getProductDetailById = async (productId: number) => {
   return product;
 };
 
-export const getProductCommentsById = async (
-  productId: number,
-  page: number,
-  limit: number
-) => {
+export const getProductCommentsById = async (params: any, query: any) => {
+  const productId = Number(params.id);
+  const { page, limit } = query;
   return await productRepository.findCommentsById(productId, page, limit);
 };
 
-export const appendProductDescription = async (
-  productId: number,
-  sellerId: number,
-  content: string
-) => {
+export const appendProductDescription = async (params: any, body: any) => {
+  const productId = Number(params.id);
+  const { sellerId, content } = body;
   await productRepository.appendProductDescription(
     productId,
     sellerId,

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import * as bidService from "../../services/bid.service";
-import { placeBidSchema, getBidHistorySchema } from "../schemas/bid.schema";
 import { logger } from "../../utils/logger.util";
 import {
   formatResponse,
@@ -35,10 +34,7 @@ export const placeBid = async (
   next: NextFunction
 ) => {
   try {
-    const { productId, bidderId, maxAmount } = placeBidSchema.parse(
-      request.body
-    );
-    await bidService.placeBid(productId, bidderId, maxAmount);
+    await bidService.placeBid(request.body);
 
     formatResponse(response, 200, { message: "Bid placed successfully" });
   } catch (error) {
@@ -53,17 +49,10 @@ export const getBidHistoryById = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const productId = Number(request.params.id);
-    if (!productId || isNaN(productId)) {
-      response.status(400).json({
-        success: false,
-        error: "Invalid product ID",
-      });
-      return;
-    }
-
-    const { page, limit } = getBidHistorySchema.parse(request.query);
-    const result = await bidService.getBidHistory(productId, page, limit);
+    const result = await bidService.getBidHistory(
+      request.params,
+      request.query
+    );
 
     formatPaginatedResponse(response, 200, result.data, result.pagination);
   } catch (error) {

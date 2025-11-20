@@ -1,10 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import * as productService from "../../services/product.service";
-import {
-  searchProductSchema,
-  getProductCommentsSchema,
-  appendProductDescriptionSchema,
-} from "../schemas/product.schema";
 import { logger } from "../../utils/logger.util";
 import {
   formatResponse,
@@ -17,16 +12,7 @@ export const searchProducts = async (
   next: NextFunction
 ) => {
   try {
-    const { q, category, page, limit, sort, exclude } =
-      searchProductSchema.parse(request.query);
-    const result = await productService.searchProducts(
-      q,
-      category,
-      page,
-      limit,
-      sort,
-      exclude
-    );
+    const result = await productService.searchProducts(request.query);
 
     formatPaginatedResponse(response, 200, result.data, result.pagination);
   } catch (error) {
@@ -73,12 +59,9 @@ export const getProductCommentsById = async (
   next: NextFunction
 ) => {
   try {
-    const productId = Number(request.params.id);
-    const { page, limit } = getProductCommentsSchema.parse(request.query);
     const result = await productService.getProductCommentsById(
-      productId,
-      page,
-      limit
+      request.params,
+      request.query
     );
 
     formatPaginatedResponse(response, 200, result.data, result.pagination);
@@ -94,19 +77,7 @@ export const appendProductDescription = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const productId = Number(request.params.id);
-    if (!productId || isNaN(productId)) {
-      response.status(400).json({
-        success: false,
-        error: "Invalid product ID",
-      });
-      return;
-    }
-
-    const { sellerId, content } = appendProductDescriptionSchema.parse(
-      request.body
-    );
-    await productService.appendProductDescription(productId, sellerId, content);
+    await productService.appendProductDescription(request.params, request.body);
 
     formatResponse(response, 200, {
       message: "Product description appended successfully",
