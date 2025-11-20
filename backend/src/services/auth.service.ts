@@ -16,8 +16,6 @@ import * as googleService from "./google.service";
 import * as facebookService from "./facebook.service";
 import { BadRequestError, NotFoundError, UnauthorizedError } from "../errors";
 import {
-  SignupData,
-  LoginData,
   SignupResponse,
   LoginResponse,
   VerificationRequiredResponse,
@@ -25,11 +23,18 @@ import {
   RefreshTokenResponse,
 } from "../types/auth.types";
 import { OTP_EXPIRY_MINUTES } from "../utils/constant.util";
+import {
+  signupSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  googleLoginSchema,
+  facebookLoginSchema,
+} from "../api/schemas/auth.schema";
 
-export const signupUser = async (
-  userData: SignupData
-): Promise<SignupResponse> => {
-  const { /* recaptchaToken, */ fullName, email, password, address } = userData;
+export const signupUser = async (userData: any): Promise<SignupResponse> => {
+  const { /* recaptchaToken, */ fullName, email, password, address } =
+    signupSchema.parse(userData);
 
   const existingUser = await userRepo.findByEmail(email);
   if (existingUser) {
@@ -69,11 +74,11 @@ export const signupUser = async (
 };
 
 export const loginUser = async (
-  loginData: LoginData,
+  loginData: any,
   deviceInfo?: string,
   ipAddress?: string
 ): Promise<LoginResponse | VerificationRequiredResponse> => {
-  const { email, password } = loginData;
+  const { email, password } = loginSchema.parse(loginData);
 
   const user = await userRepo.findByEmail(email);
   if (!user) {
@@ -143,8 +148,9 @@ export const loginUser = async (
 };
 
 export const requestPasswordReset = async (
-  email: string
+  data: any
 ): Promise<{ message: string }> => {
+  const { email } = forgotPasswordSchema.parse(data);
   const user = await userRepo.findByEmail(email);
 
   if (!user || !user.isVerified) {
@@ -163,10 +169,9 @@ export const requestPasswordReset = async (
 };
 
 export const resetPasswordWithOTP = async (
-  email: string,
-  otp: string,
-  newPassword: string
+  data: any
 ): Promise<{ message: string }> => {
+  const { email, otp, newPassword } = resetPasswordSchema.parse(data);
   const user = await userRepo.findByEmail(email);
   if (!user) {
     throw new NotFoundError("User not found");
@@ -334,10 +339,11 @@ export const getAuthenticatedUser = async (
 };
 
 export const loginWithGoogle = async (
-  code: string,
+  data: any,
   deviceInfo?: string,
   ipAddress?: string
 ): Promise<LoginResponse> => {
+  const { code } = googleLoginSchema.parse(data);
   const googlePayload = await googleService.verifyGoogleToken(code);
 
   if (!googlePayload || !googlePayload.email) {
@@ -383,10 +389,11 @@ export const loginWithGoogle = async (
 };
 
 export const loginWithFacebook = async (
-  accessToken: string,
+  data: any,
   deviceInfo?: string,
   ipAddress?: string
 ): Promise<LoginResponse> => {
+  const { accessToken } = facebookLoginSchema.parse(data);
   const fbPayload = await facebookService.verifyFacebookToken(accessToken);
 
   if (!fbPayload.email) {

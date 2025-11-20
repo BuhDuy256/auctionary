@@ -7,6 +7,7 @@ import { BidHistoryItem, HighestBidder } from "../types/bid.types";
 import { maskName } from "../utils/mask.util";
 import prisma from "../database/prisma";
 import { PaginatedResult } from "../types/product.types";
+import { placeBidSchema, getBidHistorySchema } from "../api/schemas/bid.schema";
 
 const validateBidderRating = async (bidderId: number): Promise<void> => {
   const reviews = await userRepository.getPositiveNegativeReviewsById(bidderId);
@@ -143,12 +144,12 @@ export const getHighestBidById = async (
   return await bidRepository.findHighestBidById(productId);
 };
 
-export const placeBid = async (body: {
-  productId: number;
-  bidderId: number;
-  maxAmount: number;
-}): Promise<void> => {
-  const { productId, bidderId, maxAmount: placedMaxPrice } = body;
+export const placeBid = async (body: any): Promise<void> => {
+  const {
+    productId,
+    bidderId,
+    maxAmount: placedMaxPrice,
+  } = placeBidSchema.parse(body);
 
   await validateBidderRating(bidderId);
 
@@ -192,7 +193,7 @@ export const getBidHistory = async (
   query: any
 ): Promise<PaginatedResult<BidHistoryItem>> => {
   const productId = Number(params.id);
-  const { page, limit } = query;
+  const { page, limit } = getBidHistorySchema.parse(query);
   const history = await bidRepository.findBidHistoryByProductId(
     productId,
     page,

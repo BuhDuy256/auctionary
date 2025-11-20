@@ -155,8 +155,7 @@ export const forgotPassword = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email } = request.body;
-    const result = await authService.requestPasswordReset(email);
+    const result = await authService.requestPasswordReset(request.body);
     formatResponse(response, 200, null, result.message);
   } catch (error) {
     logger.error("AuthController", "Failed to process forgot password", error);
@@ -170,12 +169,7 @@ export const resetPassword = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { email, otp, newPassword } = request.body;
-    const result = await authService.resetPasswordWithOTP(
-      email,
-      otp,
-      newPassword
-    );
+    const result = await authService.resetPasswordWithOTP(request.body);
     formatResponse(response, 200, null, result.message);
   } catch (error) {
     logger.error("AuthController", "Failed to reset password", error);
@@ -189,9 +183,8 @@ export const googleLogin = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { code } = request.body;
     const result = await authService.loginWithGoogle(
-      code,
+      request.body,
       request.headers["user-agent"],
       request.ip
     );
@@ -224,9 +217,8 @@ export const facebookLogin = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { accessToken } = request.body;
     const result = await authService.loginWithFacebook(
-      accessToken,
+      request.body,
       request.headers["user-agent"],
       request.ip
     );

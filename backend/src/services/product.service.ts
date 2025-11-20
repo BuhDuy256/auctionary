@@ -1,8 +1,13 @@
 import * as productRepository from "../repositories/product.repository";
-import { SortOption } from "../api/schemas/product.schema";
+import {
+  searchProductSchema,
+  getProductCommentsSchema,
+  appendProductDescriptionSchema,
+} from "../api/schemas/product.schema";
 
 export const searchProducts = async (query: any) => {
-  const { q, category, page, limit, sort, exclude } = query;
+  const { q, category, page, limit, sort, exclude } =
+    searchProductSchema.parse(query);
 
   if (category) {
     return await productRepository.findByCategory(
@@ -58,13 +63,13 @@ export const getProductDetailById = async (productId: number) => {
 
 export const getProductCommentsById = async (params: any, query: any) => {
   const productId = Number(params.id);
-  const { page, limit } = query;
+  const { page, limit } = getProductCommentsSchema.parse(query);
   return await productRepository.findCommentsById(productId, page, limit);
 };
 
 export const appendProductDescription = async (params: any, body: any) => {
   const productId = Number(params.id);
-  const { sellerId, content } = body;
+  const { sellerId, content } = appendProductDescriptionSchema.parse(body);
   await productRepository.appendProductDescription(
     productId,
     sellerId,
