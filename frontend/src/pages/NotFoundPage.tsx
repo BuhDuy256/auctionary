@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import Button from "../components/ui/Button";
+import { Button } from "../components/ui/Button";
 import StatusPageLayout from "../layouts/StatusPageLayout";
 
 export default function NotFoundPage() {

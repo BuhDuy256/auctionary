@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import * as authService from "../../services/authService";
 import AuthLayout from "../../layouts/AuthLayout";
 import OTPInput from "../../components/ui/OTPInput";
-import Button from "../../components/ui/Button";
+import { Button } from "../../components/ui/Button";
 import toast from "react-hot-toast";
 import "./VerifyOTPPage.css";
 
@@ -177,7 +177,7 @@ const VerifyOTPPage: React.FC = () => {
           {/* Verify Button */}
           <Button
             type="submit"
-            variant="primary"
+            variant="default"
             disabled={otp.length !== 6 || isVerifying}
             className="verify-button"
           >

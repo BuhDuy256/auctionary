@@ -1,90 +1,34 @@
-.input-wrapper {
-  position: relative;
-  width: 100%;
+.input {
   display: flex;
-  flex-direction: column;
-}
-
-.input-field {
+  height: 2.25rem;
   width: 100%;
-  background-color: var(--bg-secondary, #fafafa);
-  border: 1px solid var(--border-color, #dbdbdb);
-  border-radius: var(--radius, 6px);
-  padding: 12px;
-  padding-right: 40px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  color: var(--text-main, #000);
-  font-family: var(--font-display, "Verdana", sans-serif);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--text-main);
+  transition: all 0.2s ease;
 }
 
-.input-field:focus {
+.input::file-selector-button {
+  border: 0;
+  background-color: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus-visible {
   outline: none;
-  border-color: var(--accent-color, #a8a8a8);
-  box-shadow: 0 0 0 1px var(--accent-color, #a8a8a8);
+  box-shadow: 0 0 0 2px var(--accent-ring);
+  border-color: var(--accent-color);
 }
 
-.password-toggle-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 10px;
-  margin-top: -4px;
-  background: transparent;
-  border: none;
-  outline: none;
-  box-shadow: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-}
-
-.eye-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  opacity: 1;
-  filter: brightness(0.65);
-  transition: opacity 0.2s ease;
-}
-
-.password-toggle-btn:hover .eye-icon {
-  opacity: 1;
-}
-
-.password-toggle-btn:focus,
-.password-toggle-btn:active {
-  outline: none !important;
-  background: transparent !important;
-}
-
-.input-field:-webkit-autofill,
-.input-field:-webkit-autofill:hover,
-.input-field:-webkit-autofill:focus,
-.input-field:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px var(--bg-secondary, #ffffff) inset !important;
-  -webkit-text-fill-color: var(--text-main, #000) !important;
-  caret-color: var(--text-main, #000) !important;
-  border-radius: var(--radius, 6px) !important;
-  font-family: var(--font-display, "Verdana", sans-serif) !important;
-  font-size: 14px !important;
-}
-
-input[type="password"]::-ms-reveal,
-input[type="password"]::-ms-clear {
-  display: none !important;
-}
-
-input[type="password"]::-webkit-contacts-auto-fill-button,
-input[type="password"]::-webkit-credentials-auto-fill-button {
-  visibility: hidden;
-  display: none !important;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }

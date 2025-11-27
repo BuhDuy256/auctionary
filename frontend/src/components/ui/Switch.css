@@ -1,0 +1,49 @@
+.switch {
+  display: inline-flex;
+  height: 1.25rem;
+  width: 2.25rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  align-items: center;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  transition: all 0.2s ease-in-out;
+  background-color: var(--bg-tertiary);
+}
+
+.switch:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+
+.switch:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.switch[data-state="checked"] {
+  background-color: var(--accent-color);
+}
+
+.switch[data-state="unchecked"] {
+  background-color: var(--bg-tertiary);
+}
+
+.switch-thumb {
+  pointer-events: none;
+  display: block;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 50%;
+  background-color: var(--text-inverse);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+.switch[data-state="checked"] .switch-thumb {
+  transform: translateX(1rem);
+}
+
+.switch[data-state="unchecked"] .switch-thumb {
+  transform: translateX(0);
+}

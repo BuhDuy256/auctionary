@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth"; // 1. Import hook useAuth
 import "./Header.css";
-import Button from "../ui/Button";
+import { Button } from "../ui/Button";
 
 const Header: React.FC = () => {
   // 3. Lấy trạng thái xác thực, user, và hàm logout từ Context

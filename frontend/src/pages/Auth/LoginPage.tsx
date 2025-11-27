@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import { toast } from "react-toastify";
 import AuthLayout from "../../layouts/AuthLayout"; // 1. Import layout
-import Button from "../../components/ui/Button"; // Assuming Button/Input are in ui/
-import Input from "../../components/ui/Input";
+import { Button } from "../../components/ui/Button"; // Assuming Button/Input are in ui/
+import { Input } from "../../components/ui/Input";
 import { useAuth } from "../../hooks/useAuth"; // Assuming hook is in contexts/
 import "./AuthForms.css"; // 7. Import common CSS for forms
 import { useGoogleLogin } from "@react-oauth/google";

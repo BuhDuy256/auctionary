@@ -1,10 +1,70 @@
-.ui-kit-description {
-  color: #9ca3af;
+.ui-kit-page-container {
+  margin: 2rem;
+}
+
+/* Container chính */
+.hero-section {
   text-align: center;
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 24px;
-  max-width: 658px;
-  margin: 0 auto;
+  margin-bottom: 3rem; /* mb-12 */
+
+  /* Thay thế space-y-4 bằng Flexbox gap */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Căn giữa nội dung theo trục dọc */
+  gap: 1rem;
+}
+
+/* Cái hộp nhỏ chứa icon (Badge) */
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem; /* gap-2 */
+
+  padding: 0.5rem 1rem; /* py-2 px-4 */
+  margin-bottom: 1rem; /* mb-4 */
+
+  border-radius: var(--radius, 8px); /* rounded-lg */
+  border: 1px solid var(--border-color); /* border-border */
+
+  /* bg-card/50: Nền màu card mờ 50% */
+  /* Cách 1: Dùng màu secondary có sẵn */
+  background-color: var(--bg-secondary);
+
+  /* Cách 2: Nếu muốn mờ giống hệt Tailwind (hiện đại) */
+  background-color: color-mix(in srgb, var(--bg-secondary), transparent 50%);
+}
+
+.hero-badge-text {
+  font-size: 0.875rem; /* text-sm */
+  color: var(--text-muted); /* text-muted-foreground */
+  font-weight: 500;
+}
+
+/* Icon cái khóa */
+.hero-icon {
+  width: 1rem; /* h-4 */
+  height: 1rem; /* w-4 */
+  color: var(--accent-color); /* text-amber */
+}
+
+/* Tiêu đề lớn */
+.hero-title {
+  font-size: 2.25rem; /* text-4xl (~36px) */
+  line-height: 1.1;
+  letter-spacing: -0.025em; /* tracking-tight */
+  color: var(--text-main);
+  margin: 0;
+  font-weight: 700; /* Thêm độ đậm cho tiêu đề */
+}
+
+/* Đoạn văn mô tả */
+.hero-description {
+  color: var(--text-muted); /* text-muted-foreground */
+  font-size: 1rem; /* text-base */
+  line-height: 1.5;
+
+  /* max-w-2xl mx-auto */
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
 }

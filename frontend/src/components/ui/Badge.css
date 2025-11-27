@@ -1,0 +1,55 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: colors 0.2s ease-in-out;
+  white-space: nowrap;
+}
+
+.badge:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent-ring);
+}
+
+.badge-default {
+  border-color: transparent;
+  background-color: var(--accent-color);
+  color: var(--text-inverse);
+}
+
+.badge-default:hover {
+  opacity: 0.8;
+}
+
+.badge-secondary {
+  border-color: transparent;
+  background-color: var(--bg-secondary);
+  color: var(--text-main);
+}
+
+.badge-secondary:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.badge-destructive {
+  border-color: transparent;
+  background-color: var(--status-error);
+  color: white;
+}
+
+.badge-destructive:hover {
+  opacity: 0.8;
+}
+
+.badge-outline {
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.badge-outline:hover {
+  background-color: var(--bg-secondary);
+}
