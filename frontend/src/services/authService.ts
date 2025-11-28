@@ -1,4 +1,12 @@
 import apiClient from "./apiClient";
+import type {
+  LoginResponse,
+  SignupResponse,
+  AuthResponse,
+  VerifyOTPResponse,
+  GenericResponse,
+} from "../types/auth";
+import type { User } from "../types/user";
 
 // --- NEW ---
 // Define the shape of signup data based on your schema
@@ -16,14 +24,14 @@ export interface SignupData {
  * @param {string} email - The user's email.
  * @param {string} password - The user's password.
  * @param {string} recaptchaToken - The token from reCAPTCHA.
- * @returns {Promise<object>} The user data and token.
+ * @returns {Promise<LoginResponse>} The user data and token.
  * @throws {Error} If login fails.
  */
 export const login = async (
   email: string,
   password: string,
   recaptchaToken: string
-) => {
+): Promise<LoginResponse> => {
   // POST /auth/login, sends the new body, no auth required
   // This will return { access_token: "..." }
   return apiClient.post(
@@ -36,29 +44,33 @@ export const login = async (
 /**
  * Handles the signup API call.
  * @param {SignupData} signupData - An object matching the SignupData interface.
- * @returns {Promise<object>} The success message or data.
+ * @returns {Promise<SignupResponse>} The success message or data.
  * @throws {Error} If signup fails.
  */
-export const signup = async (signupData: SignupData) => {
+export const signup = async (
+  signupData: SignupData
+): Promise<SignupResponse> => {
   // apiService.post(endpoint, body, requiresAuth)
   // The body now matches the new schema
   return apiClient.post("/auth/signup", signupData, false);
 };
 
-export const loginWithGoogle = async (code: string) => {
+export const loginWithGoogle = async (code: string): Promise<AuthResponse> => {
   return apiClient.post("/auth/google-login", { code }, false);
 };
 
-export const loginWithFacebook = async (accessToken: string) => {
+export const loginWithFacebook = async (
+  accessToken: string
+): Promise<AuthResponse> => {
   return apiClient.post("/auth/facebook-login", { accessToken }, false);
 };
 
 /**
  * Verifies the token from localStorage and returns user data.
- * @returns {Promise<object>} The user data.
+ * @returns {Promise<{ data: User }>} The user data.
  * @throws {Error} If token is invalid or request fails.
  */
-export const getMe = async () => {
+export const getMe = async (): Promise<{ data: User }> => {
   // GET /auth/me, no body, *auth is required*
   return apiClient.get("/auth/me", true);
 };
@@ -66,7 +78,7 @@ export const getMe = async () => {
 /**
  * Logs the user out on the server and clears local token.
  */
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
   try {
     // POST /auth/logout, no body, *auth is required*
     // This invalidates the token on the server
@@ -84,24 +96,29 @@ export const logout = async () => {
  * Verifies the OTP code sent to user's email
  * @param {number} userId - User's ID
  * @param {string} otp - 6-digit OTP code
- * @returns {Promise<object>} Auth tokens and user data
+ * @returns {Promise<VerifyOTPResponse>} Auth tokens and user data
  * @throws {Error} If verification fails
  */
-export const verifyOTP = async (userId: number, otp: string) => {
+export const verifyOTP = async (
+  userId: number,
+  otp: string
+): Promise<VerifyOTPResponse> => {
   return apiClient.post("/auth/verify-otp", { userId, otp }, false);
 };
 
 /**
  * Resends OTP code to user's email
  * @param {number} userId - User's ID
- * @returns {Promise<object>} Success message
+ * @returns {Promise<GenericResponse>} Success message
  * @throws {Error} If request fails
  */
-export const resendOTP = async (userId: number) => {
+export const resendOTP = async (userId: number): Promise<GenericResponse> => {
   return apiClient.post("/auth/resend-otp", { user_id: userId }, false);
 };
 
-export const forgotPassword = async (email: string) => {
+export const forgotPassword = async (
+  email: string
+): Promise<GenericResponse> => {
   return apiClient.post("/auth/forgot-password", { email }, false);
 };
 
@@ -109,7 +126,7 @@ export const resetPasswordWithOTP = async (
   email: string,
   otp: string,
   newPassword: string
-) => {
+): Promise<GenericResponse> => {
   return apiClient.post(
     "/auth/reset-password",
     { email, otp, newPassword },

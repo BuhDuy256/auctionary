@@ -2,6 +2,12 @@ import React, { createContext, useState, useEffect, useMemo } from "react";
 import * as authService from "../services/authService";
 import { useNavigate } from "react-router-dom";
 import type { User } from "../types/user";
+import type {
+  LoginResponse,
+  SignupResponse,
+  AuthResponse,
+  GenericResponse,
+} from "../types/auth";
 
 export interface SignupData {
   fullName: string;
@@ -21,20 +27,20 @@ export interface AuthContextType {
     email: string,
     password: string,
     recaptchaToken: string
-  ) => Promise<any>;
+  ) => Promise<LoginResponse>;
 
-  signup: (formData: SignupData) => Promise<any>;
+  signup: (formData: SignupData) => Promise<SignupResponse>;
   logout: () => Promise<void>;
 
-  forgotPassword: (email: string) => Promise<any>;
+  forgotPassword: (email: string) => Promise<GenericResponse>;
   resetPassword: (
     email: string,
     otp: string,
     newPassword: string
-  ) => Promise<any>;
+  ) => Promise<GenericResponse>;
 
-  loginWithGoogle: (credential: string) => Promise<any>;
-  loginWithFacebook: (accessToken: string) => Promise<any>;
+  loginWithGoogle: (credential: string) => Promise<AuthResponse>;
+  loginWithFacebook: (accessToken: string) => Promise<AuthResponse>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -66,51 +72,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     password: string,
     recaptchaToken: string
-  ): Promise<any> => {
-    // 1. Gọi service. Nếu thất bại (401, 500), nó sẽ tự động throw lỗi
-    // và LoginPage sẽ bắt được.
-    const loginResponse = await authService.login(
-      email,
-      password,
-      recaptchaToken
-    );
+  ): Promise<LoginResponse> => {
+    try {
+      // 1. Call service
+      const loginResponse = await authService.login(
+        email,
+        password,
+        recaptchaToken
+      );
 
-    // 2. Nếu thành công, LƯU TOKEN NGAY LẬP TỨC
-    localStorage.setItem("token", loginResponse.data.accessToken);
+      // 2. If successful, save token immediately
+      localStorage.setItem("token", loginResponse.data.accessToken);
 
-    // 3. Cập nhật user state (nếu không cần verify)
-    // Nếu cần verify, backend sẽ không gửi token,
-    // nhưng để an toàn, chúng ta kiểm tra cả ở đây.
-    if (!loginResponse.data.requiresVerification) {
-      try {
-        const userResponse = await authService.getMe();
-        setUser(userResponse.data);
-      } catch (error) {
-        console.error("Failed to fetch user data after login:", error);
-        authService.logout(); // Dọn dẹp token hỏng
-        setUser(null);
-        throw new Error("Login succeeded but failed to verify user.");
+      // 3. Update user state if verification is not required
+      if (!loginResponse.data.requiresVerification) {
+        try {
+          const userResponse = await authService.getMe();
+          setUser(userResponse.data);
+        } catch (error) {
+          console.error("Failed to fetch user data after login:", error);
+          authService.logout();
+          setUser(null);
+          throw new Error("Login succeeded but failed to verify user.");
+        }
       }
+
+      // 4. Return original response
+      return loginResponse;
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
     }
-
-    // 4. TRẢ VỀ KẾT QUẢ LOGIN GỐC (quan trọng nhất)
-    // Để LoginPage có thể kiểm tra 'requiresVerification'
-    return loginResponse;
   };
 
-  const signup = async (formData: SignupData): Promise<any> => {
-    return authService.signup(formData);
+  const signup = async (formData: SignupData): Promise<SignupResponse> => {
+    try {
+      return await authService.signup(formData);
+    } catch (error) {
+      console.error("Signup failed:", error);
+      throw error;
+    }
   };
 
-  const loginWithGoogle = async (code: string): Promise<any> => {
+  const loginWithGoogle = async (code: string): Promise<AuthResponse> => {
     try {
       const response = await authService.loginWithGoogle(code);
-
-      localStorage.setItem("token", response.accessToken);
-
+      localStorage.setItem("token", response.data.accessToken);
       setUser(response.data.user);
-      console.log(response);
-
       return response;
     } catch (error) {
       console.error("Google login error in context:", error);
@@ -118,13 +126,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithFacebook = async (accessToken: string): Promise<any> => {
+  const loginWithFacebook = async (
+    accessToken: string
+  ): Promise<AuthResponse> => {
     try {
       const response = await authService.loginWithFacebook(accessToken);
-
       localStorage.setItem("token", response.data.accessToken);
       setUser(response.data.user);
-
       return response;
     } catch (error) {
       console.error("Facebook login error in context:", error);
@@ -143,7 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const forgotPassword = async (email: string): Promise<any> => {
+  const forgotPassword = async (email: string): Promise<GenericResponse> => {
     return authService.forgotPassword(email);
   };
 
@@ -151,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     otp: string,
     newPassword: string
-  ): Promise<any> => {
+  ): Promise<GenericResponse> => {
     return authService.resetPasswordWithOTP(email, otp, newPassword);
   };
 
