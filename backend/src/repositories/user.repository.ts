@@ -1,119 +1,82 @@
-import prisma from "../database/prisma";
-
-const mapUserToResponse = (user: any) => {
-  if (!user) return null;
-  return {
-    id: user.id,
-    email: user.email,
-    fullName: user.full_name,
-    address: user.address,
-    isVerified: user.is_verified,
-    status: user.status,
-    positiveReviews: user.positive_reviews,
-    negativeReviews: user.negative_reviews,
-    password: user.password,
-    createdAt: user.created_at,
-    updatedAt: user.updated_at,
-  };
-};
+import db from "../database/db";
 
 export const createUser = async (userData: {
-  full_name: string;
-  email: string;
-  password?: string | null;
-  address?: string | null;
-  is_verified?: boolean;
-  status?: any;
+    full_name: string;
+    email: string;
+    password?: string | null;
+    address?: string | null;
+    is_verified?: boolean;
+    status?: any;
 }) => {
-  const user = await prisma.users.create({
-    data: userData as any,
-  });
-  return mapUserToResponse(user);
+    const [user] = await db("users")
+        .insert(userData)
+        .returning("*");
+    return user;
 };
 
 export const findByEmail = async (email: string) => {
-  const user = await prisma.users.findUnique({
-    where: { email },
-  });
-  return mapUserToResponse(user);
+    return await db("users").where({ email }).first();
 };
 
 export const verifyUser = async (userId: number) => {
-  const user = await prisma.users.update({
-    where: { id: userId },
-    data: { is_verified: true, status: "active" },
-  });
-  return mapUserToResponse(user);
+    const [user] = await db("users")
+        .where({ id: userId })
+        .update({ is_verified: true, status: "active" })
+        .returning("*");
+    return user;
 };
 
 export const findByIdWithOTP = async (userId: number) => {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    include: {
-      otp_verifications: {
-        where: { is_used: false },
-        orderBy: { created_at: "desc" },
-        take: 1,
-      },
-    },
-  });
-  return user
-    ? {
-        ...mapUserToResponse(user),
-        otpVerifications: user.otp_verifications,
-      }
-    : null;
+    const user = await db("users").where({ id: userId }).first();
+
+    if (!user) return null;
+
+    const otpVerifications = await db("otp_verifications")
+        .where({ user_id: userId, is_used: false })
+        .orderBy("created_at", "desc")
+        .limit(1);
+
+    return {
+        ...user,
+        otpVerifications,
+    };
 };
 
 export const findById = async (userId: number) => {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-  });
-  return mapUserToResponse(user);
+    return await db("users").where({ id: userId }).first();
 };
 
 export const getPositiveNegativeReviewsById = async (userId: number) => {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    select: {
-      positive_reviews: true,
-      negative_reviews: true,
-    },
-  });
-  return user
-    ? {
-        positiveReviews: user.positive_reviews,
-        negativeReviews: user.negative_reviews,
-      }
-    : null;
-};
+    const user = await db("users")
+        .where({ id: userId })
+        .select("positive_reviews", "negative_reviews")
+        .first();
 
-export const findByIdWithRoles = async (userId: number) => {
-  const user = await prisma.users.findUnique({
-    where: { id: userId },
-    include: {
-      users_roles: {
-        include: {
-          roles: true,
-        },
-      },
-    },
-  });
-  return user
-    ? {
-        ...mapUserToResponse(user),
-        usersRoles: user.users_roles,
-      }
-    : null;
+    return user;
 };
 
 export const updatePassword = async (
-  userId: number,
-  hashedPassword: string
+    userId: number,
+    hashedPassword: string
 ) => {
-  const user = await prisma.users.update({
-    where: { id: userId },
-    data: { password: hashedPassword },
-  });
-  return mapUserToResponse(user);
+    const [user] = await db("users")
+        .where({ id: userId })
+        .update({ password: hashedPassword })
+        .returning("*");
+    return user;
+};
+
+export const findByIdWithRoles = async (userId: number) => {
+    const user = await db("users").where({ id: userId }).first();
+    if (!user) return null;
+
+    const roles = await db("users_roles")
+        .join("roles", "users_roles.role_id", "roles.role_id")
+        .where({ user_id: userId })
+        .select("roles.name");
+
+    return {
+        ...user,
+        usersRoles: roles.map((r) => ({ roles: { name: r.name } })),
+    };
 };

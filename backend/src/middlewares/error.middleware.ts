@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError, ValidationError } from '../errors';
 import { ZodError } from 'zod';
-import { Prisma } from '@prisma/client';
+
 
 export const errorHandler = (
     error: Error,
@@ -28,45 +28,33 @@ export const errorHandler = (
         });
     }
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
+    // Handle Knex/Postgres errors
+    // Postgres error codes: https://www.postgresql.org/docs/current/errcodes-appendix.html
+    const pgError = error as any;
+    if (pgError.code) {
+        if (pgError.code === '23505') { // unique_violation
             return res.status(409).json({
                 success: false,
                 error: 'Duplicate entry',
-                field: error.meta?.target,
+                field: pgError.detail,
             });
         }
-        if (error.code === 'P2025') {
-            return res.status(404).json({
+        if (pgError.code === '23503') { // foreign_key_violation
+            return res.status(400).json({
                 success: false,
-                error: 'Record not found',
+                error: 'Invalid reference',
+                details: pgError.detail,
             });
         }
-        return res.status(400).json({
-            success: false,
-            error: 'Database error',
-            ...(process.env.NODE_ENV === 'development' && { 
-                details: error.message 
-            }),
-        });
-    }
-
-    if (error instanceof Prisma.PrismaClientValidationError) {
-        return res.status(400).json({
-            success: false,
-            error: 'Invalid database query',
-            ...(process.env.NODE_ENV === 'development' && { 
-                details: error.message 
-            }),
-        });
+        // Add other specific error codes if needed
     }
 
     return res.status(500).json({
         success: false,
         error: 'Internal Server Error',
-        ...(process.env.NODE_ENV === 'development' && { 
+        ...(process.env.NODE_ENV === 'development' && {
             message: error.message,
-            stack: error.stack 
+            stack: error.stack
         }),
     });
 };

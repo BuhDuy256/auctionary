@@ -1,19 +1,61 @@
 # Backend Development Guide
 
-## Quy tắc khi thêm API mới
+## Step-by-Step API Development Process
 
-### 1. Kiến trúc 3 lớp (Controller → Service → Repository)
+To develop a new API, follow these steps in order:
 
-**Controller**: Xử lý request/response
+1.  **Database & Repository (Data Layer)**
+    *   Identify relevant tables in the Database.
+    *   Write functions in the **Repository** (`src/repositories/`) using Knex.
+    *   **Input**: Function parameters (can be an object or separate variables).
+    *   **Output**: Return raw data from the DB (in `snake_case`). **DO NOT** map data here.
+
+2.  **Zod Schema & Types (Definition Layer)**
+    *   Create or update Schema files in `src/api/schemas/`.
+    *   Define Zod Schema for Request Body/Query/Params (in `camelCase`).
+    *   Export type from schema: `export type MySchema = z.infer<typeof mySchema>;`.
+
+3.  **Service (Logic Layer)**
+    *   Write functions in the **Service** (`src/services/`).
+    *   **Input**: Use the type exported from the Schema (e.g., `data: MySchema`).
+    *   **Logic**:
+        *   Call Repository to fetch data (`snake_case`).
+        *   Perform business logic (calculations, validations...).
+        *   Map data from `snake_case` (DB) to `camelCase` (Response).
+    *   **Output**: Return a clean `camelCase` object to the Controller. The response type interface should be defined in `src/types/`.
+
+4.  **Controller (Interface Layer)**
+    *   Write functions in the **Controller** (`src/api/controllers/`).
+    *   **Input**: Type cast `req.body`, `req.query` to the Schema's type (e.g., `const body = req.body as MySchema`).
+    *   **Logic**: Call Service.
+    *   **Output**: Use `formatResponse` to return the result.
+    *   **Error**: Wrap in `try/catch` and call `next(error)`.
+
+5.  **Route (Path Registration)**
+    *   Register routes in `src/api/routes/`.
+    *   Use `validate(schema, 'body' | 'query' | 'params')` middleware.
+    *   Assign the Controller to the route.
+
+---
+
+## Detailed Rules
+
+### 1. 3-Layer Architecture (Controller → Service → Repository)
+
+**Controller**: Handles request/response, type casting from request
 
 ```typescript
+import { CreateProductSchema } from "../schemas/product.schema";
+
 export const yourController = async (
   request: Request,
   response: Response,
   next: NextFunction
 ): Promise<void> => {
   try {
-    const result = await yourService.method(request.body);
+    // Type cast data from the validated request
+    const body = request.body as CreateProductSchema;
+    const result = await yourService.method(body);
     formatResponse(response, 200, result);
   } catch (error) {
     logger.error("ControllerName", "Error message", error);
@@ -22,13 +64,14 @@ export const yourController = async (
 };
 ```
 
-**Service**: Business logic, chuyển đổi camelCase ↔ snake_case
+**Service**: Business logic, converts camelCase ↔ snake_case
 
 ```typescript
 export const yourService = async (data: {
   productName: string;
   currentPrice: number;
 }): Promise<YourType> => {
+  // Mapping camelCase -> snake_case for Repository
   const dbResult = await yourRepository.findById({
     product_name: data.productName,
     current_price: data.currentPrice,
@@ -38,6 +81,7 @@ export const yourService = async (data: {
     throw new NotFoundError("Resource not found");
   }
 
+  // Mapping snake_case (DB) -> camelCase (Response)
   return {
     id: dbResult.product_id,
     productName: dbResult.product_name,
@@ -46,40 +90,31 @@ export const yourService = async (data: {
 };
 ```
 
-**Repository**: Truy vấn database
+**Repository**: Queries database, returns raw data (snake_case)
 
 ```typescript
-const mapToResponse = (data: any) => {
-  if (!data) return null;
-  return {
-    product_id: data.product_id,
-    product_name: data.product_name,
-    current_price: toNum(data.current_price),
-  };
-};
+import db from "../database/db";
 
 export const findById = async (id: number) => {
-  const result = await prisma.products.findUnique({
-    where: { product_id: id },
-  });
-  return mapToResponse(result);
+  return await db("products").where({ product_id: id }).first();
 };
 ```
 
 ### 2. Request Validation
 
-Sử dụng Zod schema trong `src/api/schemas/` (camelCase) và validate middleware:
+Use Zod schema in `src/api/schemas/` (camelCase) and validate middleware.
+The middleware will **overwrite** data in the request with the parsed/validated data.
 
 ```typescript
 export const yourSchema = z.object({
   productName: z.string().min(1),
   bidAmount: z.number().positive(),
 });
+
+export type YourSchema = z.infer<typeof yourSchema>;
 ```
 
-Validation được xử lý bởi middleware `validate()`, không cần parse trong controller.
-
-### 3. Response Format chuẩn
+### 3. Standard Response Format
 
 ```typescript
 formatResponse(response, 200, data);
@@ -100,12 +135,12 @@ try {
 
 ### 5. Type Safety & Naming Conventions
 
-**⚠️ QUAN TRỌNG: Quy tắc đặt tên biến và interface**
+IMPORTANT: Variable and Interface Naming Rules
 
-- **camelCase**: Sử dụng cho tất cả biến, parameters, và interfaces trong Controller, Service, Types
-- **snake_case**: CHỈ sử dụng trong Repository layer (tương ứng với database schema)
+-   **camelCase**: Use for all variables, parameters, and interfaces in Controller, Service, Types
+-   **snake_case**: ONLY use in the Repository layer (corresponding to the database schema)
 
-Định nghĩa interfaces trong `src/types/` (camelCase):
+Define interfaces in `src/types/` (camelCase):
 
 ```typescript
 export interface YourType {
@@ -115,42 +150,9 @@ export interface YourType {
 }
 ```
 
-Repository trả về snake_case, Service chuyển sang camelCase:
-
-```typescript
-// Repository (snake_case)
-const dbResult = await prisma.products.findUnique({
-  where: { product_id: id },
-});
-
-return dbResult
-  ? {
-      product_id: dbResult.product_id,
-      product_name: dbResult.product_name,
-      current_price: toNum(dbResult.current_price),
-    }
-  : null;
-
-// Service (chuyển sang camelCase)
-const data = await productRepository.findById(id);
-return {
-  id: data.product_id,
-  productName: data.product_name,
-  currentPrice: data.current_price,
-};
-```
-
-Thêm explicit return types cho tất cả functions:
-
-```typescript
-export const yourService = async (id: number): Promise<YourType> => {
-  // ...
-};
-```
-
 ### 6. Constants
 
-Extract magic numbers vào `src/utils/constant.util.ts`:
+Extract magic numbers into `src/utils/constant.util.ts`:
 
 ```typescript
 export const YOUR_CONSTANTS = {
@@ -161,45 +163,33 @@ export const YOUR_CONSTANTS = {
 
 ### 7. Database Transactions
 
-Wrap multiple DB operations trong transaction:
+Wrap multiple DB operations in a transaction with Knex:
 
 ```typescript
-await prisma.$transaction(async (tx) => {
-    await tx.table1.create({...});
-    await tx.table2.update({...});
+await db.transaction(async (trx) => {
+    await trx("table1").insert({...});
+    await trx("table2").update({...});
 });
 ```
 
 ### 8. Repository Layer
 
-- Chỉ export functions, không export types
-- Sử dụng Prisma client
-- Convert Decimal sang number với `toNum()`
-- **Sử dụng snake_case** cho tất cả biến (tương ứng database schema)
-- Có thể tạo helper function `mapToResponse()` để transform data
+-   Only export functions, do not export types
+-   Use **Knex** query builder
+-   Return **snake_case** (raw DB format), DO NOT map data here
+-   Use `db` instance from `src/database/db.ts`
 
 ```typescript
-const mapUserToResponse = (user: any) => {
-  if (!user) return null;
-  return {
-    id: user.id,
-    email: user.email,
-    full_name: user.full_name,
-    is_verified: user.is_verified,
-  };
-};
+import db from "../database/db";
 
 export const findById = async (id: number) => {
-  const result = await prisma.users.findUnique({
-    where: { id },
-  });
-  return mapUserToResponse(result);
+  return await db("users").where({ id }).first();
 };
 ```
 
 ### 9. Logging
 
-Sử dụng `logger` thay vì `console.log/error`:
+Use `logger` instead of `console.log/error`:
 
 ```typescript
 logger.info("Component", "message");
@@ -213,24 +203,25 @@ router.post("/", validate(yourSchema, "body"), yourController);
 router.get("/:id", validate(idParamSchema, "params"), yourController);
 ```
 
-Middleware `validate(schema, location)` sẽ parse và validate request trước khi đến controller.
+The `validate(schema, location)` middleware will parse and validate the request, then assign the validated data back to `req[location]`.
 
-### 11. Không sử dụng
+### 11. Do Not Use
 
-- ❌ Comments trong code
-- ❌ Icons/emojis trong code
-- ❌ `console.log/error` (dùng logger)
-- ❌ Inline response formatting (dùng formatResponse)
-- ❌ Export interfaces từ repository
+-   Comments in code
+-   Icons/emojis in code
+-   `console.log/error` (use logger)
+-   Inline response formatting (use formatResponse)
+-   Export interfaces from repository
+-   Mapping data in Repository
 
 ### 12. Error Classes
 
-Sử dụng custom errors:
+Use custom errors:
 
-- `NotFoundError` - Resource not found (404)
-- `ForbiddenError` - Access denied (403)
-- `ValidationError` - Invalid input (400)
-- `UnauthorizedError` - Auth required (401)
+-   `NotFoundError` - Resource not found (404)
+-   `ForbiddenError` - Access denied (403)
+-   `ValidationError` - Invalid input (400)
+-   `UnauthorizedError` - Auth required (401)
 
 ```typescript
 import { NotFoundError, ForbiddenError } from "../errors";
@@ -254,40 +245,35 @@ export const createProductSchema = z.object({
   productName: z.string().min(1),
   currentPrice: z.number().positive(),
 });
+export type CreateProductSchema = z.infer<typeof createProductSchema>;
 
 // 3. Repository (src/repositories/product.repository.ts) - snake_case
-interface DbProduct {
-  product_id: number;
-  product_name: string;
-  current_price: Decimal;
-}
-
 export const create = async (data: {
   product_name: string;
   current_price: number;
-}): Promise<DbProduct> => {
-  return await prisma.products.create({
-    data: {
+}) => {
+  const [product] = await db("products")
+    .insert({
       product_name: data.product_name,
       current_price: data.current_price,
-    },
-  });
+    })
+    .returning("*");
+  return product;
 };
 
 // 4. Service (src/services/product.service.ts) - camelCase
-export const createProduct = async (data: {
-  productName: string;
-  currentPrice: number;
-}): Promise<Product> => {
+export const createProduct = async (data: CreateProductSchema): Promise<Product> => {
+  // Mapping camelCase -> snake_case
   const dbResult = await productRepository.create({
     product_name: data.productName,
     current_price: data.currentPrice,
   });
 
+  // Mapping snake_case -> camelCase
   return {
     id: dbResult.product_id,
     productName: dbResult.product_name,
-    currentPrice: toNum(dbResult.current_price),
+    currentPrice: dbResult.current_price,
   };
 };
 
@@ -298,7 +284,9 @@ export const createProduct = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const result = await productService.createProduct(request.body);
+    // Type casting
+    const body = request.body as CreateProductSchema;
+    const result = await productService.createProduct(body);
     formatResponse(response, 201, result);
   } catch (error) {
     logger.error("ProductController", "Failed to create product", error);
@@ -312,4 +300,3 @@ router.post(
   validate(createProductSchema, "body"),
   productController.createProduct
 );
-```
