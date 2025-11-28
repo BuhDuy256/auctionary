@@ -1,80 +1,146 @@
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth"; // 1. Import hook useAuth
-import "./Header.css";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import {
+  LogIn,
+  LogOut,
+  Menu,
+  Search,
+  Sparkles,
+  User,
+  CircleUserRound,
+  BookA,
+} from "lucide-react";
+import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Link } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 const Header: React.FC = () => {
-  // 3. Lấy trạng thái xác thực, user, và hàm logout từ Context
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout(); // Xóa token và user state
-    navigate("/login"); // Điều hướng về trang login
+    logout();
+    navigate("/");
   };
 
-  return (
-    <header className="header">
-      <div className="header-content">
-        {/* 4. Logo (bên trái) - Nhấn vào sẽ về trang chủ */}
-        <Link to="/" className="header-logo">
-          <img
-            src="/assets/auctionary_logo.svg" // Bạn cần có logo ở public/assets
-            alt="Auctionary Logo"
-            onError={(e) =>
-              (e.currentTarget.src =
-                "https://placehold.co/40x40/007bff/FFF?text=A")
-            }
-          />
-          <span className="text-accent">Auctionary</span>
-        </Link>
+  const [searchQuery, setSearchQuery] = React.useState("");
 
-        {/* 5. Điều hướng (bên phải) */}
-        <nav className="header-nav">
-          {isAuthenticated ? (
-            // === 6. ĐÃ ĐĂNG NHẬP ===
-            <div className="user-menu">
-              <span className="welcome-message">
-                Chào, {user?.fullName || user?.email}
-              </span>
-              <Button
-                variant="secondary"
-                className="header-button"
-                onClick={() => navigate("/profile")}
-              >
-                View Profile
-              </Button>
-              <Button
-                variant="secondary"
-                className="header-button"
-                onClick={handleLogout}
-              >
-                Logout
-              </Button>
+  return (
+    <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/90">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center gap-6">
+          {/* Logo */}
+          <Link
+            to="/"
+            className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity text-accent"
+          >
+            <div className="p-2 rounded-lg bg-amber/10 border border-amber/30">
+              <BookA className="h-5 w-5 text-amber" />
             </div>
-          ) : (
-            // === 7. CHƯA ĐĂNG NHẬP (GUEST) ===
-            <div className="guest-menu">
-              <Button
-                variant="default"
-                size="default"
-                className="header-button"
-                onClick={() => navigate("/login")}
-              >
-                Log In
-              </Button>
-              <Button
-                variant="secondary"
-                size="default"
-                className="header-button"
-                onClick={() => navigate("/signup")}
-              >
-                Sign Up
-              </Button>
+            <span className="tracking-tight text-lg">Auctionary</span>
+          </Link>
+
+          {/* Global Search Bar */}
+          <div className="flex-1 max-w-2xl">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search for auctions, categories, or items..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 h-11 bg-card border-border"
+              />
             </div>
-          )}
-        </nav>
+          </div>
+
+          {/* Navigation & Auth */}
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <Button
+              variant="ghost"
+              className="hidden lg:flex"
+              onClick={() => navigate("/products")}
+            >
+              <Menu className="mr-2 h-4 w-4" />
+              Browse
+            </Button>
+
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pl-4 border-l border-border">
+                  <div className="hidden md:block text-right">
+                    <div className="text-sm">Welcome back,</div>
+                    <div className="text-xs text-muted-foreground">
+                      {user?.fullName || user?.email}
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="cursor-pointer outline-none">
+                        <CircleUserRound className="h-10 w-10 text-muted-foreground hover:text-foreground transition-colors" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-40">
+                      <DropdownMenuLabel className="font-bold">
+                        {user?.fullName || user?.email}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => navigate("/profile")}
+                        className="group cursor-pointer"
+                      >
+                        <User className="h-5 w-5 text-muted-foreground group-focus:text-accent-foreground transition-colors" />
+                        <span>Profile</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="group cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950/50"
+                      >
+                        <LogOut className="h-5 w-5 text-red-600 group-focus:text-red-600" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Upgrade Button */}
+                <Button className="hidden lg:flex">
+                  <Sparkles className="mr h-4 w-4" />
+                  Upgrade to Seller
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate("/login")}
+                >
+                  <LogIn className="mr-2 h-5 w-5" />
+                  <span className="font-bold">Login</span>
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => navigate("/signup")}
+                >
+                  <User className="mr-2 h-5 w-5" />
+                  <span className="font-bold">Sign Up</span>
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </header>
   );

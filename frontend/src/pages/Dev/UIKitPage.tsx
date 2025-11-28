@@ -31,7 +31,7 @@ import { Checkbox } from "../../components/ui/checkbox";
 import { Label } from "../../components/ui/label";
 import { Separator } from "../../components/ui/separator";
 import {
-  Shield,
+  BookA,
   Lock,
   Zap,
   TrendingUp,
@@ -43,6 +43,7 @@ import {
   Settings,
   Search,
   Menu,
+  Shield,
 } from "lucide-react";
 
 export default function UIKitPage() {
@@ -57,7 +58,7 @@ export default function UIKitPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
-                <Shield className="h-5 w-5 text-accent" />
+                <BookA className="h-5 w-5 text-accent" />
                 <h5 className="tracking-tight">Auctionary</h5>
               </div>
               <Badge variant="outline" className="border-accent text-accent">
@@ -230,7 +231,7 @@ export default function UIKitPage() {
                       Secure Access
                     </Button>
                     <Button variant="secondary">
-                      <Shield className="mr-2 h-4 w-4" />
+                      <BookA className="mr-2 h-4 w-4" />
                       Protected
                     </Button>
                     <Button variant="outline">

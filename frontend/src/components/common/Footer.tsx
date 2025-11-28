@@ -1,61 +1,134 @@
+import { BookA } from "lucide-react";
+import { Badge } from "../ui/badge";
 import React from "react";
-import { Link } from "react-router-dom";
-import "./Footer.css"; // Import CSS
 
 const Footer: React.FC = () => {
   return (
-    <footer className="footer">
-      <div className="footer-content">
-        {/* Cột 1: Về Auctionary */}
-        <div className="footer-section about">
-          <h3 className="footer-logo">Auctionary</h3>
-          <p>
-            Nền tảng đấu giá trực tuyến đáng tin cậy nhất. Tìm kiếm, đặt giá, và
-            chiến thắng các sản phẩm độc đáo.
+    <footer className="border-t border-border bg-card/50 mt-16">
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <h4 className="text-sm mb-4 font-bold">Platform</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  How it Works
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Trust & Safety
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Seller Guide
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm mb-4 font-bold">Company</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  About Us
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Careers
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Press
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Blog
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm mb-4 font-bold">Support</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Contact Us
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Dispute Resolution
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  FAQs
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-sm mb-4 font-bold">Legal</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Terms of Service
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Privacy Policy
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Cookie Policy
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-accent transition-colors">
+                  Licenses
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <BookA className="h-5 w-5 text-accent" />
+            <span className="text-sm font-semibold">Auctionary</span>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            © 2025 Auctionary. All rights reserved.
           </p>
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-accent/50 text-accent text-xs"
+            >
+              Secure Platform
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              Encrypted Transactions
+            </Badge>
+          </div>
         </div>
-
-        {/* Cột 2: Các liên kết nhanh */}
-        <div className="footer-section links">
-          <h4>Điều Hướng</h4>
-          <ul>
-            <li>
-              <Link to="/">Trang Chủ</Link>
-            </li>
-            <li>
-              <Link to="/categories">Các Danh Mục</Link>
-            </li>
-            <li>
-              <Link to="/how-it-works">Cách Thức Hoạt Động</Link>
-            </li>
-          </ul>
-        </div>
-
-        {/* Cột 3: Pháp lý & Hỗ trợ */}
-        <div className="footer-section legal">
-          <h4>Hỗ Trợ</h4>
-          <ul>
-            <li>
-              <Link to="/about-us">Về Chúng Tôi</Link>
-            </li>
-            <li>
-              <Link to="/contact">Liên Hệ</Link>
-            </li>
-            <li>
-              <Link to="/privacy-policy">Chính Sách Bảo Mật</Link>
-            </li>
-            <li>
-              <Link to="/terms-of-service">Điều Khoản Dịch Vụ</Link>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Dòng cuối cùng: Copyright */}
-      <div className="footer-bottom">
-        <p>
-          &copy; {new Date().getFullYear()} Auctionary. All rights reserved.
-        </p>
       </div>
     </footer>
   );
