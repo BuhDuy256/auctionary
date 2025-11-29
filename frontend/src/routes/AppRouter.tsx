@@ -13,10 +13,14 @@ import UnauthorizedPage from "../pages/Error/Forbidden";
 import NotFoundPage from "../pages/Error/NotFoundPage";
 import SignupPage from "../pages/Auth/SignupPage";
 import LoginPage from "../pages/Auth/LoginPage";
-import VerifyOTPPage from "../pages/Auth/VerifyOTPPage"; // Add this
+import VerifyOTPPage from "../pages/Auth/VerifyOTPPage";
 import HomePage from "../pages/Home/HomePage";
 import ForgotPasswordPage from "../pages/Auth/ForgotPasswordPage";
 import UIKitPage from "../pages/Dev/UIKitPage";
+import ProductListPage from "../pages/Product/ProductListPage";
+import ProductDetailPage from "../pages/Product/ProductDetailPage";
+import UserProfilePage from "../pages/Account/UserProfilePage";
+import SellerDashboardPage from "../pages/Seller/SellerDashboardPage";
 
 const AppRouter = () => {
   return (
@@ -33,6 +37,10 @@ const AppRouter = () => {
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (DEV) */}
       {/* ============================================== */}
       <Route path="/dev/ui-kit" element={<UIKitPage />} />
+      <Route path="/products" element={<ProductListPage />} />
+      <Route path="/products/:id" element={<ProductDetailPage />} />
+      <Route path="/profile" element={<UserProfilePage />} />
+      <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
 
       {/* ============================================== */}
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (CHỈ CHO KHÁCH) */}
