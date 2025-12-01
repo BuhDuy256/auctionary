@@ -20,7 +20,7 @@ const alertVariants = cva(
           "border-error/50 text-error bg-error/10 [&>svg]:text-error *:data-[slot=alert-description]:text-error/90",
 
         destructive:
-          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive *:data-[slot=alert-description]:text-destructive/90",
+          "border-destructive/50 text-destructive [&>svg]:text-destructive *:data-[slot=alert-description]:text-destructive/90",
       },
     },
     defaultVariants: {

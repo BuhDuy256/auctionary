@@ -15,7 +15,7 @@ function Switch({
       className={cn(
         "peer inline-flex h-5 w-9 shrink-0 items-center rounded-full border-2 border-transparent transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
         "data-[state=checked]:bg-primary",
-        "data-[state=unchecked]:bg-switch-background dark:data-[state=unchecked]:bg-input/80",
+        "data-[state=unchecked]:bg-switch-background",
         className
       )}
       {...props}
@@ -25,7 +25,7 @@ function Switch({
         className={cn(
           "pointer-events-none block size-4 rounded-full shadow-lg ring-0 transition-transform",
           "data-[state=checked]:translate-x-4 data-[state=unchecked]:translate-x-0",
-          "bg-card dark:data-[state=unchecked]:bg-card-foreground dark:data-[state=checked]:bg-primary-foreground"
+          "bg-card"
         )}
       />
     </SwitchPrimitive.Root>

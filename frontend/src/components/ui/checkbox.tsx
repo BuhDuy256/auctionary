@@ -16,12 +16,12 @@ const Checkbox = React.forwardRef<
     <CheckboxPrimitive.Root
       ref={ref}
       data-slot="checkbox"
-      checked={indeterminate ? 'indeterminate' : checked}
+      checked={indeterminate ? "indeterminate" : checked}
       className={cn(
-        "peer border bg-input-background dark:bg-input/30",
+        "peer border bg-input-background",
         "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary",
         "focus-visible:border-ring focus-visible:ring-ring/50",
-        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        "aria-invalid:ring-destructive/20 aria-invalid:border-destructive",
         "size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
         indeterminate &&
           "bg-primary text-primary-foreground border-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:text-primary-foreground data-[state=indeterminate]:border-primary",

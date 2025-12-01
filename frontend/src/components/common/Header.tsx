@@ -66,7 +66,7 @@ const Header: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleSearch(e);
                   }
                 }}
@@ -116,7 +116,7 @@ const Header: React.FC = () => {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={handleLogout}
-                        className="group cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10 dark:focus:bg-destructive/20"
+                        className="group cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
                       >
                         <LogOut className="h-5 w-5 text-destructive group-focus:text-destructive" />
                         <span>Log out</span>
