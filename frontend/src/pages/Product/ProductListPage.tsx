@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import { Button } from "../../components/ui/button";
+import type { CategoryNode } from "../../types/category";
+import * as categoryService from "../../services/categoryService";
 import { ChevronLeft, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import { Badge } from "../../components/ui/badge";
 import {
@@ -21,48 +23,6 @@ import { CategoryFilter } from "../../components/auction/CategoryFilter";
 import { Separator } from "../../components/ui/separator";
 import { Slider } from "../../components/ui/slider";
 
-// Category tree structure
-const categories = [
-  {
-    id: "electronics",
-    name: "Electronics",
-    children: [
-      { id: "laptops", name: "Laptops" },
-      { id: "phones", name: "Phones" },
-      { id: "tablets", name: "Tablets" },
-      { id: "cameras", name: "Cameras" },
-    ],
-  },
-  {
-    id: "collectibles",
-    name: "Collectibles",
-    children: [
-      { id: "vintage", name: "Vintage Items" },
-      { id: "art", name: "Art & Prints" },
-      { id: "memorabilia", name: "Memorabilia" },
-    ],
-  },
-  {
-    id: "fashion",
-    name: "Fashion",
-    children: [
-      { id: "watches", name: "Watches" },
-      { id: "sneakers", name: "Sneakers" },
-      { id: "accessories", name: "Accessories" },
-    ],
-  },
-  {
-    id: "home",
-    name: "Home & Garden",
-    children: [
-      { id: "furniture", name: "Furniture" },
-      { id: "appliances", name: "Appliances" },
-      { id: "decor", name: "Decor" },
-    ],
-  },
-];
-
-// Mock product data
 const products = [
   {
     id: "1",
@@ -181,24 +141,38 @@ const products = [
 ];
 
 export default function ProductListPage() {
+  const [categories, setCategories] = useState<CategoryNode[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [searchTags, setSearchTags] = useState(["iPhone", "Smartphones"]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([
-    "phones",
-  ]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState([0, 5000]);
   const [sortBy, setSortBy] = useState("time-desc");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const mappedCategories = await categoryService.getCategories();
+        setCategories(mappedCategories);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const handleCategoryChange = (categoryIds: string[], checked: boolean) => {
     if (checked) {
-      // Add all IDs
       setSelectedCategories([
         ...selectedCategories,
         ...categoryIds.filter((id) => !selectedCategories.includes(id)),
       ]);
     } else {
-      // Remove all IDs
       setSelectedCategories(
         selectedCategories.filter((id) => !categoryIds.includes(id))
       );
@@ -236,11 +210,15 @@ export default function ProductListPage() {
                   {/* Categories */}
                   <div>
                     <h3 className="text-sm mb-3">Categories</h3>
-                    <CategoryFilter
-                      categories={categories}
-                      selectedCategories={selectedCategories}
-                      onCategoryChange={handleCategoryChange}
-                    />
+                    {categoriesLoading ? (
+                      <div className="text-sm text-muted-foreground">Loading categories...</div>
+                    ) : (
+                      <CategoryFilter
+                        categories={categories}
+                        selectedCategories={selectedCategories}
+                        onCategoryChange={handleCategoryChange}
+                      />
+                    )}
                   </div>
 
                   <Separator />
