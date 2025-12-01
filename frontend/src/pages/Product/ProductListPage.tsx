@@ -190,12 +190,17 @@ export default function ProductListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
-  const handleCategoryChange = (categoryId: string, checked: boolean) => {
+  const handleCategoryChange = (categoryIds: string[], checked: boolean) => {
     if (checked) {
-      setSelectedCategories([...selectedCategories, categoryId]);
+      // Add all IDs
+      setSelectedCategories([
+        ...selectedCategories,
+        ...categoryIds.filter((id) => !selectedCategories.includes(id)),
+      ]);
     } else {
+      // Remove all IDs
       setSelectedCategories(
-        selectedCategories.filter((id) => id !== categoryId)
+        selectedCategories.filter((id) => !categoryIds.includes(id))
       );
     }
   };
