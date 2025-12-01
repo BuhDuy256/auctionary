@@ -10,7 +10,7 @@ export const getAllCategories = async (
 ): Promise<void> => {
   try {
     const result = await categoryService.getAllCategories();
-    formatResponse(response, 200, result.data);
+    formatResponse(response, 200, result);
   } catch (error) {
     logger.error("CategoryController", "Failed to get all categories", error);
     next(error);

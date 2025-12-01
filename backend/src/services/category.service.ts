@@ -1,19 +1,34 @@
 import * as categoryRepository from '../repositories/category.repository';
+import { Category } from '../types/category.type';
 
-export const getAllCategories = async () => {
-  const categories = await categoryRepository.getAllCategories();
-
+export const mapCategoriesToTree = (categories: any[]): Category[] => {
   const parents = categories.filter((c) => c.parent_id === null);
-  const result = parents.map((parent) => ({
-    categoryId: parent.category_id,
+
+  return parents.map((parent) => ({
+    slug: parent.slug,
     name: parent.name,
-    subCategories: categories
+    children: categories
       .filter((c) => c.parent_id === parent.category_id)
       .map((child) => ({
-        categoryId: child.category_id,
+        slug: child.slug,
         name: child.name,
       })),
   }));
+};
 
-  return { data: result };
+export const getAllCategories = async (): Promise<Category[]> => {
+  const categories = await categoryRepository.getAllCategories();
+
+  const parents = categories.filter((c) => c.parent_id === null);
+
+  return parents.map((parent) => ({
+    slug: parent.slug,
+    name: parent.name,
+    children: categories
+      .filter((c) => c.parent_id === parent.category_id)
+      .map((child) => ({
+        slug: child.slug,
+        name: child.name,
+      })),
+  }));
 };
