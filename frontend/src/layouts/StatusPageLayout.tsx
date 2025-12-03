@@ -27,7 +27,7 @@ export default function StatusPageLayout({
       </p>
       <Button
         onClick={handleGoBack}
-        variant="secondary"
+        variant="outline"
         size="lg"
         className="mt-4 w-40"
       >

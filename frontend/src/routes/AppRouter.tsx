@@ -31,17 +31,17 @@ const AppRouter = () => {
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (Guest, Bidder, Seller, Admin) */}
       {/* ============================================== */}
       <Route path="/" element={<HomePage />} />
+      <Route path="/under-development" element={<UnderDevelopmentPage />} />
       <Route path="/auction/:id" element={<UnderDevelopmentPage />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="*" element={<NotFoundPage />} />
 
       {/* ============================================== */}
-      {/* TUYẾN ĐƯỜNG CÔNG KHAI (DEV) */}
+      {/* TUYẾN ĐƯỜNG ĐANG DEMO */}
       {/* ============================================== */}
       <Route path="/dev/ui-kit" element={<UIKitPage />} />
       <Route path="/products" element={<ProductListPage />} />
       <Route path="/products/:id" element={<ProductDetailPage />} />
-      <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
       <Route path="/transaction-room" element={<TransactionRoomPage />} />
       <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
 
@@ -69,15 +69,12 @@ const AppRouter = () => {
         <Route path="/profile" element={<UserProfilePage />} />
       </Route>
 
-      <Route
-        element={<ProtectedRoute allowedRoles={[ROLES.SELLER, ROLES.ADMIN]} />}
-      >
-        <Route path="/my-auctions" element={<UnderDevelopmentPage />} />
-        <Route path="/auctions/new" element={<UnderDevelopmentPage />} />
+      <Route element={<ProtectedRoute allowedRoles={[ROLES.SELLER]} />}>
+        <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
-        {/* <Route path="/admin/dashboard" element={<UnderDevelopmentPage />} /> */}
+        {/* <Route path="/admin/dashboard" element={<AdminDashboardPage />} /> */}
       </Route>
     </Routes>
   );
