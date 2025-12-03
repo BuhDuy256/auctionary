@@ -8,6 +8,7 @@ import productRouter from "./api/routes/product.routes";
 import categoryRouter from "./api/routes/category.routes";
 import formRouter from "./api/routes/form.routes";
 import BidRouter from "./api/routes/bid.route";
+import userRouter from "./api/routes/user.routes";
 
 import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
 
@@ -27,9 +28,10 @@ app.use("/categories", categoryRouter);
 app.use("/products", productRouter);
 app.use("/forms", formRouter);
 app.use("/products/:id/bid", BidRouter);
+app.use("/users", userRouter);
 
-app.get('/', (_req, res) => {
-  res.send('Online Auction API is running');
+app.get("/", (_req, res) => {
+  res.send("Online Auction API is running");
 });
 
 app.use(notFoundHandler);

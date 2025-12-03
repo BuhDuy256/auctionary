@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
@@ -9,11 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../components/ui/avatar";
+import { Avatar, AvatarFallback } from "../../components/ui/avatar";
 import {
   Tabs,
   TabsContent,
@@ -32,7 +28,6 @@ import { Label } from "../../components/ui/label";
 import { Separator } from "../../components/ui/separator";
 import {
   Shield,
-  Star,
   ThumbsUp,
   ThumbsDown,
   Heart,
@@ -41,7 +36,6 @@ import {
   ShoppingBag,
   Settings,
   Edit,
-  FileEdit,
   Eye,
   TrendingUp,
   TrendingDown,
@@ -52,159 +46,143 @@ import {
   AlertCircle,
   CheckCircle2,
   User,
+  CircleUserRound,
 } from "lucide-react";
 import { WatchlistCard } from "../../components/auction/WatchlistCard";
 import MainLayout from "../../layouts/MainLayout";
-
-// Mock data
-const watchlistItems = [
-  {
-    id: "1",
-    title: "Vintage Rolex Submariner Watch",
-    image:
-      "https://images.unsplash.com/photo-1763672087522-ab306ef0089d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx2aW50YWdlJTIwd2F0Y2glMjBsdXh1cnl8ZW58MXx8fHwxNzY0MTc0NTQ3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 8500,
-    timeLeft: "2h 15m",
-    bidCount: 42,
-    isActive: true,
-  },
-  {
-    id: "2",
-    title: "Gaming PC Setup RTX 4090",
-    image:
-      "https://images.unsplash.com/photo-1614179524071-e1ab49a0a0cf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxnYW1pbmclMjBzZXR1cHxlbnwxfHx8fDE3NjQwODc0OTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 2800,
-    timeLeft: "5h 42m",
-    bidCount: 28,
-    isActive: true,
-  },
-  {
-    id: "3",
-    title: "Antique Victorian Furniture Set",
-    image:
-      "https://images.unsplash.com/photo-1544691560-fc2053d97726?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhbnRpcXVlJTIwZnVybml0dXJlfGVufDF8fHx8MTc2NDE3NDU0N3ww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 1200,
-    timeLeft: "Ended",
-    bidCount: 15,
-    isActive: false,
-  },
-  {
-    id: "4",
-    title: "Rare Collectible Gold Coins",
-    image:
-      "https://images.unsplash.com/photo-1761077163072-5318ea62ff02?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xsZWN0aWJsZSUyMGNvaW5zfGVufDF8fHx8MTc2NDE0MDY5MXww&ixlib=rb-4.1.0&q=80&w=1080",
-    currentBid: 4200,
-    timeLeft: "1d 3h",
-    bidCount: 67,
-    isActive: true,
-  },
-];
-
-const activeBids = [
-  {
-    id: "1",
-    title: "Vintage Leica M6 Camera",
-    currentBid: 1350,
-    yourMaxBid: 1500,
-    status: "leading",
-    endTime: "2h 15m",
-    bids: 23,
-  },
-  {
-    id: "2",
-    title: "Sony A7 IV Professional Camera",
-    currentBid: 2250,
-    yourMaxBid: 2200,
-    status: "outbid",
-    endTime: "5h 42m",
-    bids: 31,
-  },
-  {
-    id: "3",
-    title: "Gaming Laptop RTX 4080",
-    currentBid: 2100,
-    yourMaxBid: 2300,
-    status: "leading",
-    endTime: "1d 3h",
-    bids: 28,
-  },
-  {
-    id: "4",
-    title: "Custom Mechanical Keyboard",
-    currentBid: 680,
-    yourMaxBid: 650,
-    status: "outbid",
-    endTime: "8h 20m",
-    bids: 48,
-  },
-];
-
-const wonAuctions = [
-  {
-    id: "1",
-    title: "Vintage Leica M6 Camera with 50mm Lens",
-    finalPrice: 1350,
-    wonDate: "Nov 26, 2025",
-    status: "In Progress",
-    transactionId: "AUC-2025-1126-7834",
-  },
-  {
-    id: "2",
-    title: "Professional Studio Headphones",
-    finalPrice: 285,
-    wonDate: "Nov 20, 2025",
-    status: "Completed",
-    transactionId: "AUC-2025-1120-3421",
-  },
-  {
-    id: "3",
-    title: "Vintage Tube Radio 1950s",
-    finalPrice: 420,
-    wonDate: "Nov 15, 2025",
-    status: "Completed",
-    transactionId: "AUC-2025-1115-9876",
-  },
-];
-
-const myListings = [
-  {
-    id: "1",
-    title: 'MacBook Pro 16" M3 Max 1TB',
-    currentBid: 2800,
-    startingPrice: 2500,
-    views: 1247,
-    bids: 38,
-    endDate: "Nov 28, 2025",
-    status: "Active",
-  },
-  {
-    id: "2",
-    title: "Canon EOS R6 Mark II + Lens",
-    currentBid: 2400,
-    startingPrice: 2000,
-    views: 856,
-    bids: 25,
-    endDate: "Nov 29, 2025",
-    status: "Active",
-  },
-  {
-    id: "3",
-    title: "Rare Vinyl Record Collection",
-    currentBid: 0,
-    startingPrice: 1500,
-    views: 342,
-    bids: 0,
-    endDate: "Dec 02, 2025",
-    status: "No Bids",
-  },
-];
+import * as userService from "../../services/userService";
+import type {
+  UserProfile,
+  WatchlistItem,
+  ActiveBidItem,
+  WonAuctionItem,
+  MyListingItem,
+} from "../../types/user";
+import toast from "react-hot-toast";
 
 export default function UserProfilePage() {
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [displayName, setDisplayName] = useState("Alex Hunter");
-  const [email, setEmail] = useState("alex.hunter@example.com");
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Tab Data States
+  const [watchlist, setWatchlist] = useState<WatchlistItem[]>([]);
+  const [activeBids, setActiveBids] = useState<ActiveBidItem[]>([]);
+  const [wonAuctions, setWonAuctions] = useState<WonAuctionItem[]>([]);
+  const [myListings, setMyListings] = useState<MyListingItem[]>([]);
+
+  // Form States
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [currentPasswordForUpdate, setCurrentPasswordForUpdate] = useState("");
+
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  useEffect(() => {
+    fetchProfile();
+    fetchTabData();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const data = await userService.getProfile();
+      setProfile(data);
+      setDisplayName(data.fullName);
+      setEmail(data.email);
+      setAddress(data.address || "");
+    } catch (error) {
+      console.error("Failed to fetch profile", error);
+      toast.error("Failed to load profile data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchTabData = async () => {
+    try {
+      const [watchlistData, bidsData, wonData, listingsData] =
+        await Promise.all([
+          userService.getWatchlist(),
+          userService.getActiveBids(),
+          userService.getWonAuctions(),
+          userService.getMyListings(),
+        ]);
+      setWatchlist(watchlistData);
+      setActiveBids(bidsData);
+      setWonAuctions(wonData);
+      setMyListings(listingsData);
+    } catch (error) {
+      console.error("Failed to fetch tab data", error);
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!currentPasswordForUpdate) {
+      toast.error("Please enter your current password to save changes");
+      return;
+    }
+
+    try {
+      await userService.updateProfile({
+        fullName: displayName,
+        email,
+        address,
+        currentPassword: currentPasswordForUpdate,
+      });
+      toast.success("Profile updated successfully");
+      setCurrentPasswordForUpdate("");
+      fetchProfile();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to update profile");
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("New passwords do not match");
+      return;
+    }
+
+    try {
+      await userService.changePassword({
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      toast.success("Password changed successfully");
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to change password");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          Loading...
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!profile) return null;
+
+  const ratingPercentage =
+    profile.stats.positiveRatings + profile.stats.negativeRatings > 0
+      ? Math.round(
+          (profile.stats.positiveRatings /
+            (profile.stats.positiveRatings + profile.stats.negativeRatings)) *
+            100
+        )
+      : 0;
 
   return (
     <MainLayout>
@@ -217,25 +195,30 @@ export default function UserProfilePage() {
               <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                 {/* Avatar & Basic Info */}
                 <div className="flex items-center gap-4">
-                  <Avatar className="h-24 w-24 border-4 border-accent/30">
-                    <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" />
-                    <AvatarFallback>AH</AvatarFallback>
+                  <Avatar className="h-24 w-24 border-4 border-accent/30 bg-background">
+                    <AvatarFallback className="bg-transparent">
+                      <CircleUserRound className="h-full w-full text-muted-foreground" />
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h1 className="text-2xl mb-1">Alex Hunter</h1>
+                    <h1 className="text-2xl mb-1">{profile.fullName}</h1>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                       <Mail className="h-4 w-4" />
-                      <span>alex.hunter@example.com</span>
+                      <span>{profile.email}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge
-                        variant="outline"
-                        className="border-accent/50 text-accent"
-                      >
-                        <Star className="h-3 w-3 mr-1 fill-accent" />
-                        Premium Member
+                      {profile.roles.map((role) => (
+                        <Badge
+                          key={role}
+                          variant="outline"
+                          className="border-accent/50 text-accent capitalize"
+                        >
+                          {role}
+                        </Badge>
+                      ))}
+                      <Badge variant="secondary">
+                        Member since {new Date(profile.createdAt).getFullYear()}
                       </Badge>
-                      <Badge variant="secondary">Member since 2023</Badge>
                     </div>
                   </div>
                 </div>
@@ -246,7 +229,9 @@ export default function UserProfilePage() {
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-1 mb-1">
                         <ThumbsUp className="h-4 w-4 text-success" />
-                        <span className="text-2xl text-success">98%</span>
+                        <span className="text-2xl text-success">
+                          {ratingPercentage}%
+                        </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Positive Rating
@@ -258,9 +243,13 @@ export default function UserProfilePage() {
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-1">
                         <ThumbsUp className="h-4 w-4 text-success" />
-                        <span className="text-2xl">247</span>
+                        <span className="text-2xl">
+                          {profile.stats.positiveRatings}
+                        </span>
                       </div>
-                      <div className="text-xs text-muted-foreground">Likes</div>
+                      <div className="text-xs text-muted-foreground">
+                        Positives
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -268,10 +257,12 @@ export default function UserProfilePage() {
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-1">
                         <ThumbsDown className="h-4 w-4 text-destructive" />
-                        <span className="text-2xl">5</span>
+                        <span className="text-2xl">
+                          {profile.stats.negativeRatings}
+                        </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
-                        Dislikes
+                        Negatives
                       </div>
                     </CardContent>
                   </Card>
@@ -280,7 +271,9 @@ export default function UserProfilePage() {
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-1">
                         <Trophy className="h-4 w-4 text-accent" />
-                        <span className="text-2xl text-accent">42</span>
+                        <span className="text-2xl text-accent">
+                          {profile.stats.auctionsWon}
+                        </span>
                       </div>
                       <div className="text-xs text-muted-foreground">
                         Auctions Won
@@ -324,15 +317,20 @@ export default function UserProfilePage() {
               <div>
                 <h2 className="text-2xl mb-1">My Watchlist</h2>
                 <p className="text-sm text-muted-foreground">
-                  {watchlistItems.length} items you're watching
+                  {watchlist.length} items you're watching
                 </p>
               </div>
               <Button variant="outline">Clear All</Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {watchlistItems.map((item) => (
-                <WatchlistCard key={item.id} {...item} />
+              {watchlist.map((item) => (
+                <WatchlistCard
+                  key={item.id}
+                  {...item}
+                  image={item.imageUrl}
+                  timeLeft={new Date(item.endTime).toLocaleDateString()}
+                />
               ))}
             </div>
           </TabsContent>
@@ -401,21 +399,27 @@ export default function UserProfilePage() {
                         <TableCell>
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Clock className="h-3 w-3" />
-                            <span>{bid.endTime}</span>
+                            <span>
+                              {new Date(bid.endTime).toLocaleDateString()}
+                            </span>
                           </div>
                         </TableCell>
                         <TableCell className="text-right text-sm text-muted-foreground">
-                          {bid.bids}
+                          {bid.bidCount}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            variant={
-                              bid.status === "leading" ? "outline" : "default"
-                            }
-                          >
-                            {bid.status === "leading" ? "View" : "Increase Bid"}
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            <Button size="sm" variant="outline">
+                              View
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="default"
+                              disabled={bid.status === "leading"}
+                            >
+                              Increase Bid
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -444,7 +448,6 @@ export default function UserProfilePage() {
                       <TableHead>Item</TableHead>
                       <TableHead className="text-right">Final Price</TableHead>
                       <TableHead>Won Date</TableHead>
-                      <TableHead>Transaction ID</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -462,26 +465,14 @@ export default function UserProfilePage() {
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {auction.wonDate}
+                            {new Date(auction.wonDate).toLocaleDateString()}
                           </span>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm font-mono text-muted-foreground">
-                            {auction.transactionId}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          {auction.status === "Completed" ? (
-                            <Badge className="bg-success/20 text-success border-success/50">
-                              <CheckCircle2 className="h-3 w-3 mr-1" />
-                              Completed
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-accent/20 text-accent border-accent/50">
-                              <Clock className="h-3 w-3 mr-1" />
-                              In Progress
-                            </Badge>
-                          )}
+                          <Badge className="bg-success/20 text-success border-success/50">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            {auction.status}
+                          </Badge>
                         </TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="outline">
@@ -533,7 +524,7 @@ export default function UserProfilePage() {
                       <TableRow
                         key={listing.id}
                         className={
-                          listing.status === "Active" && listing.bids > 0
+                          listing.status === "active" && listing.bidCount > 0
                             ? "bg-accent/5"
                             : ""
                         }
@@ -563,16 +554,16 @@ export default function UserProfilePage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <span className="text-sm text-muted-foreground">
-                            {listing.bids}
+                            {listing.bidCount}
                           </span>
                         </TableCell>
                         <TableCell>
                           <span className="text-sm text-muted-foreground">
-                            {listing.endDate}
+                            {new Date(listing.endTime).toLocaleDateString()}
                           </span>
                         </TableCell>
                         <TableCell>
-                          {listing.status === "Active" ? (
+                          {listing.status === "active" ? (
                             <Badge className="bg-success/20 text-success border-success/50">
                               Active
                             </Badge>
@@ -582,7 +573,7 @@ export default function UserProfilePage() {
                               className="border-accent/50 text-accent"
                             >
                               <AlertCircle className="h-3 w-3 mr-1" />
-                              No Bids
+                              {listing.status}
                             </Badge>
                           )}
                         </TableCell>
@@ -591,10 +582,6 @@ export default function UserProfilePage() {
                             <Button size="sm" variant="outline">
                               <Edit className="h-3 w-3 mr-1" />
                               Edit
-                            </Button>
-                            <Button size="sm" variant="outline">
-                              <FileEdit className="h-3 w-3 mr-1" />
-                              Update
                             </Button>
                           </div>
                         </TableCell>
@@ -648,16 +635,33 @@ export default function UserProfilePage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="avatar">Avatar URL</Label>
+                    <Label htmlFor="address">Address</Label>
                     <Input
-                      id="avatar"
-                      placeholder="https://example.com/avatar.jpg"
+                      id="address"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      placeholder="Enter your address"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPasswordUpdate">
+                      Current Password (Required to save)
+                    </Label>
+                    <Input
+                      id="currentPasswordUpdate"
+                      type="password"
+                      value={currentPasswordForUpdate}
+                      onChange={(e) =>
+                        setCurrentPasswordForUpdate(e.target.value)
+                      }
+                      placeholder="Enter current password"
                     />
                   </div>
 
                   <Separator />
 
-                  <Button className="w-full">
+                  <Button className="w-full" onClick={handleUpdateProfile}>
                     <CheckCircle2 className="mr-2 h-4 w-4" />
                     Save Changes
                   </Button>
@@ -681,8 +685,13 @@ export default function UserProfilePage() {
                     <Input
                       id="currentPassword"
                       type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      value={passwordForm.currentPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          currentPassword: e.target.value,
+                        })
+                      }
                       placeholder="Enter current password"
                     />
                   </div>
@@ -692,8 +701,13 @@ export default function UserProfilePage() {
                     <Input
                       id="newPassword"
                       type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      value={passwordForm.newPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          newPassword: e.target.value,
+                        })
+                      }
                       placeholder="Enter new password"
                     />
                   </div>
@@ -705,15 +719,20 @@ export default function UserProfilePage() {
                     <Input
                       id="confirmPassword"
                       type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      value={passwordForm.confirmPassword}
+                      onChange={(e) =>
+                        setPasswordForm({
+                          ...passwordForm,
+                          confirmPassword: e.target.value,
+                        })
+                      }
                       placeholder="Confirm new password"
                     />
                   </div>
 
                   <Separator />
 
-                  <Button className="w-full">
+                  <Button className="w-full" onClick={handleChangePassword}>
                     <Lock className="mr-2 h-4 w-4" />
                     Update Password
                   </Button>

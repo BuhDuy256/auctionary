@@ -1,16 +1,12 @@
-import type { UserRole } from "../constants/roles";
-
-export interface User {
+export interface UserProfile {
   id: number;
   email: string;
   fullName: string;
-  address?: string;
+  address: string | null;
   isVerified: boolean;
-  status: "pending_verification" | "active" | "pending_upgrade" | "suspended";
-  positiveReviews: number;
-  negativeReviews: number;
-  roles: UserRole[];
-  createdAt: string;
+  roles: string[];
+  stats: UserStats;
+  createdAt: Date;
 }
 
 export interface UserStats {
@@ -19,29 +15,12 @@ export interface UserStats {
   auctionsWon: number;
 }
 
-export interface UserProfile extends Omit<User, "address"> {
-  address: string | null;
-  stats: UserStats;
-}
-
-export interface UpdateProfileSchema {
-  fullName: string;
-  email: string;
-  address?: string;
-  currentPassword: string;
-}
-
-export interface ChangePasswordSchema {
-  currentPassword: string;
-  newPassword: string;
-}
-
 export interface WatchlistItem {
   id: string;
   title: string;
   imageUrl: string;
   currentBid: number;
-  endTime: string;
+  endTime: Date;
   bidCount: number;
   isActive: boolean;
 }
@@ -52,7 +31,7 @@ export interface ActiveBidItem {
   currentBid: number;
   yourMaxBid: number;
   status: "leading" | "outbid";
-  endTime: string;
+  endTime: Date;
   bidCount: number;
 }
 
@@ -60,7 +39,7 @@ export interface WonAuctionItem {
   id: string;
   title: string;
   finalPrice: number;
-  wonDate: string;
+  wonDate: Date;
   status: string;
 }
 
@@ -69,8 +48,8 @@ export interface MyListingItem {
   title: string;
   currentBid: number;
   startingPrice: number;
-  views: number;
+  views: number; // Note: Views might not be in DB yet, can default to 0
   bidCount: number;
-  endTime: string;
+  endTime: Date;
   status: string;
 }
