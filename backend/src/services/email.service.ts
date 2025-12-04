@@ -15,7 +15,7 @@ export const sendOTPEmail = async (
   email: string,
   otp: string,
   userName: string
-) => {
+): Promise<void> => {
   const mailOptions = {
     from: envConfig.EMAIL_FROM,
     to: email,
@@ -70,7 +70,7 @@ export const sendOTPEmail = async (
   }
 };
 
-export const sendWelcomeEmail = async (email: string, userName: string) => {
+export const sendWelcomeEmail = async (email: string, userName: string): Promise<void> => {
   const mailOptions = {
     from: envConfig.EMAIL_FROM,
     to: email,

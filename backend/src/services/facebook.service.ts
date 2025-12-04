@@ -1,6 +1,7 @@
 import axios from "axios";
+import { FacebookUserResponse } from "../api/dtos/responses/oauth.type";
 
-export const verifyFacebookToken = async (accessToken: string) => {
+export const verifyFacebookToken = async (accessToken: string): Promise<FacebookUserResponse> => {
   try {
     const response = await axios.get("https://graph.facebook.com/me", {
       params: {

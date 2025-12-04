@@ -1,5 +1,6 @@
 import { OAuth2Client } from "google-auth-library";
 import { envConfig } from "../configs/env.config";
+import { GoogleUserResponse } from "../api/dtos/responses/oauth.type";
 
 const client = new OAuth2Client(
   envConfig.GOOGLE_CLIENT_ID,
@@ -7,7 +8,7 @@ const client = new OAuth2Client(
   "postmessage"
 );
 
-export const verifyGoogleToken = async (code: string) => {
+export const verifyGoogleToken = async (code: string): Promise<GoogleUserResponse> => {
   try {
     const { tokens } = await client.getToken(code);
 
