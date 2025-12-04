@@ -1,7 +1,7 @@
-import { Card, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { ImageWithFallback } from "../ImageWithFallback";
+import { Card, CardContent } from "../../../components/ui/card";
+import { Badge } from "../../../components/ui/badge";
+import { Button } from "../../../components/ui/button";
+import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import { Clock, Sparkles, ShoppingCart } from "lucide-react";
 
 interface ProductListCardProps {

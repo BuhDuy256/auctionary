@@ -83,30 +83,30 @@ const request = async (
 };
 
 const apiClient = {
-  get: (endpoint: string, requiresAuth = false): Promise<any> => {
+  get: <T = any>(endpoint: string, requiresAuth = false): Promise<T> => {
     const options = buildOptions("GET", null, requiresAuth);
     return request(endpoint, options);
   },
 
-  post: (
+  post: <T = any>(
     endpoint: string,
     body: unknown,
     requiresAuth = false
-  ): Promise<any> => {
+  ): Promise<T> => {
     const options = buildOptions("POST", body, requiresAuth);
     return request(endpoint, options);
   },
 
-  patch: (
+  patch: <T = any>(
     endpoint: string,
     body: unknown,
     requiresAuth = false
-  ): Promise<any> => {
+  ): Promise<T> => {
     const options = buildOptions("PATCH", body, requiresAuth);
     return request(endpoint, options);
   },
 
-  delete: (endpoint: string, requiresAuth = false): Promise<any> => {
+  delete: <T = any>(endpoint: string, requiresAuth = false): Promise<T> => {
     const options = buildOptions("DELETE", null, requiresAuth);
     return request(endpoint, options);
   },

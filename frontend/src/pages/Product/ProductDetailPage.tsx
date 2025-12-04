@@ -45,7 +45,7 @@ import {
 } from "lucide-react";
 import { ImageGallery } from "../../components/auction/ImageGallery";
 import { BidHistory } from "../../components/auction/BidHistory";
-import { ProductListCard } from "../../components/auction/ProductListCard";
+import { ProductListCard } from "./components/ProductListCard";
 import MainLayout from "../../layouts/MainLayout";
 
 // Product images

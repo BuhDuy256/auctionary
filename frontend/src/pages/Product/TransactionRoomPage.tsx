@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
-import { TransactionRoom } from "../../components/auction/TransactionRoom";
+import { TransactionRoom } from "./components/TransactionRoom";
 import {
   FeedbackModal,
   type FeedbackData,

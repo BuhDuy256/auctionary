@@ -21,7 +21,8 @@ To develop a new feature in the frontend, follow these steps in order:
 
     - Create **Pages** in `src/pages/` for full views.
     - Create **Components** in `src/components/` for reusable UI parts.
-    - **Logic**: Use hooks (`useEffect`, `useState`) or Context to call Services.
+    - **Logic**: **NEVER** call Services directly. Create a Custom Hook (e.g., `useProducts`) to handle data fetching and logic.
+    - **Data Flow**: Component receives data/handlers from the hook.
     - **Styling**: Use Tailwind CSS utility classes.
 
 4.  **Route (Navigation Layer)**
@@ -88,35 +89,61 @@ export const createProduct = async (data: { name: string; price: number }) => {
 
 ### 4. Component Implementation
 
-Use functional components with hooks.
+**Strict Rule: Logic/UI Separation**
 
-```tsx
-// src/pages/ProductPage.tsx
-import { useEffect, useState } from "react";
+1.  **Do NOT** call Services inside Components.
+2.  **Create a Custom Hook** (e.g., `useProducts.ts` inside `src/hooks/`) to handle data fetching and state.
+3.  The Component should **only** receive data and event handlers from that hook.
+
+#### Step 4a: Create the Custom Hook
+
+```typescript
+// src/hooks/useProducts.ts
+import { useState, useEffect } from "react";
 import * as productService from "../services/productService";
 import type { Product } from "../types/product";
-import { Button } from "../components/ui/button";
 
-const ProductPage = () => {
+export const useProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
+        setIsLoading(true);
         const response = await productService.getProducts();
         setProducts(response.data);
-      } catch (error) {
-        console.error("Failed to load products", error);
+      } catch (err) {
+        setError("Failed to load products");
+        console.error(err);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
 
-  if (isLoading) return <div>Loading...</div>;
+  return { products, isLoading, error };
+};
+```
 
+#### Step 4b: Use the Hook in the Component
+
+```tsx
+// src/pages/ProductPage.tsx
+import { useProducts } from "../hooks/useProducts";
+import { Button } from "../components/ui/button";
+
+const ProductPage = () => {
+  // 1. Logic is hidden inside the hook
+  const { products, isLoading, error } = useProducts();
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
+
+  // 2. Component focuses ONLY on UI
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Products</h1>
@@ -213,3 +240,25 @@ When developing UI before the Backend is ready, or when integrating Backend into
 - In the Component, replace `mockData` with the data from the `useFetch` hook (or `useEffect`).
 - **Verification:** The UI must not flicker or break.
 - **Cleanup:** Delete the mock data variable/file.
+
+## 12. Integration & Refactoring Rules (Mock to Real)
+
+When swapping Mock Data with Real API, follow these adaptive rules:
+
+### Rule A: The "Split-on-Integration" Strategy
+
+If a Page Component is larger than **250 lines** or contains multiple logical sections (e.g., Tabs), you MUST extract them into sub-components **before** integrating the API.
+
+- **Bad:** `UserProfilePage.tsx` handles Fetching for Watchlist, Active Bids, and Settings all in one file.
+- **Good:**
+  - `UserProfilePage.tsx` (Main layout only)
+  - `src/components/profile/WatchlistTab.tsx` (Has its own `useWatchlist` hook)
+  - `src/components/profile/ActiveBidsTab.tsx` (Has its own `useBids` hook)
+
+### Rule B: Handling Data Mismatch (UI vs DB)
+
+If the Real API data differs from the Mock UI (e.g., missing `avatar` image, missing `views` count):
+
+1.  **Remove/Hide:** If the data is non-essential (e.g., `views`), remove the UI element.
+2.  **Fallback:** If the data is missing but UI requires it (e.g., `avatar`), use a UI fallback (e.g., User Initials Icon) instead of waiting for Backend changes.
+3.  **Update Interface:** Update `src/types/` to reflect the **REAL** database shape immediately. Do not keep the Mock interface.

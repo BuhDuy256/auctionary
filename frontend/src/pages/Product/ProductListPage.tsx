@@ -1,13 +1,7 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import { Button } from "../../components/ui/button";
-import type { CategoryNode } from "../../types/category";
-import type { Product } from "../../types/product";
-import * as categoryService from "../../services/categoryService";
-import * as productService from "../../services/productService";
-import { ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
-import { ActiveFilters } from "../../components/auction/ActiveFilters";
+import { SlidersHorizontal } from "lucide-react";
+import { ActiveFilters } from "./components/ActiveFilters";
 import {
   Select,
   SelectContent,
@@ -15,169 +9,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../components/ui/select";
-import { ProductListCard } from "../../components/auction/ProductListCard";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/card";
-import { CategoryFilter } from "../../components/auction/CategoryFilter";
-import { Separator } from "../../components/ui/separator";
-import { Slider } from "../../components/ui/slider";
+import { ProductListCard } from "./components/ProductListCard";
+import { ProductFilters } from "./components/ProductFilters";
+import { ProductPagination } from "./components/ProductPagination";
+import { useProducts } from "../../hooks/useProducts";
+import { useCategories } from "../../hooks/useCategories";
 
 export default function ProductListPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [categories, setCategories] = useState<CategoryNode[]>([]);
-  const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productsLoading, setProductsLoading] = useState(false);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 9,
-    total: 0,
-    totalPages: 0,
-  });
-  const [priceRange, setPriceRange] = useState([0, 5000]);
+  const {
+    products,
+    loading: productsLoading,
+    pagination,
+    priceRange,
+    setPriceRange,
+    searchQuery,
+    categorySlugs,
+    sortParam,
+    handleCategoryChange,
+    handleRemoveSearch,
+    handleRemoveCategory,
+    handleClearAllFilters,
+    handleSortChange,
+    handlePageChange,
+  } = useProducts();
 
-  const searchQuery = searchParams.get("q") || "";
-  const categorySlugs = searchParams.getAll("categorySlug");
-  const currentPage = parseInt(searchParams.get("page") || "1");
-  const sortParam = searchParams.get("sort") || "endTime:asc";
+  const {
+    categories,
+    loading: categoriesLoading,
+    selectedCategoriesWithNames,
+  } = useCategories(categorySlugs);
 
-  useEffect(() => {
-    if (!searchParams.has("sort")) {
-      const newParams = new URLSearchParams(searchParams);
-      newParams.set("sort", "endTime:asc");
-      setSearchParams(newParams, { replace: true });
-    }
-  }, [searchParams, setSearchParams]);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setCategoriesLoading(true);
-        const mappedCategories = await categoryService.getCategories();
-        setCategories(mappedCategories);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      } finally {
-        setCategoriesLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setProductsLoading(true);
-        console.log("Fetching products with params:", {
-          q: searchQuery,
-          categorySlug: categorySlugs,
-          page: currentPage,
-          sort: sortParam,
-        });
-        const result = await productService.searchProducts({
-          q: searchQuery || undefined,
-          categorySlug: categorySlugs.length > 0 ? categorySlugs : undefined,
-          page: currentPage,
-          limit: 9,
-          sort: sortParam,
-        });
-        console.log("Fetched products:", result);
-        setProducts(result.data);
-        setPagination(result.pagination);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setProductsLoading(false);
-      }
-    };
-
-    fetchProducts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, categorySlugs.join(","), currentPage, sortParam]);
-
-  const handleCategoryChange = (categoryIds: string[], checked: boolean) => {
-    const newParams = new URLSearchParams(searchParams);
-    
-    // Remove all existing categorySlug params first
-    newParams.delete("categorySlug");
-    
-    let updatedSlugs: string[];
-    if (checked) {
-      // Add the new category IDs to existing ones
-      updatedSlugs = [...new Set([...categorySlugs, ...categoryIds])];
-    } else {
-      // Remove the unchecked category IDs
-      updatedSlugs = categorySlugs.filter(slug => !categoryIds.includes(slug));
-    }
-    
-    // Append all updated slugs
-    updatedSlugs.forEach(slug => newParams.append("categorySlug", slug));
-    
-    newParams.set("page", "1");
-    setSearchParams(newParams);
-  };
-
-  const handleRemoveSearch = () => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.delete("q");
-    newParams.set("page", "1");
-    setSearchParams(newParams);
-  };
-
-  const handleRemoveCategory = (categoryId: string) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.delete("categorySlug");
-    const remaining = categorySlugs.filter(slug => slug !== categoryId);
-    remaining.forEach(slug => newParams.append("categorySlug", slug));
-    newParams.set("page", "1");
-    setSearchParams(newParams);
-  };
-
-  const handleClearAllFilters = () => {
-    const newParams = new URLSearchParams();
-    newParams.set("sort", sortParam);
-    setSearchParams(newParams);
-  };
-
-  const handleSortChange = (value: string) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set("sort", value);
-    setSearchParams(newParams);
-  };
-
-  const handlePageChange = (page: number) => {
-    const newParams = new URLSearchParams(searchParams);
-    newParams.set("page", page.toString());
-    setSearchParams(newParams);
-  };
-
-  const getSelectedCategoriesWithNames = () => {
-    const selected: Array<{ id: string; name: string }> = [];
-    
-    const findCategory = (cats: CategoryNode[], slug: string): CategoryNode | null => {
-      for (const cat of cats) {
-        if (cat.id === slug) return cat;
-        if (cat.children) {
-          const found = findCategory(cat.children, slug);
-          if (found) return found;
-        }
-      }
-      return null;
-    };
-    
-    categorySlugs.forEach(slug => {
-      const cat = findCategory(categories, slug);
-      if (cat) {
-        selected.push({ id: cat.id, name: cat.name });
-      }
-    });
-    
-    return selected;
+  const handleResetFilters = () => {
+    handleClearAllFilters();
+    setPriceRange([0, 5000]);
   };
 
   return (
@@ -196,94 +60,16 @@ export default function ProductListPage() {
       <div className="container mx-auto px-4 py-6">
         <div className="flex gap-6">
           {/* Sidebar */}
-          <aside className="w-72 flex-shrink-0 hidden lg:block">
-            <div className="sticky top-24 space-y-6" style={{ pointerEvents: productsLoading ? 'none' : 'auto', opacity: productsLoading ? 0.6 : 1 }}>
-              {/* Filters Card */}
-              <Card className="border-border">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <SlidersHorizontal className="h-5 w-5 text-accent" />
-                    Filters
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Categories */}
-                  <div>
-                    <h3 className="text-sm mb-3">Categories</h3>
-                    {categoriesLoading ? (
-                      <div className="text-sm text-muted-foreground">Loading categories...</div>
-                    ) : (
-                      <CategoryFilter
-                        categories={categories}
-                        selectedCategories={categorySlugs}
-                        onCategoryChange={handleCategoryChange}
-                      />
-                    )}
-                  </div>
-
-                  <Separator />
-
-                  {/* Price Range */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm">Price Range</h3>
-                      <span className="text-xs text-accent">
-                        ${priceRange[0]} - ${priceRange[1]}
-                      </span>
-                    </div>
-                    <Slider
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                      min={0}
-                      max={5000}
-                      step={50}
-                      className="py-4"
-                    />
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>$0</span>
-                      <span>$5,000</span>
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      const newParams = new URLSearchParams(searchParams);
-                      newParams.delete("categorySlug");
-                      newParams.set("page", "1");
-                      setSearchParams(newParams);
-                      setPriceRange([0, 5000]);
-                    }}
-                  >
-                    Reset Filters
-                  </Button>
-                </CardContent>
-              </Card>
-
-              {/* Quick Stats */}
-              <Card className="border-border bg-card/50">
-                <CardContent className="p-4 space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      Active Listings
-                    </span>
-                    <span className="text-accent">1,247</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">New Today</span>
-                    <span className="text-success">83</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Ending Soon</span>
-                    <span className="text-destructive">42</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </aside>
+          <ProductFilters
+            categories={categories}
+            categoriesLoading={categoriesLoading}
+            selectedCategories={categorySlugs}
+            priceRange={priceRange}
+            disabled={productsLoading}
+            onCategoryChange={handleCategoryChange}
+            onPriceRangeChange={setPriceRange}
+            onResetFilters={handleResetFilters}
+          />
 
           {/* Main Content */}
           <main className="flex-1">
@@ -295,7 +81,7 @@ export default function ProductListPage() {
                   {(searchQuery || categorySlugs.length > 0) && (
                     <ActiveFilters
                       searchQuery={searchQuery}
-                      selectedCategories={getSelectedCategoriesWithNames()}
+                      selectedCategories={selectedCategoriesWithNames}
                       onRemoveSearch={handleRemoveSearch}
                       onRemoveCategory={handleRemoveCategory}
                       onClearAll={handleClearAllFilters}
@@ -307,7 +93,11 @@ export default function ProductListPage() {
                   <span className="text-sm text-muted-foreground">
                     Sort by:
                   </span>
-                  <Select value={sortParam} onValueChange={handleSortChange} disabled={productsLoading}>
+                  <Select
+                    value={sortParam}
+                    onValueChange={handleSortChange}
+                    disabled={productsLoading}
+                  >
                     <SelectTrigger className="w-[180px] h-9">
                       <SelectValue />
                     </SelectTrigger>
@@ -335,8 +125,11 @@ export default function ProductListPage() {
                 <p className="text-sm text-muted-foreground">
                   Showing{" "}
                   <span className="text-foreground">
-                    {(currentPage - 1) * 9 + 1}-
-                    {Math.min(currentPage * 9, pagination.total)}
+                    {(pagination.page - 1) * pagination.limit + 1}-
+                    {Math.min(
+                      pagination.page * pagination.limit,
+                      pagination.total
+                    )}
                   </span>{" "}
                   of <span className="text-foreground">{pagination.total}</span>{" "}
                   results
@@ -364,41 +157,12 @@ export default function ProductListPage() {
             )}
 
             {/* Pagination */}
-            <div className="flex items-center justify-center gap-2" style={{ pointerEvents: productsLoading ? 'none' : 'auto', opacity: productsLoading ? 0.6 : 1 }}>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-
-              {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <Button
-                    key={page}
-                    variant={currentPage === page ? "default" : "outline"}
-                    size="icon"
-                    onClick={() => handlePageChange(page)}
-                    className={currentPage === page ? "border-accent" : ""}
-                  >
-                    {page}
-                  </Button>
-                )
-              )}
-
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() =>
-                  handlePageChange(Math.min(pagination.totalPages, currentPage + 1))
-                }
-                disabled={currentPage === pagination.totalPages}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            <ProductPagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              disabled={productsLoading}
+              onPageChange={handlePageChange}
+            />
           </main>
         </div>
       </div>

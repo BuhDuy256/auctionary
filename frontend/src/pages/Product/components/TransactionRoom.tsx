@@ -1,14 +1,23 @@
 import { useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Separator } from "../ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { ScrollArea } from "../ui/scroll-area";
-import { Alert, AlertDescription } from "../ui/alert";
-import { ImageWithFallback } from "../ImageWithFallback";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card";
+import { Badge } from "../../../components/ui/badge";
+import { Separator } from "../../../components/ui/separator";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "../../../components/ui/avatar";
+import { ScrollArea } from "../../../components/ui/scroll-area";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
+import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import {
   Check,
   Clock,

@@ -1,5 +1,9 @@
 import apiClient from "./apiClient";
-import type { Product, SearchProductsParams, PaginatedResponse } from "../types/product";
+import type {
+  Product,
+  SearchProductsParams,
+  PaginatedResponse,
+} from "../types/product";
 
 export const searchProducts = async (
   params: SearchProductsParams
@@ -12,7 +16,9 @@ export const searchProducts = async (
 
   if (params.categorySlug) {
     if (Array.isArray(params.categorySlug)) {
-      params.categorySlug.forEach(slug => queryParams.append("categorySlug", slug));
+      params.categorySlug.forEach((slug) =>
+        queryParams.append("categorySlug", slug)
+      );
     } else {
       queryParams.append("categorySlug", params.categorySlug);
     }
@@ -33,5 +39,5 @@ export const searchProducts = async (
   const queryString = queryParams.toString();
   const endpoint = `/products${queryString ? `?${queryString}` : ""}`;
 
-  return apiClient.get(endpoint);
+  return apiClient.get<PaginatedResponse<Product>>(endpoint);
 };

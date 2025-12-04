@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
+import { Badge } from "../../../components/ui/badge";
+import { Button } from "../../../components/ui/button";
 
 interface ActiveFiltersProps {
   searchQuery?: string;
@@ -24,7 +24,7 @@ export function ActiveFilters({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm text-muted-foreground">Active Filters:</span>
-      
+
       {searchQuery && (
         <Badge variant="secondary" className="pl-2 pr-1 gap-1">
           Search: {searchQuery}
@@ -36,7 +36,7 @@ export function ActiveFilters({
           </button>
         </Badge>
       )}
-      
+
       {selectedCategories.map((category) => (
         <Badge
           key={category.id}
@@ -52,7 +52,7 @@ export function ActiveFilters({
           </button>
         </Badge>
       ))}
-      
+
       <Button
         variant="ghost"
         size="sm"
