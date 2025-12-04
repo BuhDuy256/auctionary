@@ -31,7 +31,14 @@ const handleResponse = async (response: Response): Promise<any> => {
   }
 
   try {
-    return await response.json();
+    const jsonResponse = await response.json();
+
+    // Unwrap the new API response format { success: true, data: {...}, message?: string }
+    if (jsonResponse && typeof jsonResponse === 'object' && 'success' in jsonResponse && jsonResponse.success) {
+      return jsonResponse.data;
+    }
+
+    return jsonResponse;
   } catch (e) {
     throw new Error("Invalid JSON response from server");
   }

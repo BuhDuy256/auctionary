@@ -2,8 +2,7 @@ import apiClient from "./apiClient";
 import type { CategoryNode } from "../types/category";
 
 export const getCategories = async (): Promise<CategoryNode[]> => {
-  const response = await apiClient.get("/categories");
-  const categoriesData: { slug: string; name: string; children?: { slug: string; name: string }[] }[] = response.data || [];
+  const categoriesData: { slug: string; name: string; children?: { slug: string; name: string }[] }[] = await apiClient.get("/categories");
 
   return categoriesData.map((cat) => ({
     id: cat.slug,
