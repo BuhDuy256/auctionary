@@ -53,13 +53,11 @@ export default function SignupPage() {
       // 5. Prepare data, remove 'confirm_password'
       const { confirm_password, ...signupData } = formData;
 
-      // 6. Send new payload, including token
-      const response = await signup({
+      // 6. Send new payload, including token (returns unwrapped data)
+      const newUserData = await signup({
         ...signupData,
         recaptchaToken,
       });
-
-      const newUserData = response.data;
 
       toast.success(
         newUserData.message || "Account created! Please verify your email."

@@ -71,11 +71,11 @@ const VerifyOTPPage: React.FC = () => {
     setError("");
 
     try {
-      // Verify OTP - now returns tokens
+      // Verify OTP - returns unwrapped tokens
       const response = await authService.verifyOTP(userId, otp);
 
       // Success: Save token and log user in
-      const { accessToken } = response.data;
+      const { accessToken } = response;
       localStorage.setItem("token", accessToken);
 
       toast.success("Account verified successfully! 🎉");

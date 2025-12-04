@@ -67,10 +67,10 @@ export const loginWithFacebook = async (
 
 /**
  * Verifies the token from localStorage and returns user data.
- * @returns {Promise<{ data: User }>} The user data.
+ * @returns {Promise<User>} The user data (unwrapped by apiClient).
  * @throws {Error} If token is invalid or request fails.
  */
-export const getMe = async (): Promise<{ data: User }> => {
+export const getMe = async (): Promise<User> => {
   // GET /auth/me, no body, *auth is required*
   return apiClient.get("/auth/me", true);
 };

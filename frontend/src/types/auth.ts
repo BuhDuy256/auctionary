@@ -1,37 +1,31 @@
 import type { User } from "./user";
 
+// Note: apiClient automatically unwraps { success, data } → returns data directly
 export interface LoginResponse {
-  data: {
-    accessToken: string;
-    refreshToken?: string;
-    user: User;
-    requiresVerification?: boolean;
-  };
-  message?: string;
+  accessToken: string;
+  refreshToken?: string;
+  user: User;
+  requiresVerification?: boolean;
 }
 
 export interface SignupResponse {
-  data: {
-    user: User;
-    message?: string;
-  };
-  message?: string;
+  id: number;
+  email: string;
+  fullName: string;
+  isVerified: boolean;
+  message: string;
 }
 
 export interface AuthResponse {
-  data: {
-    accessToken: string;
-    user: User;
-  };
-  message?: string;
+  accessToken: string;
+  refreshToken?: string;
+  user: User;
 }
 
 export interface VerifyOTPResponse {
-  data: {
-    accessToken: string;
-    user: User;
-  };
-  message?: string;
+  accessToken: string;
+  refreshToken?: string;
+  user: User;
 }
 
 export interface GenericResponse {

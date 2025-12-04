@@ -55,8 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          const response = await authService.getMe();
-          setUser(response.data);
+          const user = await authService.getMe();
+          setUser(user);
         } catch (error) {
           console.error("Token verification failed:", error);
           authService.logout();
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     recaptchaToken: string
   ): Promise<LoginResponse> => {
     try {
-      // 1. Call service
+      // 1. Call service (returns unwrapped data)
       const loginResponse = await authService.login(
         email,
         password,
@@ -82,13 +82,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
 
       // 2. If successful, save token immediately
-      localStorage.setItem("token", loginResponse.data.accessToken);
+      localStorage.setItem("token", loginResponse.accessToken);
 
       // 3. Update user state if verification is not required
-      if (!loginResponse.data.requiresVerification) {
+      if (!loginResponse.requiresVerification) {
         try {
-          const userResponse = await authService.getMe();
-          setUser(userResponse.data);
+          const user = await authService.getMe();
+          setUser(user);
         } catch (error) {
           console.error("Failed to fetch user data after login:", error);
           authService.logout();
@@ -117,8 +117,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginWithGoogle = async (code: string): Promise<AuthResponse> => {
     try {
       const response = await authService.loginWithGoogle(code);
-      localStorage.setItem("token", response.data.accessToken);
-      setUser(response.data.user);
+      localStorage.setItem("token", response.accessToken);
+      setUser(response.user);
       return response;
     } catch (error) {
       console.error("Google login error in context:", error);
@@ -131,8 +131,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ): Promise<AuthResponse> => {
     try {
       const response = await authService.loginWithFacebook(accessToken);
-      localStorage.setItem("token", response.data.accessToken);
-      setUser(response.data.user);
+      localStorage.setItem("token", response.accessToken);
+      setUser(response.user);
       return response;
     } catch (error) {
       console.error("Facebook login error in context:", error);

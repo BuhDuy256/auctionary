@@ -38,16 +38,16 @@ export default function LoginPage() {
     }
 
     try {
-      // Call login with the new schema
+      // Call login with the new schema (returns unwrapped data)
       const response = await login(email, password, recaptchaToken);
 
       // Check if user requires verification
-      if (response.data.requiresVerification) {
+      if (response.requiresVerification) {
         toast.error("Please verify your account first.");
         navigate("/verify-otp", {
           state: {
             email: email,
-            userId: response.data.user.id, // Pass userId for OTP verification
+            userId: response.user.id, // Pass userId for OTP verification
             message:
               "Your account is not verified. A new verification code has been sent to your email.",
           },
@@ -55,16 +55,9 @@ export default function LoginPage() {
         return;
       }
 
-      // Verified user - save token and login
-      localStorage.setItem("token", response.data.accessToken);
-
-      try {
-        toast.success("Welcome back!");
-        navigate("/");
-      } catch (error) {
-        console.error("Failed to fetch user data after login:", error);
-        toast.error("Login succeeded but failed to verify user.");
-      }
+      // Verified user - token already saved by AuthContext
+      toast.success("Welcome back!");
+      navigate("/");
     } catch (err: any) {
       setError(err.message || "Login failed.");
       recaptchaRef.current?.reset();
