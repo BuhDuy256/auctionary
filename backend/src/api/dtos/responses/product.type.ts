@@ -191,3 +191,9 @@ export interface AnswerItem {
   answeredBy: string;
   answeredAt: string;
 }
+
+export interface CreateProductResponse {
+  productId: number;
+  name: string;
+  status: string;
+}

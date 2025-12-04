@@ -11,161 +11,9 @@ function escapeQuery(q: string) {
     .trim();
 }
 
-export const fullTextSearch = async (
-  q: string | undefined,
-  page: number,
-  limit: number,
-  sort?: SortOption,
-  excludeProductId?: number
-) => {
-  const safeQ = escapeQuery(q || "");
-  const offset = (page - 1) * limit;
-
-  let query = db("products")
-    .where("status", "active")
-    .where("end_time", ">", new Date());
-
-  if (safeQ) {
-    // Using ILIKE for simple full text search simulation
-    query = query.where("name", "ilike", `%${safeQ}%`);
-  }
-
-  if (excludeProductId) {
-    query = query.whereNot("product_id", excludeProductId);
-  }
-
-  const countQuery = query.clone().count("product_id as total").first();
-
-  if (sort && Array.isArray(sort) && sort.length > 0) {
-    sort.forEach((item) => {
-      const dbField =
-        item.field === "endTime"
-          ? "end_time"
-          : item.field === "price"
-            ? "current_price"
-            : item.field === "bidCount"
-              ? "bid_count"
-              : "created_at";
-      query = query.orderBy(dbField, item.direction);
-    });
-  } else {
-    query = query.orderBy("created_at", "desc");
-  }
-
-  const products = await query
-    .select(
-      "products.product_id",
-      "products.thumbnail_url",
-      "products.name",
-      "products.current_price",
-      "products.status",
-      "products.created_at",
-      "products.end_time",
-      "products.bid_count",
-      "products.highest_bidder_id"
-    )
-    .limit(limit)
-    .offset(offset);
-  const highestBidders = await db("users")
-    .whereIn(
-      "id",
-      products.map((p) => p.highest_bidder_id).filter((id) => id !== null)
-    )
-    .select("id", "full_name");
-
-  const bidderMap = new Map(highestBidders.map((b) => [b.id, b]));
-
-  const totalResult = await countQuery;
-  const total = totalResult ? parseInt(totalResult.total as string) : 0;
-
-  return {
-    data: products.map((p) => ({
-      ...p,
-      highest_bidder: p.highest_bidder_id
-        ? bidderMap.get(p.highest_bidder_id)
-        : null,
-    })),
-    total,
-  };
-};
-
-export const findByCategory = async (
-  categorySlug: string,
-  page: number,
-  limit: number,
-  sort?: SortOption,
-  excludeProductId?: number
-) => {
-  const slug = toSlug(categorySlug);
-  const offset = (page - 1) * limit;
-
-  const categoryIds = await getCategoryIds(slug);
-
-  let query = db("products")
-    .whereIn("category_id", categoryIds)
-    .where("status", "active")
-    .where("end_time", ">", new Date());
-
-  if (excludeProductId) {
-    query = query.whereNot("product_id", excludeProductId);
-  }
-
-  const countQuery = query.clone().count("product_id as total").first();
-
-  if (sort && Array.isArray(sort) && sort.length > 0) {
-    sort.forEach((item) => {
-      const dbField =
-        item.field === "endTime"
-          ? "end_time"
-          : item.field === "price"
-            ? "current_price"
-            : item.field === "bidCount"
-              ? "bid_count"
-              : "created_at";
-      query = query.orderBy(dbField, item.direction);
-    });
-  } else {
-    query = query.orderBy("created_at", "desc");
-  }
-
-  const products = await query
-    .join("categories", "products.category_id", "categories.category_id")
-    .select(
-      "products.*",
-      "categories.category_id as cat_id",
-      "categories.name as cat_name",
-      "categories.slug as cat_slug"
-    )
-    .limit(limit)
-    .offset(offset);
-  const highestBidders = await db("users")
-    .whereIn(
-      "id",
-      products.map((p) => p.highest_bidder_id).filter((id) => id !== null)
-    )
-    .select("id", "full_name");
-
-  const bidderMap = new Map(highestBidders.map((b) => [b.id, b]));
-
-  const totalResult = await countQuery;
-  const total = totalResult ? parseInt(totalResult.total as string) : 0;
-
-  return {
-    data: products.map((p) => ({
-      ...p,
-      highest_bidder: p.highest_bidder_id
-        ? bidderMap.get(p.highest_bidder_id)
-        : null,
-      category: {
-        category_id: p.cat_id,
-        name: p.cat_name,
-        slug: p.cat_slug,
-      },
-    })),
-    total,
-  };
-};
-
+/**
+ * Search products with filters - returns raw database records
+ */
 export const searchProducts = async (
   q?: string,
   categorySlugs?: string[],
@@ -174,34 +22,34 @@ export const searchProducts = async (
   sort?: SortOption,
   excludeCategorySlugs?: string[],
   excludeProductIds?: number[]
-) => {
+): Promise<{ data: any[]; total: number }> => {
   const offset = (page - 1) * limit;
 
   let query = db("products")
     .where("products.status", "active")
     .where("products.end_time", ">", new Date());
 
+  // Text search filter
   if (q) {
     const safeQ = escapeQuery(q);
     query = query.where("products.name", "ilike", `%${safeQ}%`);
   }
 
+  // Category filter (include)
   if (categorySlugs && categorySlugs.length > 0) {
     const allCategoryIds: number[] = [];
-
     for (const slug of categorySlugs) {
       const normalizedSlug = toSlug(slug);
       const categoryIds = await getCategoryIds(normalizedSlug);
       allCategoryIds.push(...categoryIds);
     }
-
     if (allCategoryIds.length > 0) {
-      // Remove duplicates
       const uniqueCategoryIds = [...new Set(allCategoryIds)];
       query = query.whereIn("products.category_id", uniqueCategoryIds);
     }
   }
 
+  // Category filter (exclude)
   if (excludeCategorySlugs && excludeCategorySlugs.length > 0) {
     const excludeCategoryIds = [];
     for (const slug of excludeCategorySlugs) {
@@ -213,32 +61,31 @@ export const searchProducts = async (
     }
   }
 
+  // Product filter (exclude)
   if (excludeProductIds && excludeProductIds.length > 0) {
     query = query.whereNotIn("products.product_id", excludeProductIds);
   }
 
+  // Count total before pagination
   const countQuery = query.clone().count("products.product_id as total").first();
 
+  // Apply sorting
   if (sort && Array.isArray(sort) && sort.length > 0) {
     sort.forEach((item) => {
       const dbField =
-        item.field === "endTime"
-          ? "products.end_time"
-          : item.field === "price"
-            ? "products.current_price"
-            : item.field === "bidCount"
-              ? "products.bid_count"
-              : item.field === "createdAt"
-                ? "products.created_at"
-                : "products.created_at";
+        item.field === "endTime" ? "products.end_time" :
+          item.field === "price" ? "products.current_price" :
+            item.field === "bidCount" ? "products.bid_count" :
+              item.field === "createdAt" ? "products.created_at" :
+                "products.created_at";
       query = query.orderBy(dbField, item.direction);
     });
   } else {
     query = query.orderBy("products.end_time", "asc");
   }
 
+  // Execute query with joins
   const products = await query
-    .leftJoin("categories", "products.category_id", "categories.category_id")
     .leftJoin("users", "products.highest_bidder_id", "users.id")
     .select(
       "products.product_id",
@@ -252,10 +99,7 @@ export const searchProducts = async (
       "products.end_time",
       "products.bid_count",
       "products.highest_bidder_id",
-      "users.full_name as bidder_name",
-      "categories.category_id as cat_id",
-      "categories.name as cat_name",
-      "categories.slug as cat_slug"
+      "users.full_name as bidder_name"
     )
     .limit(limit)
     .offset(offset);
@@ -263,27 +107,7 @@ export const searchProducts = async (
   const totalResult = await countQuery;
   const total = totalResult ? parseInt(totalResult.total as string) : 0;
 
-  return {
-    data: products.map((p) => ({
-      ...p,
-      isNewArrival:
-        Date.now() - new Date(p.created_at).getTime() < 24 * 60 * 60 * 1000,
-      highest_bidder: p.highest_bidder_id
-        ? {
-          id: p.highest_bidder_id,
-          full_name: p.bidder_name,
-        }
-        : null,
-      category: p.cat_id
-        ? {
-          category_id: p.cat_id,
-          name: p.cat_name,
-          slug: p.cat_slug,
-        }
-        : null,
-    })),
-    total,
-  };
+  return { data: products, total };
 };
 
 export const createProduct = async (data: {

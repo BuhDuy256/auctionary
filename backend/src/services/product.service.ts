@@ -11,135 +11,18 @@ import {
   ProductListCardProps,
   ProductDetailResponse,
   BidHistoryResponse,
-  QuestionsResponse
+  QuestionsResponse,
+  CreateProductResponse,
+  ProductDetail,
+  ProductComment
 } from "../api/dtos/responses/product.type";
-
-// Helper: Mask bidder name (last 4-5 chars + "****")
-const maskBidderName = (name: string | null): string => {
-  if (!name) return "****";
-  const visibleChars = Math.min(5, Math.max(4, name.length - 4));
-  const lastChars = name.slice(-visibleChars);
-  return `****${lastChars}`;
-};
-
-// Helper: Calculate seller rating
-const calculateSellerRating = (positiveReviews: number, negativeReviews: number) => {
-  const total = positiveReviews + negativeReviews;
-  if (total === 0) {
-    return {
-      average: 0,
-      totalReviews: 0,
-      positivePercentage: 0,
-    };
-  }
-
-  const average = (positiveReviews / total) * 5;
-  const positivePercentage = (positiveReviews / total) * 100;
-
-  return {
-    average: Math.round(average * 10) / 10, // Round to 1 decimal
-    totalReviews: total,
-    positivePercentage: Math.round(positivePercentage),
-  };
-};
-
-const mapProductToResponse = (product: any): ProductListCardProps => {
-  if (!product) return null as any;
-
-  const now = Date.now();
-  const endTime = new Date(product.end_time).getTime();
-  const msLeft = endTime - now;
-
-  let timeLeft = "Ended";
-  if (msLeft > 0) {
-    const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((msLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((msLeft % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (days > 0) {
-      timeLeft = `${days}d ${hours}h`;
-    } else if (hours > 0) {
-      timeLeft = `${hours}h ${minutes}m`;
-    } else {
-      timeLeft = `${minutes}m`;
-    }
-  }
-
-  return {
-    id: product.product_id.toString(),
-    slug: product.slug,
-    title: product.name,
-    image: product.thumbnail_url || "",
-    currentBid: toNum(product.current_price),
-    buyNowPrice: product.buy_now_price ? toNum(product.buy_now_price) : undefined,
-    topBidder: product.highest_bidder?.full_name || "No bids yet",
-    timeLeft: timeLeft,
-    isNewArrival: product.isNewArrival || false,
-    bidCount: product.bid_count || 0,
-  };
-};
-
-const mapProductDetailToResponse = (product: any) => {
-  if (!product) return null;
-  return {
-    thumbnail: product.thumbnail_url || "",
-    name: product.name,
-    startPrice: toNum(product.start_price),
-    stepPrice: toNum(product.step_price),
-    buyNowPrice: product.buy_now_price
-      ? toNum(product.buy_now_price)
-      : undefined,
-    currentPrice: toNum(product.current_price),
-    createdAt: product.created_at,
-    endTime: product.end_time,
-    bidCount: product.bid_count,
-    autoExtend: product.auto_extend,
-    status: product.status,
-    images: product.images.map((img: any) => img.image_url),
-    seller: {
-      id: product.seller.id,
-      fullName: product.seller.full_name,
-      positiveReviews: product.seller.positive_reviews,
-      negativeReviews: product.seller.negative_reviews,
-    },
-    description: product.description?.content || "",
-    category: {
-      id: product.category.category_id,
-      name: product.category.name,
-      slug: product.category.slug,
-      parent: product.category.parent
-        ? {
-          id: product.category.parent.category_id,
-          name: product.category.parent.name,
-          slug: product.category.parent.slug,
-        }
-        : undefined,
-    },
-  };
-};
-
-const mapCommentToResponse = (comment: any) => {
-  return {
-    commentId: comment.comment_id,
-    content: comment.content,
-    user: {
-      userId: comment.user_id,
-      fullName: comment.full_name,
-    },
-    createdAt: comment.created_at,
-    updatedAt: comment.updated_at,
-    replies: (comment.replies || []).map((reply: any) => ({
-      commentId: reply.comment_id,
-      content: reply.content,
-      user: {
-        userId: reply.user_id,
-        fullName: reply.full_name,
-      },
-      createdAt: reply.created_at,
-      updatedAt: reply.updated_at,
-    })),
-  };
-};
+import {
+  mapToProductListCard,
+  mapToProductDetail,
+  mapToProductComment,
+  maskBidderName,
+  calculateSellerRating
+} from "../mappers/product.mapper";
 
 export const searchProducts = async (query: ProductsSearchQuery): Promise<PaginatedResult<ProductListCardProps>> => {
   const { q, categorySlug, page, limit, sort, excludeCategorySlug } = query;
@@ -154,7 +37,7 @@ export const searchProducts = async (query: ProductsSearchQuery): Promise<Pagina
   );
 
   return {
-    data: result.data.map(mapProductToResponse),
+    data: result.data.map(mapToProductListCard),
     pagination: {
       page,
       limit,
@@ -164,7 +47,7 @@ export const searchProducts = async (query: ProductsSearchQuery): Promise<Pagina
   };
 };
 
-export const createProduct = async (data: CreateProduct) => {
+export const createProduct = async (data: CreateProduct): Promise<CreateProductResponse> => {
   const product = await productRepository.createProduct({
     name: data.name,
     category_id: data.categoryId,
@@ -186,15 +69,15 @@ export const createProduct = async (data: CreateProduct) => {
   };
 };
 
-export const getProductDetailById = async (productId: number) => {
+export const getProductDetailById = async (productId: number): Promise<ProductDetail | null> => {
   const product = await productRepository.findDetailById(productId);
-  return mapProductDetailToResponse(product);
+  return mapToProductDetail(product);
 };
 
 export const getProductCommentsById = async (
   productId: number,
   query: GetProductCommentsQuery
-) => {
+): Promise<PaginatedResult<ProductComment>> => {
   const { page, limit } = query;
   const result = await productRepository.findCommentsById(
     productId,
@@ -203,7 +86,7 @@ export const getProductCommentsById = async (
   );
 
   return {
-    data: result.data.map(mapCommentToResponse),
+    data: result.data.map(mapToProductComment),
     pagination: {
       page,
       limit,
@@ -216,7 +99,7 @@ export const getProductCommentsById = async (
 export const appendProductDescription = async (
   productId: number,
   body: AppendProductDescription
-) => {
+): Promise<void> => {
   const { sellerId, content } = body;
   await productRepository.appendProductDescription(
     productId,
@@ -304,7 +187,7 @@ export const getProductDetail = async (
         parent: breadcrumb.length > 1 ? breadcrumb[breadcrumb.length - 2] : null,
       },
       breadcrumb,
-      relatedProducts: relatedProducts.data.map(mapProductToResponse),
+      relatedProducts: relatedProducts.data.map(mapToProductListCard),
     },
     seller: {
       id: product.seller_id,
