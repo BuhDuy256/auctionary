@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import * as authService from "../../services/auth.service";
-import { formatResponse } from "../../utils/response.util";
 import { logger } from "../../utils/logger.util";
-import { AUTH_CONSTANTS } from "../../utils/constant.util";
-import { envConfig } from "../../config/env.config";
+import { AUTH_CONSTANTS } from "../../configs/constants.config";
+import { envConfig } from "../../configs/env.config";
 
 export const verifyOTP = async (
   request: Request,
@@ -22,15 +21,13 @@ export const verifyOTP = async (
       maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
 
-    formatResponse(
-      response,
-      200,
-      {
+    response
+      .status(200)
+      .message("Email verified successfully")
+      .json({
         accessToken: result.accessToken,
         user: result.user,
-      },
-      "Email verified successfully"
-    );
+      });
   } catch (error) {
     logger.error("OTPController", "Failed to verify OTP", error);
     next(error);
@@ -47,7 +44,7 @@ export const resendOTP = async (
 
     const result = await authService.resendOTP(userId);
 
-    formatResponse(response, 200, null, result.message);
+    response.status(200).message(result.message).json(null);
   } catch (error) {
     logger.error("OTPController", "Failed to resend OTP", error);
     next(error);

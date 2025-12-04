@@ -1,19 +1,13 @@
 import axios from "axios";
-import { envConfig } from "../config/env.config";
+import { envConfig } from "../configs/env.config";
+import { RECAPTCHA_CONSTANTS } from "../configs/constants.config";
+import { VerifyRecaptchaResponse, RecaptchaV2Response } from "../api/dtos/responses/recaptcha.type";
 
 const RECAPTCHA_SECRET_KEY = envConfig.RECAPTCHA_SECRET_KEY;
-const RECAPTCHA_VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify";
-
-interface RecaptchaV2Response {
-  success: boolean;
-  challenge_ts: string;
-  hostname: string;
-  "error-codes"?: string[];
-}
 
 export const verifyRecaptchaV2 = async (
   token: string
-): Promise<{ success: boolean; message?: string }> => {
+): Promise<VerifyRecaptchaResponse> => {
   try {
     if (!RECAPTCHA_SECRET_KEY) {
       console.warn(
@@ -30,7 +24,7 @@ export const verifyRecaptchaV2 = async (
     }
 
     const response = await axios.post<RecaptchaV2Response>(
-      RECAPTCHA_VERIFY_URL,
+      RECAPTCHA_CONSTANTS.VERIFY_URL,
       null,
       {
         params: {
@@ -42,7 +36,6 @@ export const verifyRecaptchaV2 = async (
 
     const data = response.data;
 
-    // Check if verification was successful
     if (!data.success) {
       const errorCodes = data["error-codes"] || [];
       let message = "reCAPTCHA verification failed";

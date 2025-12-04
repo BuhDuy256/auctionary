@@ -1,6 +1,6 @@
-export { AppError } from './AppError';
-export { BadRequestError } from './BadRequestError';
-export { NotFoundError } from './NotFoundError';
-export { UnauthorizedError } from './UnauthorizedError';
-export { ValidationError } from './ValidationError';
-export { ForbiddenError } from './ForbiddenError';
+export { AppError } from './app.error';
+export { BadRequestError } from './bad-request.error';
+export { NotFoundError } from './not-found.error';
+export { UnauthorizedError } from './unauthorized.error';
+export { ValidationError } from './validation.error';
+export { ForbiddenError } from './forbidden.error';

@@ -1,4 +1,4 @@
-import { envConfig } from "../config/env.config";
+import { envConfig } from "../configs/env.config";
 
 enum LogLevel {
   INFO = 'info',

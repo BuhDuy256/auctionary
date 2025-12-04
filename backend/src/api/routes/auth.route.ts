@@ -1,8 +1,8 @@
 import express from "express";
 import * as authController from "../controllers/auth.controller";
 import * as otpController from "../controllers/otp.controller";
-import { validate } from "../../middlewares/validate.middleware";
-import { validateRecaptchaV2 } from "../../middlewares/recaptcha.middleware";
+import { validate } from "../middlewares/validate.middleware";
+import { validateRecaptchaV2 } from "../middlewares/recaptcha.middleware";
 import {
   signupSchema,
   loginSchema,
@@ -10,9 +10,9 @@ import {
   forgotPasswordSchema,
   googleLoginSchema,
   facebookLoginSchema,
-} from "../schemas/auth.schema";
-import { verifyOTPSchema, resendOTPSchema } from "../schemas/otp.schema";
-import { requireAuth } from "../../middlewares/requireAuth.middleware";
+} from "../dtos/requests/auth.schema";
+import { verifyOTPSchema, resendOTPSchema } from "../dtos/requests/otp.schema";
+import { requireAuth } from "../middlewares/require-auth.middleware";
 
 const router = express.Router();
 

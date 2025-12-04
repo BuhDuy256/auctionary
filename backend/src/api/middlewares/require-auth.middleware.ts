@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { envConfig } from "../config/env.config";
+import { envConfig } from "../../configs/env.config";
 
 export const requireAuth = (req: any, res: any, next: any) => {
   let token;
@@ -13,7 +13,7 @@ export const requireAuth = (req: any, res: any, next: any) => {
         token,
         envConfig.JWT_ACCESS_SECRET as string
       );
-      req.user = decoded; // decoded sẽ là { id: ..., username: ..., iat: ..., exp: ... }
+      req.user = decoded;
 
       next();
     } catch (error) {

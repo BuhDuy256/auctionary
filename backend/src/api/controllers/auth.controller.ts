@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import * as authService from "../../services/auth.service";
-import { formatResponse } from "../../utils/response.util";
 import { logger } from "../../utils/logger.util";
-import { AUTH_CONSTANTS } from "../../utils/constant.util";
+import { AUTH_CONSTANTS } from "../../configs/constants.config";
 import {
   SignupSchema,
   LoginSchema,
@@ -10,8 +9,8 @@ import {
   ResetPasswordSchema,
   GoogleLoginSchema,
   FacebookLoginSchema,
-} from "../schemas/auth.schema";
-import { envConfig } from "../../config/env.config";
+} from "../dtos/requests/auth.schema";
+import { envConfig } from "../../configs/env.config";
 
 export const signup = async (
   request: Request,
@@ -21,7 +20,11 @@ export const signup = async (
   try {
     const body = request.body as SignupSchema;
     const result = await authService.signupUser(body);
-    formatResponse(response, 201, result, "User created successfully");
+
+    response
+      .status(201)
+      .message("User created successfully")
+      .json(result);
   } catch (error) {
     logger.error("AuthController", "Failed to signup user", error);
     next(error);
@@ -45,15 +48,13 @@ export const login = async (
     );
 
     if ("requiresVerification" in result) {
-      formatResponse(
-        response,
-        200,
-        {
+      response
+        .status(200)
+        .message(result.message)
+        .json({
           requiresVerification: true,
           user: result.user,
-        },
-        result.message
-      );
+        });
       return;
     }
 
@@ -64,15 +65,13 @@ export const login = async (
       maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
 
-    formatResponse(
-      response,
-      200,
-      {
+    response
+      .status(200)
+      .message("Login successful")
+      .json({
         accessToken: result.accessToken,
         user: result.user,
-      },
-      "Login successful"
-    );
+      });
   } catch (error) {
     logger.error("AuthController", "Failed to login user", error);
     next(error);
@@ -89,12 +88,19 @@ export const refreshToken = async (
       request.cookies.refreshToken || request.body.refreshToken;
 
     if (!refreshToken) {
-      formatResponse(response, 401, null, "Refresh token not provided");
+      response
+        .status(401)
+        .message("Refresh token not provided")
+        .json(null);
       return;
     }
 
     const result = await authService.refreshAccessToken(refreshToken);
-    formatResponse(response, 200, result, "Token refreshed successfully");
+
+    response
+      .status(200)
+      .message("Token refreshed successfully")
+      .json(result);
   } catch (error) {
     logger.error("AuthController", "Failed to refresh token", error);
     next(error);
@@ -115,7 +121,11 @@ export const logout = async (
     }
 
     response.clearCookie("refreshToken");
-    formatResponse(response, 200, null, "Logged out successfully");
+
+    response
+      .status(200)
+      .message("Logged out successfully")
+      .json(null);
   } catch (error) {
     logger.error("AuthController", "Failed to logout user", error);
     next(error);
@@ -133,12 +143,11 @@ export const logoutAll = async (
     await authService.logoutAllDevices(userId);
 
     response.clearCookie("refreshToken");
-    formatResponse(
-      response,
-      200,
-      null,
-      "Logged out from all devices successfully"
-    );
+
+    response
+      .status(200)
+      .message("Logged out from all devices successfully")
+      .json(null);
   } catch (error) {
     logger.error("AuthController", "Failed to logout from all devices", error);
     next(error);
@@ -153,7 +162,11 @@ export const getMe = async (
   try {
     const userId = (request as any).user.id;
     const user = await authService.getAuthenticatedUser(userId);
-    formatResponse(response, 200, user, "User data retrieved successfully");
+
+    response
+      .status(200)
+      .message("User data retrieved successfully")
+      .json(user);
   } catch (error) {
     logger.error("AuthController", "Failed to get user data", error);
     next(error);
@@ -168,7 +181,11 @@ export const forgotPassword = async (
   try {
     const body = request.body as ForgotPasswordSchema;
     const result = await authService.requestPasswordReset(body);
-    formatResponse(response, 200, null, result.message);
+
+    response
+      .status(200)
+      .message(result.message)
+      .json(null);
   } catch (error) {
     logger.error("AuthController", "Failed to process forgot password", error);
     next(error);
@@ -183,7 +200,11 @@ export const resetPassword = async (
   try {
     const body = request.body as ResetPasswordSchema;
     const result = await authService.resetPasswordWithOTP(body);
-    formatResponse(response, 200, null, result.message);
+
+    response
+      .status(200)
+      .message(result.message)
+      .json(null);
   } catch (error) {
     logger.error("AuthController", "Failed to reset password", error);
     next(error);
@@ -210,15 +231,13 @@ export const googleLogin = async (
       maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
 
-    formatResponse(
-      response,
-      200,
-      {
+    response
+      .status(200)
+      .message("Google login successful")
+      .json({
         accessToken: result.accessToken,
         user: result.user,
-      },
-      "Google login successful"
-    );
+      });
   } catch (error) {
     logger.error("AuthController", "Failed to login with Google", error);
     next(error);
@@ -245,15 +264,13 @@ export const facebookLogin = async (
       maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
 
-    formatResponse(
-      response,
-      200,
-      {
+    response
+      .status(200)
+      .message("Facebook login successful")
+      .json({
         accessToken: result.accessToken,
         user: result.user,
-      },
-      "Facebook login successful"
-    );
+      });
   } catch (error) {
     logger.error("AuthController", "Failed to login with Facebook", error);
     next(error);

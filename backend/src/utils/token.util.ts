@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { envConfig } from "../config/env.config";
+import { envConfig } from "../configs/env.config";
 
 export const generateAccessToken = (user: any) => {
   return jwt.sign(
@@ -18,9 +18,5 @@ export const generateRefreshToken = (user: any) => {
 };
 
 export const verifyRefreshToken = (token: string) => {
-  try {
-    return jwt.verify(token, envConfig.JWT_REFRESH_SECRET as any);
-  } catch (error) {
-    return null;
-  }
+  return jwt.verify(token, envConfig.JWT_REFRESH_SECRET as any);
 };

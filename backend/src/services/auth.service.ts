@@ -1,7 +1,7 @@
 import * as userRepo from "../repositories/user.repository";
 import * as otpRepo from "../repositories/otp.repository";
 import * as tokenRepo from "../repositories/token.repository";
-import * as socialRepo from "../repositories/socialAccount.repository";
+import * as socialRepo from "../repositories/social-account.repository";
 import { hashPassword, comparePassword } from "../utils/hash.util";
 import { generateOTP, isOTPExpired } from "../utils/otp.util";
 import { sendOTPEmail, sendWelcomeEmail } from "./email.service";
@@ -21,8 +21,8 @@ import {
   VerificationRequiredResponse,
   UserWithRoles,
   RefreshTokenResponse,
-} from "../types/auth.types";
-import { OTP_EXPIRY_MINUTES } from "../utils/constant.util";
+} from "../api/dtos/responses/auth.type";
+import { OTP_EXPIRY_MINUTES } from "../configs/constants.config";
 import {
   SignupSchema,
   LoginSchema,
@@ -30,7 +30,7 @@ import {
   ResetPasswordSchema,
   GoogleLoginSchema,
   FacebookLoginSchema,
-} from "../api/schemas/auth.schema";
+} from "../api/dtos/requests/auth.schema";
 
 const mapUserToResponse = (user: any) => {
   if (!user) return null;

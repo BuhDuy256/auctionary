@@ -1,5 +1,5 @@
 import knex from 'knex';
-import { envConfig } from '../config/env.config';
+import { envConfig } from '../configs/env.config';
 
 export default knex({
   client: 'pg',

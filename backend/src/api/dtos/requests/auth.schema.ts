@@ -15,19 +15,16 @@ export const signupSchema = z.object({
   address: z.string().optional(),
   recaptchaToken: z.string().min(1, "reCAPTCHA token is required"),
 });
-export type SignupSchema = z.infer<typeof signupSchema>;
 
 export const loginSchema = z.object({
   email: z.string().email("Invalid email format"),
   password: z.string().min(1, "Password is required"),
   recaptchaToken: z.string().min(1, "reCAPTCHA token is required"),
 });
-export type LoginSchema = z.infer<typeof loginSchema>;
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email format"),
 });
-export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z.object({
   email: z.string().email("Invalid email format"),
@@ -39,14 +36,18 @@ export const resetPasswordSchema = z.object({
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
 });
-export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
 
 export const googleLoginSchema = z.object({
   code: z.string().min(1, "Google code is required"),
 });
-export type GoogleLoginSchema = z.infer<typeof googleLoginSchema>;
 
 export const facebookLoginSchema = z.object({
   accessToken: z.string().min(1, "Facebook access token is required"),
 });
+
+export type SignupSchema = z.infer<typeof signupSchema>;
+export type LoginSchema = z.infer<typeof loginSchema>;
+export type ForgotPasswordSchema = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
+export type GoogleLoginSchema = z.infer<typeof googleLoginSchema>;
 export type FacebookLoginSchema = z.infer<typeof facebookLoginSchema>;

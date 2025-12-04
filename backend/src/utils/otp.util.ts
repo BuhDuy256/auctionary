@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { envConfig } from "../config/env.config";
+import { envConfig } from "../configs/env.config";
 
 export const generateOTP = (length: number = 6): string => {
   const digits = "0123456789";

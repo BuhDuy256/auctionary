@@ -1,15 +1,19 @@
+// Libraries
 import express, { Application } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import { envConfig } from "./config/env.config";
 
-import authRouter from "./api/routes/auth.routes";
-import productRouter from "./api/routes/product.routes";
-import categoryRouter from "./api/routes/category.routes";
-import formRouter from "./api/routes/form.routes";
-import BidRouter from "./api/routes/bid.route";
+// Middlewares 
+import { errorHandler, notFoundHandler } from "./api/middlewares/error.middleware";
+import { responseInterceptor } from "./api/middlewares/response-interceptor.middleware";
 
-import { errorHandler, notFoundHandler } from "./middlewares/error.middleware";
+// Config
+import { envConfig } from "./configs/env.config";
+
+// Routers
+import authRouter from "./api/routes/auth.route";
+// import productRouter from "./api/routes/product.route";
+// import categoryRouter from "./api/routes/category.route";
 
 const app: Application = express();
 const PORT: number = envConfig.PORT;
@@ -20,21 +24,26 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(express.json());
 app.use(cookieParser());
-app.use("/auth", authRouter);
-app.use("/categories", categoryRouter);
-app.use("/products", productRouter);
-app.use("/forms", formRouter);
-app.use("/products/:id/bid", BidRouter);
 
+// Response Interceptor - Auto wrap success responses (MUST be placed before routes)
+app.use(responseInterceptor);
+
+// Routes
+app.use("/auth", authRouter);
+// app.use("/categories", categoryRouter);
+// app.use("/products", productRouter);
 app.get('/', (_req, res) => {
   res.send('Online Auction API is running');
 });
 
+// Error Handling
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+// App Listen
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

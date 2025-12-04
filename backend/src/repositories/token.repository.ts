@@ -22,7 +22,7 @@ export const createRefreshToken = async (
 export const findRefreshToken = async (tokenHash: string) => {
   const token = await db("refresh_tokens")
     .where({ token_hash: tokenHash })
-    .where("expires_at", ">", new Date()) // Token must not be expired
+    .where("expires_at", ">", new Date())
     .first();
 
   if (!token) return null;
