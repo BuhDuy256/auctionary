@@ -25,9 +25,9 @@ Instead, act as a consultant to prepare the roadmap.
    - Draft the JSON Response structure that matches the DB columns.
 
 Output Requirement
-
-Output the **Gap Analysis Table**, **Proposed Solutions/Questions**, and **Draft API JSON**.
-Then STOP and wait for my approval/answers.
+DO NOT EDIT ANY FILES YET.
+Just respond in the chat with the **Gap Analysis Table** and your **Questions**.
+Wait for my confirmation.
 
 # Phase 1: Backend Implementation
 
@@ -41,7 +41,7 @@ Requirements:
 3. **Data Mapping:** Ensure the API response matches the JSON structure we defined in Phase 0.
 4. **Validation:** Ensure input validation matches `[FILE DATABASE]`.
 
-Output: Code for backend which follow `[FILE BACKEND GUIDE]`.
+Ensure your backend code follow `[FILE BACKEND GUIDE]`.
 
 # Phase 2: Frontend Logic Layer
 
@@ -56,7 +56,7 @@ Requirements (Follow `Frontend Development Guide`):
    - If API returns `user_addr` but UI expects `address`, map it here.
    - If API misses a field (e.g., `status`), calculate it here if possible.
 
-Output: Code for frontend which follow `[FILE FRONTEND GUIDE]`.
+Ensure your frontend code follow `[FILE FRONTEND GUIDE]`.
 
 # Phase 3: Frontend UI Integration
 
@@ -80,5 +80,3 @@ Based on the Gap Analysis in Phase 0, handle these specific cases:
   - **Action:** Completely remove the specific `div` or `span` displaying this stat.
 - **Case 3: Loading State:**
   - Keep the existing UI layout but verify data existence (`if (!data) return <Skeleton />`) before rendering specific sections.
-
-Output: The Refactored Component Code.

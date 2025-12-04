@@ -84,5 +84,5 @@ Please generate the code for:
 4.  **The Refactored Parent Component** (Cleaned up, importing the above components).
 [ĐOẠN NÀY LIỆT KÊ CÁC FILE TỪ TRONG KẾ HOẠCH NÓ ĐÃ SOẠN Ở PROMPT TRƯỚC]
 
-Output the full code for each file clearly.
+Waiting for your clean code.
 ```
