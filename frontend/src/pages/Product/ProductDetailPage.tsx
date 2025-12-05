@@ -86,7 +86,7 @@ export default function ProductDetailPage() {
             {product.category.parent && (
               <>
                 <Link
-                  to={`/products?category=${product.category.parent.slug}`}
+                  to={`/products?categorySlug=${product.category.parent.slug}`}
                   className="text-muted-foreground hover:text-accent transition-colors"
                 >
                   {product.category.parent.name}
@@ -95,7 +95,7 @@ export default function ProductDetailPage() {
               </>
             )}
             <Link
-              to={`/products?category=${product.category.slug}`}
+              to={`/products?categorySlug=${product.category.slug}`}
               className="text-muted-foreground hover:text-accent transition-colors"
             >
               {product.category.name}
