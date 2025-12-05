@@ -53,10 +53,20 @@ export function BidHistory({ bids }: BidHistoryProps) {
               bids.map((bid, index) => (
                 <TableRow
                   key={bid.id}
-                  className={bid.isTopBid ? "bg-accent/5 hover:bg-accent/10" : ""}
+                  className={
+                    bid.isTopBid ? "bg-accent/5 hover:bg-accent/10" : ""
+                  }
                 >
                   <TableCell className="text-sm text-muted-foreground">
-                    {bid.timestamp}
+                    {new Date(bid.timestamp).toLocaleString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                      hour12: false,
+                    })}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">

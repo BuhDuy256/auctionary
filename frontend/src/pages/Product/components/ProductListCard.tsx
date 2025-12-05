@@ -4,9 +4,11 @@ import { Button } from "../../../components/ui/button";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import { Clock, Sparkles, ShoppingCart } from "lucide-react";
 import { cn } from "../../../components/ui/utils";
+import { Link } from "react-router-dom";
 
 interface ProductListCardProps {
   id: string;
+  slug?: string;
   title: string;
   image: string;
   currentBid: number;
@@ -18,6 +20,8 @@ interface ProductListCardProps {
 }
 
 export function ProductListCard({
+  id,
+  slug,
   title,
   image,
   currentBid,
@@ -27,6 +31,8 @@ export function ProductListCard({
   isNewArrival = false,
   bidCount,
 }: ProductListCardProps) {
+  const productUrl = slug ? `/product/${slug}-${id}` : `/product/${id}`;
+
   return (
     <Card
       className={`group overflow-hidden bg-card hover:shadow-lg transition-all duration-300 ${
@@ -39,7 +45,10 @@ export function ProductListCard({
         <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-accent to-transparent animate-pulse"></div>
       )}
 
-      <div className="relative aspect-square overflow-hidden bg-secondary">
+      <Link
+        to={productUrl}
+        className="block relative aspect-square overflow-hidden bg-secondary"
+      >
         <ImageWithFallback
           src={image}
           alt={title}
@@ -59,13 +68,15 @@ export function ProductListCard({
             <span>{timeLeft}</span>
           </div>
         </div>
-      </div>
+      </Link>
 
       <CardContent className="p-4 space-y-3">
         <div>
-          <h3 className="text-sm line-clamp-2 mb-2 min-h-[2.5rem] group-hover:text-accent transition-colors">
-            {title}
-          </h3>
+          <Link to={productUrl}>
+            <h3 className="text-sm line-clamp-2 mb-2 min-h-[2.5rem] group-hover:text-accent transition-colors">
+              {title}
+            </h3>
+          </Link>
 
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span>Top Bidder:</span>

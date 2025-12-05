@@ -1,0 +1,91 @@
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import * as productService from "../services/product.service";
+import { extractIdFromSlug } from "../utils/url";
+import type {
+  ProductDetailResponse,
+  BidHistoryResponse,
+  QuestionsResponse,
+} from "../types/product";
+
+export const useProductDetail = () => {
+  const { id: paramId } = useParams<{ id: string }>();
+  const productId = extractIdFromSlug(paramId || "");
+
+  const [productData, setProductData] = useState<ProductDetailResponse | null>(
+    null
+  );
+  const [bidsData, setBidsData] = useState<BidHistoryResponse | null>(null);
+  const [questionsData, setQuestionsData] = useState<QuestionsResponse | null>(
+    null
+  );
+
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch main product details
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!productId) {
+        setError("Invalid product ID");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const data = await productService.getProductDetail(productId);
+        setProductData(data);
+        setError(null);
+      } catch (err: any) {
+        console.error("Failed to fetch product detail:", err);
+        setError(err.message || "Failed to load product details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId]);
+
+  // Fetch Bids (can be optimized to load on tab change, but loading initially for now)
+  useEffect(() => {
+    const fetchBids = async () => {
+      if (!productId) return;
+      try {
+        const data = await productService.getProductBids(productId);
+        setBidsData(data);
+      } catch (err) {
+        console.error("Failed to fetch bids:", err);
+      }
+    };
+
+    fetchBids();
+  }, [productId]);
+
+  // Fetch Questions
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      if (!productId) return;
+      try {
+        const data = await productService.getProductQuestions(productId);
+        setQuestionsData(data);
+      } catch (err) {
+        console.error("Failed to fetch questions:", err);
+      }
+    };
+
+    fetchQuestions();
+  }, [productId]);
+
+  return {
+    product: productData?.product,
+    seller: productData?.seller,
+    auction: productData?.auction,
+    userStatus: productData?.userProductStatus,
+    bids: bidsData,
+    questions: questionsData,
+    loading,
+    error,
+  };
+};

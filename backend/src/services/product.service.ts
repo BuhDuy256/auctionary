@@ -165,7 +165,7 @@ export const getProductDetail = async (
     undefined, // no search query
     [product.category_slug], // same category (must be array)
     1, // page
-    4, // limit
+    5, // limit
     undefined, // no sort (use default)
     undefined, // no exclude category
     [productId] // exclude current product
