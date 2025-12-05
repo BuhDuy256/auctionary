@@ -3,6 +3,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import { Clock, Sparkles, ShoppingCart } from "lucide-react";
+import { cn } from "../../../components/ui/utils";
 
 interface ProductListCardProps {
   id: string;
@@ -80,18 +81,28 @@ export function ProductListCard({
             </div>
           </div>
 
-            <div className="flex items-baseline justify-between">
+          <div className="flex items-baseline justify-between">
+            {buyNowPrice ? (
               <span className="text-xs text-muted-foreground">Buy Now</span>
-              <div className="text-success text-sm">
-                {buyNowPrice? "$" + buyNowPrice.toLocaleString(): "---"}
-              </div>
+            ) : (
+              <span className="text-xs text-muted-foreground opacity-50">
+                Buy Now
+              </span>
+            )}
+
+            <div
+              className={cn(
+                "text-success text-sm",
+                !buyNowPrice && "opacity-50"
+              )}
+            >
+              {buyNowPrice ? "$" + buyNowPrice.toLocaleString() : "---"}
             </div>
+          </div>
 
           <div className="flex items-baseline justify-between">
             <span className="text-xs text-muted-foreground">Bids</span>
-            <div className="text-success text-foreground">
-              {bidCount}
-            </div>
+            <div className="text-foreground">{bidCount}</div>
           </div>
         </div>
 
@@ -99,14 +110,18 @@ export function ProductListCard({
           <Button className="flex-1" size="sm">
             Place Bid
           </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-success/50 text-success hover:bg-success/10"
-            >
-              <ShoppingCart className="h-3.5 w-3.5" />
-              Buy
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn(
+              "border-success/50 text-success hover:bg-success/10",
+              !buyNowPrice && "opacity-50"
+            )}
+            disabled={!buyNowPrice}
+          >
+            <ShoppingCart className="h-3.5 w-3.5" />
+            Buy
+          </Button>
         </div>
       </CardContent>
     </Card>
