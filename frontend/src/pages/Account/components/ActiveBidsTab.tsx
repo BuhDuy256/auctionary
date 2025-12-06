@@ -9,8 +9,20 @@ import {
 } from "../../../components/ui/table";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { TrendingUp, TrendingDown, Clock } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Clock,
+  MoreVertical,
+  Eye,
+} from "lucide-react";
 import { useMyBids } from "../../../hooks/useMyBids";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../components/ui/dropdown-menu";
 
 export const ActiveBidsTab = () => {
   const { bids, isLoading } = useMyBids();
@@ -99,18 +111,25 @@ export const ActiveBidsTab = () => {
                       {bid.bid_count}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline">
-                          View
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={isLeading ? "outline" : "default"}
-                          disabled={isLeading}
-                        >
-                          Increase Bid
-                        </Button>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {!isLeading && (
+                            <DropdownMenuItem>
+                              <TrendingUp className="h-4 w-4 mr-2 focus:text-accent-foreground" />
+                              Increase Bid
+                            </DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem>
+                            <Eye className="h-4 w-4 mr-2 focus:text-accent-foreground" />
+                            View Detail
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 );

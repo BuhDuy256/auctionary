@@ -12,10 +12,12 @@ import { Button } from "../../../components/ui/button";
 import { CheckCircle2, Lock, Shield, User } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import * as userService from "../../../services/userService";
 import toast from "react-hot-toast";
 
 export const SettingsTab = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
 
   const [displayName, setDisplayName] = useState(user?.fullName || "");
@@ -255,7 +257,14 @@ export const SettingsTab = () => {
                 Add an extra layer of security to your account
               </div>
             </div>
-            <Button variant="outline">Enable</Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                navigate("/under-development");
+              }}
+            >
+              Enable
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -46,6 +46,7 @@ const AppRouter = () => {
       <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
       <Route path="/transaction-room" element={<TransactionRoomPage />} />
       <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+      <Route path="/under-development" element={<UnderDevelopmentPage />} />
 
       {/* ============================================== */}
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (CHỈ CHO KHÁCH) */}

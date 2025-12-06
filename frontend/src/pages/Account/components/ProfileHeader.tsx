@@ -30,8 +30,8 @@ export const ProfileHeader = ({ user, stats }: ProfileHeaderProps) => {
     displayRole === "admin"
       ? "bg-red-500/10 text-red-500 border-red-500/50"
       : displayRole === "seller"
-      ? "bg-accent/50 text-accent border-accent"
-      : "border-accent/50 text-accent";
+      ? "bg-accent/10 text-accent border-accent"
+      : "bg-blue-500/20 text-blue-500 border-blue-500/50";
 
   return (
     <div className="mb-8">

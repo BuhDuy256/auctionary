@@ -9,8 +9,20 @@ import {
 } from "../../../components/ui/table";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { Edit, FileEdit, AlertCircle, Sparkles } from "lucide-react";
+import {
+  Edit,
+  FileEdit,
+  AlertCircle,
+  Sparkles,
+  MoreVertical,
+} from "lucide-react";
 import { useMyListings } from "../../../hooks/useMyListings";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../components/ui/dropdown-menu";
 
 export const MyListingsTab = () => {
   const { listings, isLoading } = useMyListings();
@@ -100,14 +112,23 @@ export const MyListingsTab = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button size="sm" variant="outline">
-                        <Edit className="h-3 w-3 mr-1" />
-                        Edit
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <FileEdit className="h-3 w-3 mr-1" />
-                        Update
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Edit className="h-4 w-4 mr-2 focus:text-accent-foreground" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <FileEdit className="h-4 w-4 mr-2 focus:text-accent-foreground" />
+                            Update
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </TableCell>
                 </TableRow>
