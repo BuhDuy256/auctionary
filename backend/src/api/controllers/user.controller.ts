@@ -57,20 +57,6 @@ export const getWonAuctions = async (
   }
 };
 
-export const getMyListings = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    const userId = (req as any).user?.id;
-    const listings = await userService.getMyListings(userId);
-    res.message("My listings retrieved successfully").json(listings);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const updateProfile = async (
   req: Request,
   res: Response,

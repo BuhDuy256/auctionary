@@ -42,10 +42,6 @@ export const getWonAuctions = async (userId: number) => {
   return userRepository.getWonAuctions(userId);
 };
 
-export const getMyListings = async (userId: number) => {
-  return userRepository.getMyListings(userId);
-};
-
 export const updateProfile = async (
   userId: number,
   data: { fullName?: string; address?: string }

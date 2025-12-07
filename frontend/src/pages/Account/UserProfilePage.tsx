@@ -1,4 +1,4 @@
-import { Heart, Gavel, Trophy, ShoppingBag, Settings } from "lucide-react";
+import { Heart, Gavel, Trophy, Settings } from "lucide-react";
 import {
   Tabs,
   TabsContent,
@@ -11,7 +11,6 @@ import { ProfileHeader } from "./components/ProfileHeader";
 import { WatchlistTab } from "./components/WatchlistTab";
 import { ActiveBidsTab } from "./components/ActiveBidsTab";
 import { WonAuctionsTab } from "./components/WonAuctionsTab";
-import { MyListingsTab } from "./components/MyListingsTab";
 import { SettingsTab } from "./components/SettingsTab";
 
 export default function UserProfilePage() {
@@ -36,7 +35,7 @@ export default function UserProfilePage() {
 
         {/* Navigation Tabs */}
         <Tabs defaultValue="watchlist" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
             <TabsTrigger value="watchlist">
               <Heart className="h-4 w-4 mr-2" />
               Watchlist
@@ -48,10 +47,6 @@ export default function UserProfilePage() {
             <TabsTrigger value="won">
               <Trophy className="h-4 w-4 mr-2" />
               Won Auctions
-            </TabsTrigger>
-            <TabsTrigger value="selling">
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              My Selling
             </TabsTrigger>
             <TabsTrigger value="settings">
               <Settings className="h-4 w-4 mr-2" />
@@ -72,11 +67,6 @@ export default function UserProfilePage() {
           {/* Won Auctions Tab */}
           <TabsContent value="won">
             <WonAuctionsTab />
-          </TabsContent>
-
-          {/* My Selling Tab */}
-          <TabsContent value="selling">
-            <MyListingsTab />
           </TabsContent>
 
           {/* Settings Tab */}

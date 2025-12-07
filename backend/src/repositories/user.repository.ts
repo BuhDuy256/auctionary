@@ -159,9 +159,3 @@ export const getWonAuctions = async (userId: number) => {
       "products.thumbnail_url"
     );
 };
-
-export const getMyListings = async (userId: number) => {
-  return await db("products")
-    .where("seller_id", userId)
-    .orderBy("created_at", "desc");
-};
