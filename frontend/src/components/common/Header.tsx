@@ -125,7 +125,7 @@ const Header: React.FC = () => {
                         <CircleUserRound className="h-10 w-10 text-muted-foreground hover:text-foreground transition-colors" />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuContent align="end" className="max-w-60">
                       <DropdownMenuLabel className="font-bold">
                         {user?.fullName || user?.email}
                       </DropdownMenuLabel>

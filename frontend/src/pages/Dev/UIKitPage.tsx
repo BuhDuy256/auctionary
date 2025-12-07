@@ -612,6 +612,16 @@ export default function UIKitPage() {
                   >
                     Error
                   </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      notify.undo("Undo message", () =>
+                        console.log("Undo action")
+                      )
+                    }
+                  >
+                    Undo
+                  </Button>
                 </div>
                 <div className="flex items-start gap-3 p-4 rounded-lg border border-border bg-card">
                   <div className="p-2 rounded-md bg-accent/20">

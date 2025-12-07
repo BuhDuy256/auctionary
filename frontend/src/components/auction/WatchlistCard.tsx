@@ -13,6 +13,8 @@ interface WatchlistCardProps {
   timeLeft: string;
   bidCount: number;
   isActive: boolean;
+  // Props mới để xử lý xóa
+  onRemove: () => void;
 }
 
 export function WatchlistCard({
@@ -23,6 +25,7 @@ export function WatchlistCard({
   timeLeft,
   bidCount,
   isActive,
+  onRemove,
 }: WatchlistCardProps) {
   return (
     <Card className="group overflow-hidden border-border hover:border-accent/50 transition-all duration-300">
@@ -34,10 +37,17 @@ export function WatchlistCard({
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
           />
         </Link>
+
+        {/* Nút Tim luôn đỏ. Bấm vào là gọi onRemove */}
         <Button
           variant="ghost"
           size="icon"
-          className="absolute top-2 right-2 bg-background/80 backdrop-blur hover:bg-background"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Ngăn click lan ra ngoài
+            onRemove();
+          }}
+          className="absolute top-2 right-2 bg-background/80 backdrop-blur hover:bg-background z-10"
         >
           <Heart className="h-4 w-4 fill-red-500 text-red-500" />
         </Button>

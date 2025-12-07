@@ -1,12 +1,24 @@
 import { Button } from "../../../components/ui/button";
 import { WatchlistCard } from "../../../components/auction/WatchlistCard";
 import { useWatchlist } from "../../../hooks/useWatchlist";
+import { Loader2, Trash2, HeartCrack } from "lucide-react";
+import type { WatchlistProduct } from "../../../types/watchlist";
 
 export const WatchlistTab = () => {
-  const { watchlist, isLoading } = useWatchlist();
+  const { watchlist, isLoading, removeFromWatchlist } = useWatchlist();
 
-  if (isLoading) {
-    return <div>Loading watchlist...</div>;
+  const handleRemove = async (item: WatchlistProduct) => {
+    await removeFromWatchlist(item);
+  };
+
+  const handleClearAll = () => {};
+
+  if (isLoading && watchlist.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-40 text-muted-foreground">
+        <Loader2 className="w-6 h-6 mr-2 animate-spin" /> Loading watchlist...
+      </div>
+    );
   }
 
   return (
@@ -18,17 +30,26 @@ export const WatchlistTab = () => {
             {watchlist.length} items you're watching
           </p>
         </div>
-        <Button variant="outline" disabled={watchlist.length === 0}>
+        <Button
+          variant="outline"
+          onClick={handleClearAll}
+          disabled={watchlist.length === 0}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
           Clear All
         </Button>
       </div>
 
       {watchlist.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          Your watchlist is empty.
+        <div className="py-8 text-center text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground bg-secondary/20 rounded-lg border border-dashed border-border">
+            <HeartCrack className="h-12 w-12 mb-4 opacity-50" />
+            <h3 className="text-lg font-medium">Your watchlist is empty</h3>
+            <p>Start exploring auctions and save your favorites here.</p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {watchlist.map((item) => (
             <WatchlistCard
               key={item.id}
@@ -39,6 +60,7 @@ export const WatchlistTab = () => {
               timeLeft={item.timeLeft}
               bidCount={item.bidCount}
               isActive={!(item.timeLeft === "Ended")}
+              onRemove={() => handleRemove(item)}
             />
           ))}
         </div>

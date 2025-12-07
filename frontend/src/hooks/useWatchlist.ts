@@ -37,13 +37,13 @@ export const useWatchlist = () => {
     [watchlist]
   );
 
-  const addToWatchlist = async (product: WatchlistProduct) => {
+  const addToWatchlist = async (product: WatchlistProduct, undoing = false) => {
     if (!user) {
       notify.error("Please login to use watchlist");
       return;
     }
 
-    if (isWatched(product.id)) return;
+    if (!undoing && isWatched(product.id)) return;
 
     const previousList = [...watchlist];
     setWatchlist((prev) => [...prev, product]);
@@ -52,7 +52,7 @@ export const useWatchlist = () => {
       await watchlistService.addProductToWatchlist({
         productId: Number(product.id),
       });
-      notify.success("Added to watchlist");
+      notify.success(`Added ${product.title} to watchlist`);
     } catch (error) {
       setWatchlist(previousList);
       notify.error("Failed to add to watchlist");
@@ -60,15 +60,30 @@ export const useWatchlist = () => {
     }
   };
 
-  const removeFromWatchlist = async (productId: string) => {
+  // if product is string, it is product id
+  const removeFromWatchlist = async (input: string | WatchlistProduct) => {
     if (!user) return;
+
+    let productId, product;
+    if (typeof input === "object") {
+      product = input;
+      productId = input.id;
+    } else {
+      productId = input;
+    }
 
     const previousList = [...watchlist];
     setWatchlist((prev) => prev.filter((item) => item.id !== productId));
 
     try {
       await watchlistService.removeProductFromWatchlist(Number(productId));
-      notify.success("Removed from watchlist");
+      if (product) {
+        notify.undo(`Removed ${product.title} from watchlist`, () => {
+          addToWatchlist(product, true);
+        });
+      } else {
+        notify.success("Removed from watchlist");
+      }
     } catch (error) {
       setWatchlist(previousList);
       notify.error("Failed to remove from watchlist");
