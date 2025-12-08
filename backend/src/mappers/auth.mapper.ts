@@ -14,5 +14,7 @@ export const mapUserToResponse = (user: any) => {
     hasPassword: !!user.password,
     createdAt: user.created_at,
     updatedAt: user.updated_at,
+    usersRoles: user.usersRoles,
+    usersPermissions: user.usersPermissions,
   };
 };

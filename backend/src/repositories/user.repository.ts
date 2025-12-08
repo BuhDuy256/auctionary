@@ -82,8 +82,16 @@ export const findByIdWithRoles = async (userId: number) => {
 
   // Get permissions from user's roles
   const permissions = await db("users_roles")
-    .join("roles_permissions", "users_roles.role_id", "roles_permissions.role_id")
-    .join("permissions", "roles_permissions.permission_id", "permissions.permission_id")
+    .join(
+      "roles_permissions",
+      "users_roles.role_id",
+      "roles_permissions.role_id"
+    )
+    .join(
+      "permissions",
+      "roles_permissions.permission_id",
+      "permissions.permission_id"
+    )
     .where({ user_id: userId })
     .select("permissions.name")
     .distinct();
@@ -91,7 +99,9 @@ export const findByIdWithRoles = async (userId: number) => {
   return {
     ...user,
     usersRoles: roles.map((r) => ({ roles: { name: r.name } })),
-    usersPermissions: permissions.map((p) => ({ permissions: { name: p.name } })),
+    usersPermissions: permissions.map((p) => ({
+      permissions: { name: p.name },
+    })),
   };
 };
 
