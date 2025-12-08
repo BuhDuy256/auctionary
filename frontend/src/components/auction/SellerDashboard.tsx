@@ -29,16 +29,22 @@ import {
   Clock,
   DollarSign,
   Package,
-  AlertCircle,
-  CheckCircle2,
   Download,
   Filter,
+  Calendar,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 
 interface SellerDashboardProps {
   onCreateAuction: () => void;
 }
-
+const subscription = {
+  plan: "Basic Seller",
+  status: "active",
+  expiryDate: "2025-03-25",
+  daysLeft: 2,
+};
 const sellerStats = [
   {
     label: "Active Auctions",
@@ -171,7 +177,9 @@ const getStatusBadge = (status: string) => {
       );
     case "sold":
       return (
-        <Badge className="bg-accent/20 text-accent border-accent/50">Sold</Badge>
+        <Badge className="bg-accent/20 text-accent border-accent/50">
+          Sold
+        </Badge>
       );
     case "unsold":
       return (
@@ -370,47 +378,95 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card className="border-accent/30 bg-accent/5 cursor-pointer hover:bg-accent/10 transition-colors">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-accent/20">
-              <CheckCircle2 className="h-6 w-6 text-accent" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Card Trạng Thái Gói & Gia Hạn (Đã bỏ giới hạn bài đăng) */}
+        <Card className="border-border lg:col-span-1 bg-secondary/10">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-lg">Subscription</CardTitle>
+              <Badge
+                variant="outline"
+                className="bg-accent/10 text-accent border-accent/20"
+              >
+                {subscription.plan}
+              </Badge>
             </div>
-            <div>
-              <div className="text-sm mb-1">Pending Actions</div>
-              <div className="text-xs text-muted-foreground">
-                3 items need attention
-              </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* 1. Ngày hết hạn */}
+            <div className="flex items-center justify-between py-2 border-b border-border/50">
+              <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <Calendar className="h-4 w-4" /> Valid Until
+              </span>
+              <span
+                className={`text-sm font-medium ${
+                  subscription.daysLeft <= 7 ? "text-orange-500" : ""
+                }`}
+              >
+                {new Date(subscription.expiryDate).toLocaleDateString()}
+              </span>
+            </div>
+
+            {/* 3. Logic hiển thị nút bấm hành động */}
+            <div className="pt-2">
+              {subscription.daysLeft <= 0 ? (
+                // Case 1: Đã hết hạn -> Cảnh báo Đỏ
+                <div className="bg-destructive/10 border border-destructive/20 p-3 rounded-md">
+                  <div className="flex items-center gap-2 text-destructive text-xs font-medium mb-2">
+                    <AlertTriangle className="h-4 w-4" /> Plan Expired
+                  </div>
+                  <Button size="sm" variant="destructive" className="w-full">
+                    Reactivate Plan
+                  </Button>
+                </div>
+              ) : subscription.daysLeft <= 2 ? (
+                // Case 2: Sắp hết hạn -> Cảnh báo Vàng
+                <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-yellow-600 text-xs font-medium flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" /> Expires in{" "}
+                      {subscription.daysLeft} days
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full border-yellow-600/30 text-yellow-600"
+                  >
+                    Renew Now
+                  </Button>
+                </div>
+              ) : (
+                // Case 3: Còn hạn dài -> Thông báo Xanh
+                <div className="bg-green-500/10 border border-green-500/20 p-3 rounded-md flex items-center justify-center gap-2 text-green-600 text-sm font-medium">
+                  <CheckCircle2 className="h-4 w-4" /> Account is in good
+                  standing
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border cursor-pointer hover:bg-secondary/30 transition-colors">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-secondary">
-              <TrendingUp className="h-6 w-6 text-success" />
-            </div>
-            <div>
-              <div className="text-sm mb-1">Performance Report</div>
-              <div className="text-xs text-muted-foreground">
-                View analytics
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Card Tips (Giữ nguyên) */}
+        <Card className="border-border lg:col-span-2 bg-accent/5">
+          <CardHeader>
+            <CardTitle className="text-lg">Selling Tips</CardTitle>
+          </CardHeader>
 
-        <Card className="border-border cursor-pointer hover:bg-secondary/30 transition-colors">
-          <CardContent className="p-6 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-secondary">
-              <AlertCircle className="h-6 w-6 text-blue-500" />
-            </div>
-            <div>
-              <div className="text-sm mb-1">Messages</div>
-              <div className="text-xs text-muted-foreground">
-                5 unread messages
-              </div>
-            </div>
+          <CardContent>
+            <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground">
+              <li>
+                Auctions ending on <strong>Sunday evenings</strong> tend to get
+                20% more bids.
+              </li>
+              <li>
+                Adding at least <strong>5 high-quality photos</strong> increases
+                trust significantly.
+              </li>
+              <li>
+                Responding to questions within 1 hour boosts your seller rating.
+              </li>
+            </ul>
           </CardContent>
         </Card>
       </div>
