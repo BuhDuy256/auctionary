@@ -48,6 +48,8 @@ const categories = [
   "Musical Instruments",
 ];
 
+const MIN_CHAR = 3;
+
 export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
   const [productName, setProductName] = useState("");
   const [category, setCategory] = useState("");
@@ -109,16 +111,17 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
 
     if (!productName.trim()) {
       newErrors.productName = "Product name is required";
-    } else if (productName.trim().length < 10) {
-      newErrors.productName = "Product name must be at least 10 characters";
+    } else if (productName.trim().length < MIN_CHAR) {
+      newErrors.productName =
+        "Product name must be at least " + String(MIN_CHAR) + " characters";
     }
 
     if (!category) {
       newErrors.category = "Please select a category";
     }
 
-    if (images.length === 0) {
-      newErrors.images = "Please upload at least one product image";
+    if (images.length < 3) {
+      newErrors.images = "Please upload at least 3 product images";
     }
 
     setErrors(newErrors);
@@ -128,8 +131,13 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log("Form submitted", { productName, category, images });
+
     if (validateForm()) {
+      console.log("Validation passed, calling onNext");
       onNext({ productName, category, images });
+    } else {
+      console.log("Validation failed", errors);
     }
   };
 
@@ -195,7 +203,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
               <p className="text-xs text-destructive">{errors.productName}</p>
             ) : (
               <p className="text-xs text-muted-foreground">
-                {productName.length}/200 characters (minimum 10)
+                {productName.length}/200 characters (minimum {MIN_CHAR})
               </p>
             )}
           </div>
@@ -279,7 +287,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
                 <span className="text-accent">click to browse</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                PNG, JPG or WEBP (Max 10 images, 5MB each)
+                PNG, JPG or WEBP (Min 3, Max 10 images, 5MB each)
               </p>
             </div>
           </div>
@@ -334,7 +342,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
       </Card>
 
       {/* Form Summary */}
-      {productName && category && images.length > 0 && (
+      {productName && category && images.length >= 3 && (
         <Card className="border-success/30 bg-success/5">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-full bg-success/20">
