@@ -33,6 +33,7 @@ interface ProductBiddingProps {
   userStatus?: UserProductStatus;
   onPlaceBid: (amount: number) => void;
   onToggleWatchlist: () => void;
+  isWatchlisted: boolean;
 }
 
 export function ProductBidding({
@@ -40,6 +41,7 @@ export function ProductBidding({
   userStatus,
   onPlaceBid,
   onToggleWatchlist,
+  isWatchlisted,
 }: ProductBiddingProps) {
   const [bidAmount, setBidAmount] = useState("");
   const [bidPlaced, setBidPlaced] = useState(false); // Local state for UI feedback
@@ -56,7 +58,6 @@ export function ProductBidding({
     }
   };
 
-  const isWatchlisted = userStatus?.isWatchlisted || false;
   const isOutbid = userStatus?.isOutbid || false;
 
   return (

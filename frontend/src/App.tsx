@@ -9,7 +9,7 @@ function App() {
       <Toaster
         position="top-right"
         toastOptions={{
-          duration: 2000,
+          duration: 1500,
         }}
       />
       {/* <ThemeSwitcher /> */}

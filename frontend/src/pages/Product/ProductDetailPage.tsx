@@ -10,6 +10,8 @@ import { ProductBidding } from "./components/ProductBidding";
 import { SellerCard } from "./components/SellerCard";
 import { ProductTabs } from "./components/ProductTabs";
 import { Link } from "react-router-dom";
+import { useWatchlist } from "../../hooks/useWatchlist";
+import type { WatchlistProduct } from "../../types/watchlist";
 
 export default function ProductDetailPage() {
   const {
@@ -22,6 +24,8 @@ export default function ProductDetailPage() {
     loading,
     error,
   } = useProductDetail();
+
+  const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
 
   if (loading) {
     return (
@@ -49,13 +53,31 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Calculate time left (mock logic for now, should use auction.endTime)
-  // In a real app, use a countdown hook
   const timeLeft = "2d 5h";
 
+  const isCurrentlyWatchlisted =
+    isWatched(String(product.id)) || userStatus?.isWatchlisted || false;
+
   const handleToggleWatchlist = () => {
-    // TODO: Implement watchlist toggle logic
-    console.log("Toggle watchlist");
+    if (!product || !auction) return;
+
+    if (isCurrentlyWatchlisted) {
+      removeFromWatchlist(String(product.id));
+    } else {
+      const itemToAdd: WatchlistProduct = {
+        id: String(product.id),
+        title: product.name,
+        image: product.thumbnailUrl,
+        currentBid: auction.currentPrice,
+        buyNowPrice: auction.buyNowPrice,
+        topBidder: auction.topBidder,
+        bidCount: auction.bidCount,
+        timeLeft: timeLeft,
+        isNewArrival: false,
+      };
+
+      addToWatchlist(itemToAdd);
+    }
   };
 
   const handlePlaceBid = (amount: number) => {
@@ -121,7 +143,11 @@ export default function ProductDetailPage() {
             <ProductHeader
               title={product.name}
               timeLeft={timeLeft}
-              isWatchlisted={userStatus?.isWatchlisted || false}
+              isWatchlisted={
+                isWatched(String(product.id)) ||
+                userStatus?.isWatchlisted ||
+                false
+              }
               onToggleWatchlist={handleToggleWatchlist}
             />
 
@@ -134,6 +160,7 @@ export default function ProductDetailPage() {
               userStatus={userStatus}
               onPlaceBid={handlePlaceBid}
               onToggleWatchlist={handleToggleWatchlist}
+              isWatchlisted={isCurrentlyWatchlisted}
             />
           </div>
         </div>

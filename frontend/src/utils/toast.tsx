@@ -73,7 +73,6 @@ export const notify = {
       ),
       {
         duration: 4000,
-        position: "bottom-center",
         style: {
           ...baseStyle,
           borderLeft: "4px solid #3b82f6",

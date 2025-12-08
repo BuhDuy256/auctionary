@@ -47,9 +47,9 @@ export function WatchlistCard({
             e.stopPropagation(); // Ngăn click lan ra ngoài
             onRemove();
           }}
-          className="absolute top-2 right-2 bg-background/80 backdrop-blur hover:bg-background z-10"
+          className="absolute h-8 w-8 top-2 right-2 bg-background/80 backdrop-blur hover:bg-background z-10 rounded-full"
         >
-          <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+          <Heart className="h-5 w-5 fill-red-500 text-red-500" />
         </Button>
 
         {!isActive && (
