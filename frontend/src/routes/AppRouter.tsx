@@ -21,6 +21,7 @@ import ProductListPage from "../pages/Product/ProductListPage";
 import ProductDetailPage from "../pages/Product/ProductDetailPage";
 import UserProfilePage from "../pages/Account/UserProfilePage";
 import SellerDashboardPage from "../pages/Seller/SellerDashboardPage";
+import CreateAuctionPage from "../pages/Seller/CreateAuctionPage";
 import TransactionRoomPage from "../pages/Product/TransactionRoomPage";
 import AdminDashboardPage from "../pages/Admin/AdminDashboardPage";
 
@@ -44,6 +45,7 @@ const AppRouter = () => {
       <Route path="/product/:id" element={<ProductDetailPage />} />
       <Route path="/products/:id" element={<ProductDetailPage />} />
       <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
+      <Route path="/seller/auction/create" element={<CreateAuctionPage />} />
       <Route path="/transaction-room" element={<TransactionRoomPage />} />
       <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
       <Route path="/under-development" element={<UnderDevelopmentPage />} />
