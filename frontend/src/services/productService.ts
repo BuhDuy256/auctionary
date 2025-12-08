@@ -6,6 +6,7 @@ import type {
   ProductDetailResponse,
   BidHistoryResponse,
   QuestionsResponse,
+  PlaceBidResponse,
 } from "../types/product";
 
 export const searchProducts = async (
@@ -63,4 +64,11 @@ export const getProductQuestions = async (
   page: number = 1
 ): Promise<QuestionsResponse> => {
   return apiClient.get(`/products/${id}/questions?page=${page}`);
+};
+
+export const placeBid = async (
+  id: string,
+  amount: number
+): Promise<PlaceBidResponse> => {
+  return apiClient.post(`/products/${id}/bid`, { amount }, true);
 };

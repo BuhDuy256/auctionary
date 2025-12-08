@@ -102,15 +102,15 @@ export const useProductDetail = () => {
                 ...prev.auction,
                 currentPrice: result.currentPrice,
                 bidCount: prev.auction.bidCount + 1,
-                topBidder: result.currentWinnerId.toString()
+                topBidder: result.currentWinnerId.toString(),
               },
               userProductStatus: {
                 ...prev.userProductStatus,
                 isOutbid: result.status === "outbid",
                 isTopBidder: result.status === "winning",
                 currentUserMaxBid: amount,
-                isWatchlisted: prev.userProductStatus?.isWatchlisted || false
-              }
+                isWatchlisted: prev.userProductStatus?.isWatchlisted || false,
+              },
             };
           });
 
@@ -122,6 +122,6 @@ export const useProductDetail = () => {
       } catch (err) {
         throw err;
       }
-    }
+    },
   };
 };
