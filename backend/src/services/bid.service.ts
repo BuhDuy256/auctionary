@@ -5,8 +5,8 @@ import * as bidMapper from "../mappers/bid.mapper";
 import { PlaceBidResponse } from "../api/dtos/responses/place-bid.type";
 
 export const placeBid = async (
-  userId: number,
   productId: number,
+  userId: number,
   amount: number
 ): Promise<PlaceBidResponse> => {
   // 1. Validation

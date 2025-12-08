@@ -5,6 +5,7 @@ import type {
   QuestionsResponse,
   ProductListCardProps,
   PaginatedResult,
+  PlaceBidResponse,
 } from "../types/product";
 
 // Let's assume types are available or I will define them in a types file if needed.
@@ -34,4 +35,11 @@ export const getProductQuestions = async (
 export const searchProducts = async (params: any): Promise<PaginatedResult<ProductListCardProps>> => {
   const queryString = new URLSearchParams(params).toString();
   return apiClient.get(`/products?${queryString}`);
+};
+
+export const placeBid = async (
+  id: string,
+  amount: number
+): Promise<PlaceBidResponse> => {
+  return apiClient.post(`/products/${id}/bid`, { amount }, true);
 };

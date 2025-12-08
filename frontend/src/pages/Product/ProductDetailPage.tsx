@@ -21,6 +21,7 @@ export default function ProductDetailPage() {
     questions,
     loading,
     error,
+    placeBid,
   } = useProductDetail();
 
   if (loading) {
@@ -56,11 +57,6 @@ export default function ProductDetailPage() {
   const handleToggleWatchlist = () => {
     // TODO: Implement watchlist toggle logic
     console.log("Toggle watchlist");
-  };
-
-  const handlePlaceBid = (amount: number) => {
-    // TODO: Implement place bid logic
-    console.log("Place bid:", amount);
   };
 
   return (
@@ -132,7 +128,7 @@ export default function ProductDetailPage() {
             <ProductBidding
               auction={auction}
               userStatus={userStatus}
-              onPlaceBid={handlePlaceBid}
+              onPlaceBid={placeBid}
               onToggleWatchlist={handleToggleWatchlist}
             />
           </div>

@@ -151,3 +151,9 @@ export interface ProductListCardProps {
   isNewArrival?: boolean;
   bidCount: number;
 }
+
+export interface PlaceBidResponse {
+  status: "winning" | "outbid";
+  currentPrice: number;
+  currentWinnerId: number;
+}

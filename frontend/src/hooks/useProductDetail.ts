@@ -87,5 +87,41 @@ export const useProductDetail = () => {
     questions: questionsData,
     loading,
     error,
+    placeBid: async (amount: number) => {
+      if (!productId) return;
+      try {
+        const result = await productService.placeBid(productId, amount);
+
+        // Update local state based on result
+        if (result.status === "winning" || result.status === "outbid") {
+          setProductData((prev) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              auction: {
+                ...prev.auction,
+                currentPrice: result.currentPrice,
+                bidCount: prev.auction.bidCount + 1,
+                topBidder: result.currentWinnerId.toString()
+              },
+              userProductStatus: {
+                ...prev.userProductStatus,
+                isOutbid: result.status === "outbid",
+                isTopBidder: result.status === "winning",
+                currentUserMaxBid: amount,
+                isWatchlisted: prev.userProductStatus?.isWatchlisted || false
+              }
+            };
+          });
+
+          // Refresh bids history to show the new bid
+          const bids = await productService.getProductBids(productId);
+          setBidsData(bids);
+        }
+        return result;
+      } catch (err) {
+        throw err;
+      }
+    }
   };
 };

@@ -31,7 +31,7 @@ import type { AuctionInfo, UserProductStatus } from "../../../types/product";
 interface ProductBiddingProps {
   auction: AuctionInfo;
   userStatus?: UserProductStatus;
-  onPlaceBid: (amount: number) => void;
+  onPlaceBid: (amount: number) => Promise<any>;
   onToggleWatchlist: () => void;
 }
 
@@ -42,17 +42,47 @@ export function ProductBidding({
   onToggleWatchlist,
 }: ProductBiddingProps) {
   const [bidAmount, setBidAmount] = useState("");
-  const [bidPlaced, setBidPlaced] = useState(false); // Local state for UI feedback
+  const [bidPlaced, setBidPlaced] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const currentPrice = auction.currentPrice;
   const minBid = currentPrice + auction.stepPrice;
 
-  const handlePlaceBid = () => {
+  const handlePlaceBid = async () => {
+    // Client-side check for authentication
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setErrorMsg("You need to login to use this feature");
+      return;
+    }
+
     const amount = parseFloat(bidAmount);
     if (amount >= minBid) {
-      onPlaceBid(amount);
-      setBidPlaced(true);
-      setTimeout(() => setBidPlaced(false), 5000);
+      try {
+        setLoading(true);
+        setErrorMsg(null);
+        await onPlaceBid(amount);
+        setBidPlaced(true);
+        setBidAmount(""); // Reset input
+        setTimeout(() => setBidPlaced(false), 5000);
+      } catch (err: any) {
+        console.error(err);
+        // Handle various error formats
+        let message = "Failed to place bid";
+        if (err.response?.data?.message) {
+          message = err.response.data.message;
+        } else if (err.message) {
+          message = err.message;
+        }
+
+        if (message === "API request failed" || message.includes("401")) {
+          message = "You need to login to use this feature";
+        }
+        setErrorMsg(message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -146,9 +176,12 @@ export function ProductBidding({
                 className="px-8"
               >
                 <Zap className="mr-2 h-4 w-4" />
-                Place Bid
+                {loading ? "Placing Bid..." : "Place Bid"}
               </Button>
             </div>
+            {errorMsg && (
+              <p className="text-sm text-destructive mt-2">{errorMsg}</p>
+            )}
             <p className="text-xs text-muted-foreground">
               Minimum bid: ${minBid.toLocaleString()}
             </p>

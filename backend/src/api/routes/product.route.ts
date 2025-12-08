@@ -4,6 +4,7 @@ import { searchProductsSchema, createProductSchema } from "../dtos/requests/prod
 import { placeBidSchema } from "../dtos/requests/place-bid.schema";
 import { authorize } from "../middlewares/authorize.middleware";
 import * as productController from "../controllers/product.controller";
+import { requireAuth } from "../middlewares/require-auth.middleware";
 
 const router = Router();
 
@@ -30,7 +31,8 @@ router.get("/:id/questions",
 );
 
 router.post("/:id/bid",
-  authorize("place_bid"),
+  requireAuth,
+  authorize("auctions.bid"),
   validate(placeBidSchema, "body"),
   productController.placeBid
 );
