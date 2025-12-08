@@ -12,7 +12,9 @@ import { ProductTabs } from "./components/ProductTabs";
 import { Link } from "react-router-dom";
 import { formatTimeLeft } from "../../utils/time";
 import { useWatchlist } from "../../hooks/useWatchlist";
+import { useCategories } from "../../hooks/useCategories";
 import type { WatchlistProduct } from "../../types/watchlist";
+import type { CategoryNode } from "../../types/category";
 
 export default function ProductDetailPage() {
   const {
@@ -28,6 +30,30 @@ export default function ProductDetailPage() {
   } = useProductDetail();
 
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
+  const { categories } = useCategories();
+
+  // Helper to generate URL with all children of a parent category
+  const getParentCategoryUrl = (parentSlug: string): string => {
+    const findCategory = (cats: CategoryNode[], slug: string): CategoryNode | null => {
+      for (const cat of cats) {
+        if (cat.id === slug) return cat;
+        if (cat.children) {
+          const found = findCategory(cat.children, slug);
+          if (found) return found;
+        }
+      }
+      return null;
+    };
+
+    const parent = findCategory(categories, parentSlug);
+    if (!parent || !parent.children || parent.children.length === 0) {
+      return `/products?categorySlug=${parentSlug}`;
+    }
+
+    // Build URL with all children
+    const childSlugs = parent.children.map(c => `categorySlug=${c.id}`).join('&');
+    return `/products?${childSlugs}`;
+  };
 
   if (loading) {
     return (
@@ -107,7 +133,7 @@ export default function ProductDetailPage() {
             {product.category.parent && (
               <>
                 <Link
-                  to={`/products?categorySlug=${product.category.parent.slug}`}
+                  to={getParentCategoryUrl(product.category.parent.slug)}
                   className="text-muted-foreground hover:text-accent transition-colors"
                 >
                   {product.category.parent.name}

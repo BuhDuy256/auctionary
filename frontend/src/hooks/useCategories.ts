@@ -49,6 +49,7 @@ export const useCategories = (selectedSlugs: string[] = []) => {
     return selectedSlugs
       .map((slug) => {
         const cat = findCategory(categories, slug);
+        // Only show leaf categories (no parentId needed since URL always has children)
         return cat ? { id: cat.id, name: cat.name } : null;
       })
       .filter((item): item is SelectedCategory => item !== null);

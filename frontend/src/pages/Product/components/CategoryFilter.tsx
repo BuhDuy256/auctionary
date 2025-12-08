@@ -34,7 +34,7 @@ function calculateCategoryState(
     };
   }
 
-  // Parent node - calculate based on children
+  // Parent node - calculate based on children selection
   const checkedChildren = category.children!.filter((child) =>
     selectedCategories.includes(child.id)
   );
@@ -59,8 +59,8 @@ function CategoryTreeItem({
   onCategoryChange: (categoryIds: string[], checked: boolean) => void;
   level?: number;
 }) {
-  const [isExpanded, setIsExpanded] = useState(level === 0);
   const hasChildren = category.children && category.children.length > 0;
+  const [isExpanded, setIsExpanded] = useState(level === 0);
 
   // Calculate state
   const state = calculateCategoryState(category, selectedCategories);
