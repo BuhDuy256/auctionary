@@ -13,7 +13,7 @@ import {
   Zap,
 } from "lucide-react";
 import { ChevronRight } from "lucide-react";
-import { AuctionCard } from "../../components/auction/AuctionCard";
+import { AuctionCard } from "./components/AuctionCard";
 import { useAuth } from "../../hooks/useAuth";
 import { usePermission } from "../../hooks/usePermission";
 import { useNavigate } from "react-router-dom";
