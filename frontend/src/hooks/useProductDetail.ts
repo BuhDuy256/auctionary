@@ -37,9 +37,13 @@ export const useProductDetail = () => {
         const data = await productService.getProductDetail(productId);
         setProductData(data);
         setError(null);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error("Failed to fetch product detail:", err);
-        setError(err.message || "Failed to load product details");
+        if (err instanceof Error) {
+          setError(err.message || "Failed to load product details");
+        } else {
+          setError("Failed to load product details");
+        }
       } finally {
         setLoading(false);
       }
@@ -89,39 +93,35 @@ export const useProductDetail = () => {
     error,
     placeBid: async (amount: number) => {
       if (!productId) return;
-      try {
-        const result = await productService.placeBid(productId, amount);
+      const result = await productService.placeBid(productId, amount);
 
-        // Update local state based on result
-        if (result.status === "winning" || result.status === "outbid") {
-          setProductData((prev) => {
-            if (!prev) return null;
-            return {
-              ...prev,
-              auction: {
-                ...prev.auction,
-                currentPrice: result.currentPrice,
-                bidCount: prev.auction.bidCount + 1,
-                topBidder: result.currentWinnerId.toString(),
-              },
-              userProductStatus: {
-                ...prev.userProductStatus,
-                isOutbid: result.status === "outbid",
-                isTopBidder: result.status === "winning",
-                currentUserMaxBid: amount,
-                isWatchlisted: prev.userProductStatus?.isWatchlisted || false,
-              },
-            };
-          });
+      // Update local state based on result
+      if (result.status === "winning" || result.status === "outbid") {
+        setProductData((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            auction: {
+              ...prev.auction,
+              currentPrice: result.currentPrice,
+              bidCount: prev.auction.bidCount + 1,
+              topBidder: result.currentWinnerId.toString()
+            },
+            userProductStatus: {
+              ...prev.userProductStatus,
+              isOutbid: result.status === "outbid",
+              isTopBidder: result.status === "winning",
+              currentUserMaxBid: amount,
+              isWatchlisted: prev.userProductStatus?.isWatchlisted || false
+            }
+          };
+        });
 
-          // Refresh bids history to show the new bid
-          const bids = await productService.getProductBids(productId);
-          setBidsData(bids);
-        }
-        return result;
-      } catch (err) {
-        throw err;
+        // Refresh bids history to show the new bid
+        const bids = await productService.getProductBids(productId);
+        setBidsData(bids);
       }
-    },
+      return result;
+    }
   };
 };

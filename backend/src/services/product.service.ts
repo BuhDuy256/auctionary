@@ -2,7 +2,6 @@ import * as productRepository from "../repositories/product.repository";
 import {
   ProductsSearchQuery,
   CreateProduct,
-  GetProductCommentsQuery,
   AppendProductDescription,
 } from "../api/dtos/requests/product.schema";
 import { toNum } from "../utils/number.util";
@@ -13,13 +12,9 @@ import {
   BidHistoryResponse,
   QuestionsResponse,
   CreateProductResponse,
-  ProductDetail,
-  ProductComment
 } from "../api/dtos/responses/product.type";
 import {
   mapToProductListCard,
-  mapToProductDetail,
-  mapToProductComment,
   maskBidderName,
   calculateSellerRating
 } from "../mappers/product.mapper";
@@ -66,33 +61,6 @@ export const createProduct = async (data: CreateProduct): Promise<CreateProductR
     productId: product.product_id,
     name: product.name,
     status: product.status,
-  };
-};
-
-export const getProductDetailById = async (productId: number): Promise<ProductDetail | null> => {
-  const product = await productRepository.findDetailById(productId);
-  return mapToProductDetail(product);
-};
-
-export const getProductCommentsById = async (
-  productId: number,
-  query: GetProductCommentsQuery
-): Promise<PaginatedResult<ProductComment>> => {
-  const { page, limit } = query;
-  const result = await productRepository.findCommentsById(
-    productId,
-    page,
-    limit
-  );
-
-  return {
-    data: result.data.map(mapToProductComment),
-    pagination: {
-      page,
-      limit,
-      total: result.total,
-      totalPages: Math.ceil(result.total / limit),
-    },
   };
 };
 

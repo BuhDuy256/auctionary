@@ -1,4 +1,4 @@
-import { ProductListCardProps, ProductDetail, ProductComment } from "../api/dtos/responses/product.type";
+import { ProductListCardProps, } from "../api/dtos/responses/product.type";
 import { toNum } from "../utils/number.util";
 
 export const mapToProductListCard = (product: any): ProductListCardProps => {
@@ -38,73 +38,6 @@ export const mapToProductListCard = (product: any): ProductListCardProps => {
     timeLeft,
     isNewArrival,
     bidCount: product.bid_count || 0,
-  };
-};
-
-/**
- * Maps raw product detail data to ProductDetail response
- */
-export const mapToProductDetail = (product: any): ProductDetail | null => {
-  if (!product) return null;
-
-  return {
-    thumbnail: product.thumbnail_url || "",
-    name: product.name,
-    startPrice: toNum(product.start_price),
-    stepPrice: toNum(product.step_price),
-    buyNowPrice: product.buy_now_price ? toNum(product.buy_now_price) : undefined,
-    currentPrice: toNum(product.current_price),
-    createdAt: product.created_at,
-    endTime: product.end_time,
-    bidCount: product.bid_count,
-    autoExtend: product.auto_extend,
-    status: product.status,
-    images: product.images.map((img: any) => img.image_url),
-    seller: {
-      id: product.seller.id,
-      fullName: product.seller.full_name,
-      positiveReviews: product.seller.positive_reviews,
-      negativeReviews: product.seller.negative_reviews,
-    },
-    description: product.description?.content || "",
-    category: {
-      id: product.category.category_id,
-      name: product.category.name,
-      slug: product.category.slug,
-      parent: product.category.parent
-        ? {
-          id: product.category.parent.category_id,
-          name: product.category.parent.name,
-          slug: product.category.parent.slug,
-        }
-        : undefined,
-    },
-  };
-};
-
-/**
- * Maps raw comment data to ProductComment response
- */
-export const mapToProductComment = (comment: any): ProductComment => {
-  return {
-    commentId: comment.comment_id,
-    content: comment.content,
-    user: {
-      userId: comment.user_id,
-      fullName: comment.full_name,
-    },
-    createdAt: comment.created_at,
-    updatedAt: comment.updated_at,
-    replies: (comment.replies || []).map((reply: any) => ({
-      commentId: reply.comment_id,
-      content: reply.content,
-      user: {
-        userId: reply.user_id,
-        fullName: reply.full_name,
-      },
-      createdAt: reply.created_at,
-      updatedAt: reply.updated_at,
-    })),
   };
 };
 

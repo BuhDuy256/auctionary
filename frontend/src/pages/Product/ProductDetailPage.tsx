@@ -10,6 +10,7 @@ import { ProductBidding } from "./components/ProductBidding";
 import { SellerCard } from "./components/SellerCard";
 import { ProductTabs } from "./components/ProductTabs";
 import { Link } from "react-router-dom";
+import { formatTimeLeft } from "../../utils/time";
 import { useWatchlist } from "../../hooks/useWatchlist";
 import type { WatchlistProduct } from "../../types/watchlist";
 
@@ -54,7 +55,9 @@ export default function ProductDetailPage() {
     );
   }
 
-  const timeLeft = "2d 5h";
+  const endTimeMs = new Date(auction.endTime).getTime();
+  const timeLeftMs = Math.max(0, endTimeMs - Date.now());
+  const timeLeft = formatTimeLeft(timeLeftMs);
 
   const isCurrentlyWatchlisted =
     isWatched(String(product.id)) || userStatus?.isWatchlisted || false;

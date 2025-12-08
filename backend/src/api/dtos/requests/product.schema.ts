@@ -48,11 +48,6 @@ export const createProductSchema = z.object({
   autoExtend: z.enum(["yes", "no"]),
 });
 
-export const getProductCommentsSchema = z.object({
-  page: z.coerce.number().int().min(1).optional().default(1),
-  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
-});
-
 export const appendProductDescriptionSchema = z.object({
   sellerId: z.number().int().positive(),
   content: z.string().min(1),
@@ -61,7 +56,6 @@ export const appendProductDescriptionSchema = z.object({
 export type ProductsSearchQuery = z.infer<typeof searchProductsSchema>;
 export type SortOption = z.infer<typeof sortOptionSchema>;
 export type CreateProduct = z.infer<typeof createProductSchema>;
-export type GetProductCommentsQuery = z.infer<typeof getProductCommentsSchema>;
 export type AppendProductDescription = z.infer<
   typeof appendProductDescriptionSchema
 >;
