@@ -305,13 +305,18 @@ export const getHighestBidderId = async (
   return product?.highest_bidder_id ?? null;
 };
 
-export const updateHighestBidderId = async (
+export const updateProductBidStats = async (
   productId: number,
-  newHighestBidderId: number
+  highestBidderId: number,
+  currentPrice: number
 ): Promise<void> => {
   await db("products")
     .where({ product_id: productId })
-    .update({ highest_bidder_id: newHighestBidderId });
+    .update({
+      highest_bidder_id: highestBidderId,
+      current_price: currentPrice,
+    })
+    .increment("bid_count", 1);
 };
 
 export const appendProductDescription = async (
