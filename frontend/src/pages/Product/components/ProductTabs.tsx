@@ -61,10 +61,6 @@ export function ProductTabs({
   const handleSave = async () => {
     if (!editorContent.trim()) return;
 
-    if (onAppendDescription) {
-      await onAppendDescription(editorContent);
-    }
-
     const newInfo: AdditionalInfo = {
       id: Date.now().toString(),
       content: editorContent,
@@ -74,6 +70,10 @@ export function ProductTabs({
     setAdditionalInfos((prev) => [...prev, newInfo]);
     setEditorContent("");
     setIsEditing(false);
+
+    if (onAppendDescription) {
+      await onAppendDescription(editorContent);
+    }
   };
 
   const handleCancel = () => {
