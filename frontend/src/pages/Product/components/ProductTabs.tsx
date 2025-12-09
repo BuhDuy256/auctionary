@@ -37,13 +37,16 @@ interface AdditionalInfo {
 }
 
 interface ProductTabsProps {
-  description: string;
+  descriptions: {
+    content: string;
+    createdAt: string;
+  }[];
   bids?: BidHistoryResponse | null;
   questions?: QuestionsResponse | null;
 }
 
 export function ProductTabs({
-  description,
+  descriptions = [],
   bids,
   questions,
 }: ProductTabsProps) {
@@ -76,6 +79,23 @@ export function ProductTabs({
     setEditorContent("");
     setIsEditing(true);
   };
+
+  const mainDescription = descriptions.length > 0 ? descriptions[0] : null;
+  const historyDescriptions =
+    descriptions.length > 1 ? descriptions.slice(1) : [];
+
+  // Combine history from props (server) and additionalInfos (local optimistic)
+  // Adapt server history to match AdditionalInfo shape for rendering if needed
+  // or just render them in sequence.
+
+  const allUpdates = [
+    ...historyDescriptions.map((desc, index) => ({
+      id: `server-${index}`,
+      content: desc.content,
+      createdAt: desc.createdAt,
+    })),
+    ...additionalInfos,
+  ];
 
   return (
     <Tabs defaultValue="description" className="mb-12">
@@ -114,14 +134,22 @@ export function ProductTabs({
           <CardContent className="space-y-6">
             {/* Original Description */}
             <div className="prose prose-invert max-w-none">
-              <div dangerouslySetInnerHTML={{ __html: description }} />
+              {mainDescription ? (
+                <div
+                  dangerouslySetInnerHTML={{ __html: mainDescription.content }}
+                />
+              ) : (
+                <p className="text-muted-foreground italic">
+                  No description available.
+                </p>
+              )}
             </div>
 
             {/* Additional Information List */}
-            {additionalInfos.length > 0 && (
+            {allUpdates.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-border">
                 <h4 className="text-lg font-medium">Updates</h4>
-                {additionalInfos.map((info) => (
+                {allUpdates.map((info) => (
                   <div
                     key={info.id}
                     className="bg-secondary/20 p-4 rounded-lg border border-border"

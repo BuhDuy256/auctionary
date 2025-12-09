@@ -395,9 +395,8 @@ export const getProductImages = async (productId: number) => {
 export const getProductDescription = async (productId: number) => {
   return await db("product_descriptions")
     .where({ product_id: productId })
-    .orderBy("version", "desc")
-    .select("content")
-    .first();
+    .orderBy("created_at", "asc")
+    .select("content", "created_at as created_at");
 };
 
 export const getCategoryWithParents = async (categoryId: number) => {

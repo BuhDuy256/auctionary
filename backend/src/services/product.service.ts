@@ -147,7 +147,10 @@ export const getProductDetail = async (
       slug: product.slug || product.category_slug, // Use product slug (fallback to category slug for old products)
       thumbnailUrl: product.thumbnail_url || "",
       images: images.map((img: any) => img.image_url),
-      overview: description?.content || "",
+      descriptions: (Array.isArray(description) ? description : []).map((d: any) => ({
+        content: d.content,
+        createdAt: d.created_at,
+      })),
       category: {
         id: product.category_id,
         name: product.category_name,
