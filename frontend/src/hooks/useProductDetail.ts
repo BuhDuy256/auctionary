@@ -122,6 +122,26 @@ export const useProductDetail = () => {
         setBidsData(bids);
       }
       return result;
+    },
+    appendDescription: async (content: string) => {
+      if (!productId || !productData?.seller.id) return;
+      await productService.appendDescription(productId, content, productData.seller.id);
+
+      // Refresh product details to show new description
+      const data = await productService.getProductDetail(productId);
+      setProductData(data);
+    },
+    appendQuestion: async (content: string, askBy: number | undefined) => {
+      if (!productId || !productData?.seller.id) return;
+      await productService.appendQuestion(productId, content, askBy);
+      const questionsData = await productService.getProductQuestions(productId);
+      setQuestionsData(questionsData);
+    },
+    appendAnswer: async (content: string, questionId: number | undefined, answerBy: number | undefined) => {
+      if (!productId || !productData?.seller.id) return;
+      await productService.appendAnswer(productId, questionId, content, answerBy);
+      const questionsData = await productService.getProductQuestions(productId);
+      setQuestionsData(questionsData);
     }
   };
 };

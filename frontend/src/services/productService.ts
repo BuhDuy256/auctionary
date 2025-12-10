@@ -73,7 +73,28 @@ export const placeBid = async (
 ): Promise<PlaceBidResponse> => {
   return apiClient.post(`/products/${id}/bid`, { amount }, true);
 };
-
+export const appendDescription = async (
+  id: string,
+  content: string,
+  sellerId: number
+): Promise<void> => {
+  return apiClient.post(`/products/${id}/descriptions`, { content, sellerId }, true);
+};
+export const appendQuestion = async (
+  id: string,
+  content: string,
+  questionerId: number | undefined
+): Promise<void> => {
+  return apiClient.post(`/products/${id}/questions`, { content, questionerId }, true)
+}
+export const appendAnswer = async (
+  id: string,
+  questionId: number | undefined,
+  content: string,
+  answererId: number | undefined
+): Promise<void> => {
+  return apiClient.post(`/products/${id}/answers`, { content, questionId, answererId }, true)
+}
 export const createProduct = async (data: CreateProductPayload) => {
   const formData = new FormData();
 

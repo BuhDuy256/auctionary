@@ -27,6 +27,9 @@ export default function ProductDetailPage() {
     loading,
     error,
     placeBid,
+    appendDescription,
+    appendQuestion,
+    appendAnswer,
   } = useProductDetail();
 
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
@@ -34,7 +37,10 @@ export default function ProductDetailPage() {
 
   // Helper to generate URL with all children of a parent category
   const getParentCategoryUrl = (parentSlug: string): string => {
-    const findCategory = (cats: CategoryNode[], slug: string): CategoryNode | null => {
+    const findCategory = (
+      cats: CategoryNode[],
+      slug: string
+    ): CategoryNode | null => {
       for (const cat of cats) {
         if (cat.id === slug) return cat;
         if (cat.children) {
@@ -51,7 +57,9 @@ export default function ProductDetailPage() {
     }
 
     // Build URL with all children
-    const childSlugs = parent.children.map(c => `categorySlug=${c.id}`).join('&');
+    const childSlugs = parent.children
+      .map((c) => `categorySlug=${c.id}`)
+      .join("&");
     return `/products?${childSlugs}`;
   };
 
@@ -192,9 +200,12 @@ export default function ProductDetailPage() {
 
         {/* Tabs Section */}
         <ProductTabs
-          description={product.overview}
+          descriptions={product.descriptions}
           bids={bids}
           questions={questions}
+          onAppendDescription={appendDescription}
+          onAppendQuestion={appendQuestion}
+          onAppendAnswer={appendAnswer}
         />
 
         {/* Related Products */}

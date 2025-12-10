@@ -43,7 +43,10 @@ export interface ProductInfo {
   slug: string;
   thumbnailUrl: string;
   images: string[];
-  overview: string;
+  descriptions: {
+    content: string;
+    createdAt: string;
+  }[];
   category: CategoryWithParent;
   breadcrumb: BreadcrumbItem[];
   relatedProducts: ProductListCardProps[];

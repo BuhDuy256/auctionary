@@ -329,7 +329,35 @@ export const appendProductDescription = async (
   });
 };
 
-export const getProductBidInfo = async (productId: number) => {
+export const appendProductQuestion = async (
+  productId: number,
+  questionerId: number,
+  content: string
+): Promise<void> => {
+  await db("product_comments").insert({
+    product_id: productId,
+    user_id: questionerId,
+    content: content,
+  });
+}
+
+export const appendProductAnswer = async (
+  productId: number,
+  questionId: number,
+  answererId: number,
+  content: string
+): Promise<void> => {
+  await db("product_comments").insert({
+    product_id: productId,
+    user_id: answererId,
+    content: content,
+    parent_id: questionId
+  });
+}
+
+export const getProductBidInfo = async (
+  productId: number
+) => {
   const product = await db("products")
     .where({ product_id: productId })
     .select("step_price", "start_price", "current_price", "highest_bidder_id")
@@ -376,9 +404,8 @@ export const getProductImages = async (productId: number) => {
 export const getProductDescription = async (productId: number) => {
   return await db("product_descriptions")
     .where({ product_id: productId })
-    .orderBy("version", "desc")
-    .select("content")
-    .first();
+    .orderBy("created_at", "asc")
+    .select("content", "created_at as created_at");
 };
 
 export const getCategoryWithParents = async (categoryId: number) => {

@@ -3,6 +3,8 @@ import {
   ProductsSearchQuery,
   CreateProduct,
   AppendProductDescription,
+  AppendProductQuestion,
+  AppendProductAnswer
 } from "../api/dtos/requests/product.schema";
 import { toNum } from "../utils/number.util";
 import {
@@ -119,6 +121,22 @@ export const appendProductDescription = async (
   );
 };
 
+export const appendProductQuestion = async (
+  productId: number,
+  body: AppendProductQuestion
+): Promise<void> => {
+  const { questionerId, content } = body;
+  await productRepository.appendProductQuestion(productId, questionerId, content);
+}
+
+export const appendProductAnswer = async (
+  productId: number,
+  body: AppendProductAnswer
+): Promise<void> => {
+  const { questionId, answererId, content } = body;
+  await productRepository.appendProductAnswer(productId, questionId, answererId, content);
+}
+
 // Product Detail Page
 export const getProductDetail = async (
   productId: number,
@@ -192,7 +210,10 @@ export const getProductDetail = async (
       slug: product.slug || product.category_slug, // Use product slug (fallback to category slug for old products)
       thumbnailUrl: product.thumbnail_url || "",
       images: images.map((img: any) => img.image_url),
-      overview: description?.content || "",
+      descriptions: (Array.isArray(description) ? description : []).map((d: any) => ({
+        content: d.content,
+        createdAt: d.created_at,
+      })),
       category: {
         id: product.category_id,
         name: product.category_name,
@@ -292,3 +313,5 @@ export const getProductQuestions = async (
     },
   };
 };
+
+
