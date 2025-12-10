@@ -1,7 +1,6 @@
 import db from "../database/db";
 import { NotFoundError } from "../errors";
 
-
 export const getCategoryBySlug = async (slug: string) => {
   const category = await db("categories")
     .where({ slug })
@@ -42,4 +41,12 @@ export const getCategoryIds = async (slug: string): Promise<number[]> => {
 
 export const getAllCategories = async () => {
   return await db("categories").select("*");
+};
+
+export const getCategorySlugs = async (categoryId: number) => {
+  return await db("categories as sub")
+    .leftJoin("categories as parent", "sub.parent_id", "parent.category_id")
+    .select("sub.slug as subSlug", "parent.slug as parentSlug")
+    .where("sub.category_id", categoryId)
+    .first();
 };

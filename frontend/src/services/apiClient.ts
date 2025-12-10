@@ -69,21 +69,19 @@ const handleResponse = async (response: Response): Promise<any> => {
 
 const buildOptions = (
   method: string,
-  body: unknown = null,
+  body: any = null,
   requiresAuth = false
 ): RequestInit => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
+  const isFormData = body instanceof FormData;
+
+  const headers: Record<string, string> = isFormData
+    ? {}
+    : { "Content-Type": "application/json" };
 
   if (requiresAuth) {
     const token = getToken();
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
-    } else {
-      console.warn(
-        "Auth required for this request, but no token is available."
-      );
     }
   }
 
@@ -93,7 +91,7 @@ const buildOptions = (
   };
 
   if (body !== null) {
-    options.body = JSON.stringify(body);
+    options.body = isFormData ? body : JSON.stringify(body);
   }
 
   return options;

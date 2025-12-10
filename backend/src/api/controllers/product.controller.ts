@@ -2,8 +2,10 @@ import { Request, Response, NextFunction } from "express";
 import * as productService from "../../services/product.service";
 import { logger } from "../../utils/logger.util";
 import * as bidService from "../../services/bid.service";
-import { ProductsSearchQuery } from "../dtos/requests/product.schema";
-import * as storageService from "../../services/storage.service";
+import {
+  CreateProduct,
+  ProductsSearchQuery,
+} from "../dtos/requests/product.schema";
 
 export const searchProducts = async (
   request: Request,
@@ -22,25 +24,37 @@ export const searchProducts = async (
 };
 
 export const createProduct = async (
-  req: Request,
-  res: Response,
+  request: Request,
+  response: Response,
   next: NextFunction
 ) => {
   try {
-    const files = req.files as Express.Multer.File[];
+    const files = (request.files as Express.Multer.File[]) || [];
+    const body = request.body;
 
-    const imageUrls = await storageService.uploadFiles(
-      "product_images",
-      files,
-      "products"
-    );
+    const productData: CreateProduct = {
+      name: body.name,
+      categoryId: Number(body.categoryId),
+      sellerId:
+        (request as any).user?.id || body.sellerId ? Number(body.sellerId) : 1,
+      thumbnailUrl: "", // Service handles this
+      imageUrls: [], // Service handles this
+      startPrice: Number(body.startPrice),
+      stepPrice: Number(body.stepPrice),
+      buyNowPrice: body.buyNowPrice ? Number(body.buyNowPrice) : undefined,
+      description: body.description,
+      endTime: new Date(body.endTime),
+      autoExtend: body.autoExtend === "true" || body.autoExtend === true,
+    };
 
-    const productData = { ...req.body, images: imageUrls };
+    const result = await productService.createProduct(productData, files);
 
-    const result = await productService.createProduct(productData);
-
-    res.status(201).json(result);
+    response.status(201).json({
+      success: true,
+      data: result,
+    });
   } catch (error) {
+    logger.error("ProductController", "Failed to create product", error);
     next(error);
   }
 };

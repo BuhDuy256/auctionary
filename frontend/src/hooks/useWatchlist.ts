@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { notify } from "../utils/toast";
+import { notify } from "../utils/notify";
 import * as watchlistService from "../services/watchlistService";
 import { useAuth } from "./useAuth";
 import type { WatchlistProduct } from "../types/watchlist";

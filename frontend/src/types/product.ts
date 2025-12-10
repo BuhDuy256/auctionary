@@ -157,3 +157,41 @@ export interface PlaceBidResponse {
   currentPrice: number;
   currentWinnerId: number;
 }
+
+export interface CreateProductResponse {
+  productId: number;
+  name: string;
+  status: string;
+}
+
+export interface Step1Data {
+  productName: string;
+  category: string;
+  categoryId: string;
+  subCategory: string;
+  subCategoryId: string;
+  images: File[];
+}
+
+export interface Step2Data {
+  startingPrice: number;
+  bidIncrement: number;
+  buyNowPrice?: number;
+  duration: number;
+  description: string;
+  autoExtend: boolean;
+}
+export interface AuctionFormData extends Step1Data, Step2Data {}
+
+export interface CreateProductPayload {
+  name: string;
+  categoryId: number;
+  sellerId: number;
+  startPrice: number;
+  stepPrice: number;
+  buyNowPrice?: number;
+  description: string;
+  endTime: Date;
+  autoExtend: boolean;
+  images: File[];
+}

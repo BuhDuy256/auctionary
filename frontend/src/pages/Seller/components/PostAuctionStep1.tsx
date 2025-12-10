@@ -1,17 +1,17 @@
 import { useState, useMemo } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Card, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Card, CardContent } from "../../../components/ui/card";
+import { Badge } from "../../../components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import { Alert, AlertDescription } from "../ui/alert";
+} from "../../../components/ui/select";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
 import {
   Upload,
   X,
@@ -21,20 +21,12 @@ import {
   Info,
   Check,
 } from "lucide-react";
-import { useCategories } from "../../hooks/useCategories";
+import { useCategories } from "../../../hooks/useCategories";
+import type { Step1Data } from "../../../types/product";
 
 interface PostAuctionStep1Props {
   onNext: (data: Step1Data) => void;
   onBack: () => void;
-}
-
-export interface Step1Data {
-  productName: string;
-  category: string;
-  categoryId: string;
-  subCategory: string;
-  subCategoryId: string;
-  images: File[];
 }
 
 const MIN_CHAR = 3;

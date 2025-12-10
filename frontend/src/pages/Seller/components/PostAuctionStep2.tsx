@@ -1,20 +1,24 @@
 import { useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Card, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Checkbox } from "../ui/checkbox";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
+import { Card, CardContent } from "../../../components/ui/card";
+import { Badge } from "../../../components/ui/badge";
+import { Checkbox } from "../../../components/ui/checkbox";
 
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "../../../components/ui/alert";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import type { Step1Data } from "../auction/PostAuctionStep1";
+} from "../../../components/ui/select";
+import type { Step1Data, Step2Data } from "../../../types/product";
 import {
   DollarSign,
   TrendingUp,
@@ -33,16 +37,8 @@ import "react-quill-new/dist/quill.snow.css";
 interface PostAuctionStep2Props {
   step1Data: Step1Data;
   onBack: () => void;
-  onSubmit: (data: AuctionData) => void;
-}
-
-export interface AuctionData extends Step1Data {
-  startingPrice: number;
-  bidIncrement: number;
-  buyNowPrice: number;
-  duration: number;
-  description: string;
-  autoExtend: boolean;
+  onSubmit: (data: Step2Data) => void;
+  isLoading?: boolean;
 }
 
 const durations = [
@@ -58,6 +54,7 @@ export function PostAuctionStep2({
   step1Data,
   onBack,
   onSubmit,
+  isLoading = false,
 }: PostAuctionStep2Props) {
   const [startingPrice, setStartingPrice] = useState("");
   const [bidIncrement, setBidIncrement] = useState("");
@@ -111,10 +108,9 @@ export function PostAuctionStep2({
 
     if (validateForm()) {
       onSubmit({
-        ...step1Data,
         startingPrice: parseFloat(startingPrice),
         bidIncrement: parseFloat(bidIncrement),
-        buyNowPrice: buyNowPrice ? parseFloat(buyNowPrice) : 0,
+        buyNowPrice: buyNowPrice ? parseFloat(buyNowPrice) : undefined,
         duration: parseInt(duration),
         description,
         autoExtend,
@@ -468,14 +464,13 @@ export function PostAuctionStep2({
 
       {/* Action Buttons */}
       <div className="flex items-center justify-between pt-4 border-t border-border">
-        <Button type="button" variant="outline" onClick={onBack}>
+        <Button variant="outline" onClick={onBack} disabled={isLoading}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Product Info
         </Button>
 
-        <Button type="submit" size="lg">
-          <Check className="mr-2 h-4 w-4" />
-          Publish Auction
+        <Button type="submit" size="lg" isLoading={isLoading}>
+          {isLoading ? "Publishing..." : "Publish Auction"}
         </Button>
       </div>
     </form>

@@ -8,8 +8,7 @@ export const uploadFiles = async (
   if (files.length === 0) return [];
 
   const uploadPromises = files.map(async (file) => {
-    // Logic đặt tên file đưa vào đây
-    const fileName = `${folder}/${Date.now()}-${file.originalname.replace(
+    const fileName = `${folder}/${Date.now()}_${file.originalname.replace(
       /\s/g,
       "_"
     )}`;
@@ -28,4 +27,22 @@ export const uploadFiles = async (
   });
 
   return await Promise.all(uploadPromises);
+};
+
+export const uploadFile = async (
+  bucket: string,
+  file: Express.Multer.File,
+  fullPath: string
+): Promise<string> => {
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(fullPath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true,
+    });
+
+  if (error) throw new Error(`Upload failed: ${error.message}`);
+
+  const { data } = supabase.storage.from(bucket).getPublicUrl(fullPath);
+  return data.publicUrl;
 };

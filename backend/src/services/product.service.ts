@@ -18,6 +18,8 @@ import {
   maskBidderName,
   calculateSellerRating,
 } from "../mappers/product.mapper";
+import { toSlug } from "../utils/slug.util";
+import * as storageService from "../services/storage.service";
 
 export const searchProducts = async (
   query: ProductsSearchQuery
@@ -45,8 +47,44 @@ export const searchProducts = async (
 };
 
 export const createProduct = async (
-  data: CreateProduct
+  data: CreateProduct,
+  files: Express.Multer.File[] = []
 ): Promise<CreateProductResponse> => {
+  const categoryPath = await productRepository.getCategoryWithParents(
+    data.categoryId
+  );
+
+  let categorySlug = "others";
+  let subCategorySlug = "misc";
+
+  if (categoryPath && categoryPath.length > 0) {
+    if (categoryPath.length >= 2) {
+      categorySlug = categoryPath[0].slug;
+      subCategorySlug = categoryPath[1].slug;
+    } else {
+      categorySlug = categoryPath[0].slug;
+    }
+  }
+
+  const productSlugPart = toSlug(data.name);
+  const timestamp = Date.now();
+  const productFolder = `${productSlugPart}_${timestamp}`;
+  const storagePath = `products/${categorySlug}/${subCategorySlug}/${productFolder}`;
+
+  const uploadedUrls = await Promise.all(
+    files.map((file, index) => {
+      const fileName = index === 0 ? "main.png" : `ex_${index}.png`;
+      const fullPath = `${storagePath}/${fileName}`;
+      return storageService.uploadFile(
+        "auctionary-product-images",
+        file,
+        fullPath
+      );
+    })
+  );
+
+  const finalProductSlug = `${productSlugPart}-${timestamp}`;
+
   const product = await productRepository.createProduct({
     name: data.name,
     category_id: data.categoryId,
@@ -57,9 +95,10 @@ export const createProduct = async (
     end_time: data.endTime,
     auto_extend: data.autoExtend,
     description: data.description,
-    thumbnail_url: data.thumbnailUrl,
-    image_urls: data.imageUrls,
-  });
+    thumbnail_url: uploadedUrls[0] || "",
+    image_urls: uploadedUrls,
+    slug: finalProductSlug,
+  } as any);
 
   return {
     productId: product.product_id,

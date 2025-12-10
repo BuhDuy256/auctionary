@@ -7,6 +7,7 @@ import type {
   BidHistoryResponse,
   QuestionsResponse,
   PlaceBidResponse,
+  CreateProductPayload,
 } from "../types/product";
 
 export const searchProducts = async (
@@ -71,4 +72,29 @@ export const placeBid = async (
   amount: number
 ): Promise<PlaceBidResponse> => {
   return apiClient.post(`/products/${id}/bid`, { amount }, true);
+};
+
+export const createProduct = async (data: CreateProductPayload) => {
+  const formData = new FormData();
+
+  formData.append("name", data.name);
+  formData.append("categoryId", data.categoryId.toString());
+  formData.append("sellerId", data.sellerId.toString());
+  formData.append("description", data.description);
+
+  formData.append("startPrice", data.startPrice.toString());
+  formData.append("stepPrice", data.stepPrice.toString());
+  if (data.buyNowPrice) {
+    formData.append("buyNowPrice", data.buyNowPrice.toString());
+  }
+
+  formData.append("endTime", data.endTime.toISOString());
+  formData.append("autoExtend", String(data.autoExtend));
+
+  if (data.images && data.images.length > 0) {
+    data.images.forEach((file) => {
+      formData.append("images", file);
+    });
+  }
+  return apiClient.post("/products", formData, true);
 };

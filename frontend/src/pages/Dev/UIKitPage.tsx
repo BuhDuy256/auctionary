@@ -45,7 +45,7 @@ import {
   Menu,
   Shield,
 } from "lucide-react";
-import { notify } from "../../utils/toast";
+import { notify } from "../../utils/notify";
 
 export default function UIKitPage() {
   const [progress] = useState(65);

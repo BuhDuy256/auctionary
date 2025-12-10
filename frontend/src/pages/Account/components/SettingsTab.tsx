@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useAuth } from "../../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import * as userService from "../../../services/userService";
-import { notify } from "../../../utils/toast";
+import { notify } from "../../../utils/notify";
 
 export const SettingsTab = () => {
   const navigate = useNavigate();
