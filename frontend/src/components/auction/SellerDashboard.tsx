@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useSellerDashboard } from "../../hooks/useSellerDashboard";
+import { formatRelativeTime, calculateTimeLeft } from "../../utils/date";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Badge } from "../ui/badge";
@@ -22,8 +24,6 @@ import {
   Plus,
   Search,
   MoreVertical,
-  Eye,
-  Edit,
   Trash2,
   TrendingUp,
   Clock,
@@ -34,7 +34,9 @@ import {
   Calendar,
   AlertTriangle,
   CheckCircle2,
+  Eye,
 } from "lucide-react";
+import type { ProductStatus } from "../../types/seller";
 
 interface SellerDashboardProps {
   onCreateAuction: () => void;
@@ -45,125 +47,8 @@ const subscription = {
   expiryDate: "2025-03-25",
   daysLeft: 2,
 };
-const sellerStats = [
-  {
-    label: "Active Auctions",
-    value: "8",
-    change: "+2 this week",
-    icon: Package,
-    color: "text-accent",
-  },
-  {
-    label: "Total Bids",
-    value: "247",
-    change: "+45 today",
-    icon: TrendingUp,
-    color: "text-success",
-  },
-  {
-    label: "Total Revenue",
-    value: "$12,450",
-    change: "+$2,100 this month",
-    icon: DollarSign,
-    color: "text-accent",
-  },
-  {
-    label: "Avg. Bid Time",
-    value: "2.5 days",
-    change: "-0.3 days",
-    icon: Clock,
-    color: "text-info",
-  },
-];
 
-const sellingItems = [
-  {
-    id: "AUC-1001",
-    image:
-      "https://images.unsplash.com/photo-1670177257750-9b47927f68eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjB3YXRjaCUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0MTYxNzk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Luxury Swiss Chronograph Watch",
-    category: "Watches",
-    startPrice: 1000,
-    currentBid: 4500,
-    bids: 45,
-    views: 1247,
-    timeLeft: "2h 15m",
-    status: "active",
-    listed: "3 days ago",
-  },
-  {
-    id: "AUC-1002",
-    image:
-      "https://images.unsplash.com/photo-1607720844146-7351a68014c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFkcGhvbmVzJTIwY2xvc2V1cHxlbnwxfHx8fDE3NjQxNzU3NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Premium Noise-Cancelling Headphones",
-    category: "Electronics",
-    startPrice: 200,
-    currentBid: 380,
-    bids: 28,
-    views: 892,
-    timeLeft: "1d 4h",
-    status: "active",
-    listed: "2 days ago",
-  },
-  {
-    id: "AUC-1003",
-    image:
-      "https://images.unsplash.com/photo-1686783695684-7b8351fdebbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZXNpZ25lciUyMHNuZWFrZXJzJTIwd2hpdGV8ZW58MXx8fHwxNzY0MTQwMDU0fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Limited Edition Designer Sneakers",
-    category: "Fashion",
-    startPrice: 500,
-    currentBid: 850,
-    bids: 32,
-    views: 1534,
-    timeLeft: "3h 42m",
-    status: "active",
-    listed: "5 days ago",
-  },
-  {
-    id: "AUC-1004",
-    image:
-      "https://images.unsplash.com/photo-1431068799455-80bae0caf685?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYW1lcmElMjBlcXVpcG1lbnR8ZW58MXx8fHwxNzY0MDcwNTIwfDA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Professional DSLR Camera Kit",
-    category: "Cameras",
-    startPrice: 800,
-    currentBid: 0,
-    bids: 0,
-    views: 234,
-    timeLeft: "6d 12h",
-    status: "pending",
-    listed: "12 hours ago",
-  },
-  {
-    id: "AUC-998",
-    image:
-      "https://images.unsplash.com/photo-1670177257750-9b47927f68eb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxsdXh1cnklMjB3YXRjaCUyMHByb2R1Y3R8ZW58MXx8fHwxNzY0MTYxNzk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Vintage Rolex Submariner",
-    category: "Watches",
-    startPrice: 5000,
-    currentBid: 8200,
-    bids: 67,
-    views: 3421,
-    timeLeft: "Ended",
-    status: "sold",
-    listed: "10 days ago",
-  },
-  {
-    id: "AUC-995",
-    image:
-      "https://images.unsplash.com/photo-1607720844146-7351a68014c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWFkcGhvbmVzJTIwY2xvc2V1cHxlbnwxfHx8fDE3NjQxNzU3NzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
-    title: "Studio Monitor Headphones",
-    category: "Electronics",
-    startPrice: 150,
-    currentBid: 0,
-    bids: 0,
-    views: 89,
-    timeLeft: "Ended",
-    status: "unsold",
-    listed: "8 days ago",
-  },
-];
-
-const getStatusBadge = (status: string) => {
+const getStatusBadge = (status: ProductStatus) => {
   switch (status) {
     case "active":
       return (
@@ -171,9 +56,11 @@ const getStatusBadge = (status: string) => {
           Active
         </Badge>
       );
-    case "pending":
+    case "removed":
       return (
-        <Badge className="bg-info/20 text-info border-info/50">Pending</Badge>
+        <Badge className="bg-destructive/20 text-destructive border-destructive/50">
+          Removed
+        </Badge>
       );
     case "sold":
       return (
@@ -181,10 +68,10 @@ const getStatusBadge = (status: string) => {
           Sold
         </Badge>
       );
-    case "unsold":
+    case "expired":
       return (
         <Badge variant="outline" className="text-muted-foreground">
-          Unsold
+          Expired
         </Badge>
       );
     default:
@@ -194,6 +81,69 @@ const getStatusBadge = (status: string) => {
 
 export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const { data, loading, error } = useSellerDashboard();
+
+  // Transform stats data for UI display
+  const sellerStats = useMemo(() => {
+    if (!data) return [];
+    return [
+      {
+        label: "Active Auctions",
+        value: data.stats.activeAuctions.toString(),
+        icon: Package,
+        color: "text-accent",
+      },
+      {
+        label: "Total Bids",
+        value: data.stats.totalBids.toString(),
+        icon: TrendingUp,
+        color: "text-success",
+      },
+      {
+        label: "Total Revenue",
+        value: `$${data.stats.totalRevenue.toLocaleString()}`,
+        icon: DollarSign,
+        color: "text-accent",
+      },
+      {
+        label: "Avg. Bid Time",
+        value: `${data.stats.avgBidTime.toFixed(1)} days`,
+        icon: Clock,
+        color: "text-info",
+      },
+    ];
+  }, [data]);
+
+  // Filter listings based on search query
+  const filteredListings = useMemo(() => {
+    if (!data?.listings) return [];
+    if (!searchQuery) return data.listings;
+    return data.listings.filter((item) =>
+      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [data, searchQuery]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <p className="text-destructive mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -227,9 +177,6 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                   </div>
                 </div>
                 <div className="text-3xl mb-1">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">
-                  {stat.change}
-                </div>
               </CardContent>
             </Card>
           );
@@ -273,26 +220,25 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                   <TableHead className="text-right">Start Price</TableHead>
                   <TableHead className="text-right">Current Bid</TableHead>
                   <TableHead className="text-center">Bids</TableHead>
-                  <TableHead className="text-center">Views</TableHead>
                   <TableHead>Time Left</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sellingItems.map((item) => (
+                {filteredListings.map((item) => (
                   <TableRow
                     key={item.id}
                     className="border-border hover:bg-secondary/30"
                   >
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {item.id}
+                      AUC-{item.id}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
                           <ImageWithFallback
-                            src={item.image}
+                            src={item.thumbnailUrl || ""}
                             alt={item.title}
                             className="w-full h-full object-cover"
                           />
@@ -302,23 +248,23 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                             {item.title}
                           </div>
                           <div className="text-xs text-muted-foreground">
-                            {item.listed}
+                            {formatRelativeTime(item.createdAt)}
                           </div>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className="text-xs">
-                        {item.category}
+                        {item.categoryName}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       ${item.startPrice.toLocaleString()}
                     </TableCell>
                     <TableCell className="text-right">
-                      {item.currentBid > 0 ? (
+                      {item.currentPrice > 0 ? (
                         <span className="text-accent">
-                          ${item.currentBid.toLocaleString()}
+                          ${item.currentPrice.toLocaleString()}
                         </span>
                       ) : (
                         <span className="text-muted-foreground">No bids</span>
@@ -327,21 +273,16 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                     <TableCell className="text-center">
                       <div className="flex items-center justify-center gap-1">
                         <TrendingUp className="h-3 w-3 text-muted-foreground" />
-                        <span>{item.bids}</span>
+                        <span>{item.bidCount}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <Eye className="h-3 w-3 text-muted-foreground" />
-                        <span>{item.views}</span>
-                      </div>
-                    </TableCell>
+
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">
-                        {item.timeLeft !== "Ended" && (
+                        {calculateTimeLeft(item.endTime) !== "Ended" && (
                           <Clock className="h-3 w-3 text-muted-foreground" />
                         )}
-                        <span>{item.timeLeft}</span>
+                        <span>{calculateTimeLeft(item.endTime)}</span>
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -352,19 +293,13 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                             <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuContent align="end" className="max-w-48">
                           <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
+                            <Eye className="mr-2 h-4 w-4 focus:text-accent-foreground" />
                             View Details
                           </DropdownMenuItem>
-                          {item.status === "active" && (
-                            <DropdownMenuItem>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit Auction
-                            </DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
+                          <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                            <Trash2 className="mr-2 h-4 w-4 text-destructive" />
                             Delete Auction
                           </DropdownMenuItem>
                         </DropdownMenuContent>

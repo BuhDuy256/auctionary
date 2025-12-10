@@ -5,7 +5,8 @@ export interface SellerDashboardStats {
   avgBidTime: number; // days
 }
 
-export type ProductStatus = "active" | "pending" | "sold" | "unsold";
+// need adding "pending" in the future
+export type ProductStatus = "active" | "removed" | "sold" | "expired";
 
 export interface SellerDashboardListing {
   id: number;
@@ -15,9 +16,9 @@ export interface SellerDashboardListing {
   startPrice: number;
   currentPrice: number;
   bidCount: number;
-  endTime: string; // ISO string from JSON
+  endTime: string;
   status: ProductStatus;
-  createdAt: string; // ISO string from JSON
+  createdAt: string;
 }
 
 export interface SellerDashboardData {
