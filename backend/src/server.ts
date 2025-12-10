@@ -19,6 +19,7 @@ import categoryRouter from "./api/routes/category.route";
 import productRouter from "./api/routes/product.route";
 import userRouter from "./api/routes/user.route";
 import watchlistRouter from "./api/routes/watchlist.route";
+import sellerRouter from "./api/routes/seller.route";
 
 const app: Application = express();
 const PORT: number = envConfig.PORT;
@@ -42,6 +43,7 @@ app.use("/categories", categoryRouter);
 app.use("/products", productRouter);
 app.use("/users", userRouter);
 app.use("/watchlist", watchlistRouter);
+app.use("/seller", sellerRouter);
 
 // Error Handling
 app.use(notFoundHandler);
