@@ -42,7 +42,7 @@ export default function ProductDetailPage() {
       slug: string
     ): CategoryNode | null => {
       for (const cat of cats) {
-        if (cat.id === slug) return cat;
+        if (cat.slug === slug) return cat;
         if (cat.children) {
           const found = findCategory(cat.children, slug);
           if (found) return found;
@@ -56,9 +56,9 @@ export default function ProductDetailPage() {
       return `/products?categorySlug=${parentSlug}`;
     }
 
-    // Build URL with all children
+    // Build URL with all children slugs
     const childSlugs = parent.children
-      .map((c) => `categorySlug=${c.id}`)
+      .map((c) => `categorySlug=${c.slug}`)
       .join("&");
     return `/products?${childSlugs}`;
   };

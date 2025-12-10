@@ -5,6 +5,7 @@ import { Label } from "../../../components/ui/label";
 
 interface CategoryNode {
   id: string;
+  slug: string;
   name: string;
   children?: CategoryNode[];
 }
@@ -12,7 +13,7 @@ interface CategoryNode {
 interface CategoryFilterProps {
   categories: CategoryNode[];
   selectedCategories: string[];
-  onCategoryChange: (categoryIds: string[], checked: boolean) => void;
+  onCategoryChange: (categorySlugs: string[], checked: boolean) => void;
 }
 
 interface CategoryState {
@@ -26,18 +27,23 @@ function calculateCategoryState(
 ): CategoryState {
   const hasChildren = category.children && category.children.length > 0;
 
+  console.log("Calculating state for:", category.name, "slug:", category.slug, "selected:", selectedCategories);
+
   if (!hasChildren) {
     // Leaf node - simple checked state
+    const isChecked = selectedCategories.includes(category.slug);
+    console.log("  Leaf node, checked:", isChecked);
     return {
-      checked: selectedCategories.includes(category.id),
+      checked: isChecked,
       indeterminate: false,
     };
   }
 
   // Parent node - calculate based on children selection
   const checkedChildren = category.children!.filter((child) =>
-    selectedCategories.includes(child.id)
+    selectedCategories.includes(child.slug)
   );
+  console.log("  Parent node, checked children:", checkedChildren.length, "/", category.children!.length);
 
   if (checkedChildren.length === 0) {
     return { checked: false, indeterminate: false };
@@ -56,7 +62,7 @@ function CategoryTreeItem({
 }: {
   category: CategoryNode;
   selectedCategories: string[];
-  onCategoryChange: (categoryIds: string[], checked: boolean) => void;
+  onCategoryChange: (categorySlugs: string[], checked: boolean) => void;
   level?: number;
 }) {
   const hasChildren = category.children && category.children.length > 0;
@@ -68,12 +74,12 @@ function CategoryTreeItem({
   // Handle click based on node type
   const handleToggle = (checked: boolean) => {
     if (hasChildren) {
-      // Parent: Toggle all children
-      const childIds = category.children!.map((c) => c.id);
-      onCategoryChange(childIds, checked);
+      // Parent: Toggle all children slugs
+      const childSlugs = category.children!.map((c) => c.slug);
+      onCategoryChange(childSlugs, checked);
     } else {
-      // Child: Toggle only this
-      onCategoryChange([category.id], checked);
+      // Child: Toggle only this slug
+      onCategoryChange([category.slug], checked);
     }
   };
 

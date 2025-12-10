@@ -11,10 +11,12 @@ export const getCategories = async (): Promise<CategoryNode[]> => {
 
   return categoriesData.map((cat) => ({
     id: String(cat.id), // Convert numeric ID to string for Select component compatibility
+    slug: cat.slug,
     name: cat.name,
     children:
       cat.children?.map((child) => ({
         id: String(child.id),
+        slug: child.slug,
         name: child.name,
       })) || [],
   }));

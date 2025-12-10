@@ -37,7 +37,7 @@ export const useCategories = (selectedSlugs: string[] = []) => {
       slug: string
     ): CategoryNode | null => {
       for (const cat of cats) {
-        if (cat.id === slug) return cat;
+        if (cat.slug === slug) return cat;
         if (cat.children) {
           const found = findCategory(cat.children, slug);
           if (found) return found;
@@ -50,7 +50,7 @@ export const useCategories = (selectedSlugs: string[] = []) => {
       .map((slug) => {
         const cat = findCategory(categories, slug);
         // Only show leaf categories (no parentId needed since URL always has children)
-        return cat ? { id: cat.id, name: cat.name } : null;
+        return cat ? { id: cat.slug, name: cat.name } : null;
       })
       .filter((item): item is SelectedCategory => item !== null);
   }, [categories, selectedSlugs]);
