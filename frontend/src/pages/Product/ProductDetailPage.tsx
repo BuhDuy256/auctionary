@@ -175,6 +175,7 @@ export default function ProductDetailPage() {
           <div className="space-y-6">
             <ProductHeader
               title={product.name}
+              categoryName={product.category.name}
               timeLeft={timeLeft}
               isWatchlisted={
                 isWatched(String(product.id)) ||
@@ -203,6 +204,7 @@ export default function ProductDetailPage() {
           descriptions={product.descriptions}
           bids={bids}
           questions={questions}
+          sellerId={seller.id}
           onAppendDescription={appendDescription}
           onAppendQuestion={appendQuestion}
           onAppendAnswer={appendAnswer}

@@ -5,6 +5,7 @@ import { Separator } from "../../../components/ui/separator";
 
 interface ProductHeaderProps {
   title: string;
+  categoryName: string,
   timeLeft: string; // This should be calculated from endTime
   isWatchlisted: boolean;
   onToggleWatchlist: () => void;
@@ -12,6 +13,7 @@ interface ProductHeaderProps {
 
 export function ProductHeader({
   title,
+  categoryName,
   timeLeft,
   isWatchlisted,
   onToggleWatchlist,
@@ -33,7 +35,7 @@ export function ProductHeader({
       </div>
 
       <div className="flex items-center gap-4 mb-4">
-        <Badge variant="secondary">Cameras & Photography</Badge>
+        <Badge variant="secondary">{categoryName}</Badge>
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Clock className="h-4 w-4 text-accent" />
           <span>

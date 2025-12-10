@@ -38,12 +38,6 @@ import type {
 import { useAuth } from "../../../hooks/useAuth";
 import { notify } from "../../../utils/notify";
 
-interface AdditionalInfo {
-  id: string;
-  content: string;
-  createdAt: string;
-}
-
 interface ProductTabsProps {
   descriptions: {
     content: string;
@@ -51,6 +45,7 @@ interface ProductTabsProps {
   }[];
   bids?: BidHistoryResponse | null;
   questions?: QuestionsResponse | null;
+  sellerId?: number;
   onAppendDescription?: (content: string) => Promise<void>;
   onAppendQuestion?: (
     content: string,
@@ -67,16 +62,19 @@ export function ProductTabs({
   descriptions = [],
   bids,
   questions,
+  sellerId,
   onAppendDescription,
   onAppendQuestion,
   onAppendAnswer,
 }: ProductTabsProps) {
   const { hasRole } = usePermission();
   const { user } = useAuth();
+  
+  // Check if current user is the seller
+  const isSellerOfProduct = user?.id === sellerId;
   const [isEditing, setIsEditing] = useState(false);
   const [editorContent, setEditorContent] = useState("");
-  // Temporary state to manage appended descriptions
-  const [additionalInfos, setAdditionalInfos] = useState<AdditionalInfo[]>([]);
+  const [isSavingDescription, setIsSavingDescription] = useState(false);
 
   // Q&A State
   const [questionText, setQuestionText] = useState("");
@@ -134,21 +132,19 @@ export function ProductTabs({
   };
 
   const handleSave = async () => {
-    if (!editorContent.trim()) return;
+    if (!editorContent.trim() || !onAppendDescription) return;
 
-    // Keep existing description logic as requested
-    const newInfo: AdditionalInfo = {
-      id: Date.now().toString(),
-      content: editorContent,
-      createdAt: new Date().toISOString(),
-    };
-
-    setAdditionalInfos((prev) => [...prev, newInfo]);
-    setEditorContent("");
-    setIsEditing(false);
-
-    if (onAppendDescription) {
+    try {
+      setIsSavingDescription(true);
       await onAppendDescription(editorContent);
+      notify.success("Description updated successfully");
+      setEditorContent("");
+      setIsEditing(false);
+    } catch (error) {
+      console.error(error);
+      notify.error("Failed to update description. Please try again.");
+    } finally {
+      setIsSavingDescription(false);
     }
   };
 
@@ -163,17 +159,7 @@ export function ProductTabs({
   };
 
   const mainDescription = descriptions.length > 0 ? descriptions[0] : null;
-  const historyDescriptions =
-    descriptions.length > 1 ? descriptions.slice(1) : [];
-
-  const allUpdates = [
-    ...historyDescriptions.map((desc, index) => ({
-      id: `server-${index}`,
-      content: desc.content,
-      createdAt: desc.createdAt,
-    })),
-    ...additionalInfos,
-  ];
+  const allUpdates = descriptions.length > 1 ? descriptions.slice(1) : [];
 
   return (
     <Tabs defaultValue="description" className="mb-12">
@@ -190,7 +176,7 @@ export function ProductTabs({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Product Description</CardTitle>
-            {hasRole("seller") && !isEditing && (
+            {hasRole("seller") && isSellerOfProduct && !isEditing && (
               <Button variant="outline" size="sm" onClick={handleAddInfoClick}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Information
@@ -198,13 +184,32 @@ export function ProductTabs({
             )}
             {isEditing && (
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleCancel}
+                  disabled={isSavingDescription}
+                >
                   <X className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
-                <Button variant="default" size="sm" onClick={handleSave}>
-                  <Check className="mr-2 h-4 w-4" />
-                  Save
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  onClick={handleSave}
+                  disabled={!editorContent.trim() || isSavingDescription}
+                >
+                  {isSavingDescription ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Save
+                    </>
+                  )}
                 </Button>
               </div>
             )}
@@ -227,20 +232,20 @@ export function ProductTabs({
             {allUpdates.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-border">
                 <h4 className="text-lg font-medium">Updates</h4>
-                {allUpdates.map((info) => (
+                {allUpdates.map((desc, index) => (
                   <div
-                    key={info.id}
+                    key={`update-${index}`}
                     className="bg-secondary/20 p-4 rounded-lg border border-border"
                   >
                     <div className="text-xs text-muted-foreground mb-2 flex items-center gap-2">
                       <Badge variant="outline" className="text-[10px] h-5">
                         Update
                       </Badge>
-                      {new Date(info.createdAt).toLocaleString()}
+                      {new Date(desc.createdAt).toLocaleString()}
                     </div>
                     <div
                       className="prose prose-invert max-w-none text-sm"
-                      dangerouslySetInnerHTML={{ __html: info.content }}
+                      dangerouslySetInnerHTML={{ __html: desc.content }}
                     />
                   </div>
                 ))}
@@ -256,6 +261,7 @@ export function ProductTabs({
                     theme="snow"
                     value={editorContent}
                     onChange={setEditorContent}
+                    readOnly={isSavingDescription}
                     className="h-full"
                     modules={{
                       toolbar: [
@@ -307,62 +313,61 @@ export function ProductTabs({
         <Card>
           <CardHeader>
             <CardTitle>Questions & Answers</CardTitle>
-            <CardDescription>
-              Ask the seller a question about this item
-            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Ask Question Input */}
-            <div className="p-4 rounded-lg border border-border bg-card/50">
-              <div className="flex gap-4">
-                <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarImage src="/placeholder-user.jpg" alt="@user" />
-                  <AvatarFallback className="bg-primary/10 text-primary">
-                    <User className="h-5 w-5" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-2">
-                  <Textarea
-                    placeholder="Ask a question about this product..."
-                    value={questionText}
-                    onChange={(e) => setQuestionText(e.target.value)}
-                    onFocus={() => setIsQuestionFocused(true)}
-                    disabled={isAskingQuestion}
-                    className="min-h-[60px] resize-none bg-background border-border/50 focus-visible:ring-1 focus-visible:ring-primary/50 transition-all"
-                  />
+            {!isSellerOfProduct && (
+              <div className="p-4 rounded-lg border border-border bg-card/50">
+                <div className="flex gap-4">
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src="/placeholder-user.jpg" alt="@user" />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      <User className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-2">
+                    <Textarea
+                      placeholder="Ask a question about this product..."
+                      value={questionText}
+                      onChange={(e) => setQuestionText(e.target.value)}
+                      onFocus={() => setIsQuestionFocused(true)}
+                      disabled={isAskingQuestion}
+                      className="min-h-[60px] resize-none bg-background border-border/50 focus-visible:ring-1 focus-visible:ring-primary/50 transition-all"
+                    />
 
-                  {(isQuestionFocused || questionText.length > 0) && (
-                    <div className="flex justify-end gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={isAskingQuestion}
-                        onClick={() => {
-                          setIsQuestionFocused(false);
-                          setQuestionText("");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        disabled={!questionText.trim() || isAskingQuestion}
-                        onClick={handleAskQuestion}
-                      >
-                        {isAskingQuestion ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Posting...
-                          </>
-                        ) : (
-                          "Post Question"
-                        )}
-                      </Button>
-                    </div>
-                  )}
+                    {(isQuestionFocused || questionText.length > 0) && (
+                      <div className="flex justify-end gap-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={isAskingQuestion}
+                          onClick={() => {
+                            setIsQuestionFocused(false);
+                            setQuestionText("");
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={!questionText.trim() || isAskingQuestion}
+                          onClick={handleAskQuestion}
+                        >
+                          {isAskingQuestion ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Posting...
+                            </>
+                          ) : (
+                            "Post Question"
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Q&A List */}
             <Accordion
@@ -411,7 +416,7 @@ export function ProductTabs({
                             {qa.answer.answer}
                           </p>
                         </div>
-                      ) : isReplying ? (
+                      ) : isReplying && isSellerOfProduct ? (
                         // Facebook-style Reply Input
                         <div className="pl-4 pt-2 animate-in fade-in slide-in-from-top-1 duration-200">
                           <div className="flex gap-4">
@@ -464,7 +469,7 @@ export function ProductTabs({
                             </div>
                           </div>
                         </div>
-                      ) : hasRole("seller") ? (
+                      ) : hasRole("seller") && isSellerOfProduct ? (
                         <div className="pl-4 py-2">
                           <Button
                             variant="ghost"
