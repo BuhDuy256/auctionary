@@ -91,6 +91,7 @@ export default function CreateAuctionPage() {
             step1Data={step1Data}
             onBack={handleStep2Back}
             onSubmit={handleAuctionSubmit}
+            isLoading={isCreating}
           />
         )}
       </main>

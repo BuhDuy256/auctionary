@@ -36,7 +36,7 @@ import type {
   QuestionsResponse,
 } from "../../../types/product";
 import { useAuth } from "../../../hooks/useAuth";
-import { notify } from "../../../utils/toast";
+import { notify } from "../../../utils/notify";
 
 interface AdditionalInfo {
   id: string;
