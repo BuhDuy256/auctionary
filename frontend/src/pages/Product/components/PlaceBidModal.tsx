@@ -167,7 +167,7 @@ export function PlaceBidModal({
                   <Button
                     key={amount}
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     className="flex-1 border-accent/30 hover:bg-accent/10 hover:border-accent"
                     onClick={() => {
@@ -234,28 +234,28 @@ export function PlaceBidModal({
             )}
 
             {/* Submit Button */}
-            <div className="space-y-2">
-              <Button
-                type="submit"
-                className="w-full"
-                size="lg"
-                disabled={!maxBid || !!error || isSubmitting}
-              >
-                <Gavel className="mr-2 h-5 w-5" />
-                {isSubmitting ? "Placing Bid..." : "Confirm Bid"}
-              </Button>
-
-              <Button
-                type="button"
-                variant="ghost"
-                className="w-full"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-            </div>
           </form>
+        </div>
+        <div className="space-y-2 px-6 mb-2">
+          <Button
+            type="submit"
+            className="w-full"
+            size="lg"
+            disabled={!maxBid || !!error || isSubmitting}
+          >
+            <Gavel className="mr-2 h-5 w-5" />
+            {isSubmitting ? "Placing Bid..." : "Confirm Bid"}
+          </Button>
+
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+          >
+            Cancel
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
