@@ -15,8 +15,15 @@ import { useWatchlist } from "../../hooks/useWatchlist";
 import { useCategories } from "../../hooks/useCategories";
 import type { WatchlistProduct } from "../../types/watchlist";
 import type { CategoryNode } from "../../types/category";
+import type { BidProductData } from "./components/ProductListCard";
 
-export default function ProductDetailPage() {
+interface ProductDetailPageProps {
+  onQuickPlaceBid: (data: BidProductData) => void;
+}
+
+export default function ProductDetailPage({
+  onQuickPlaceBid,
+}: ProductDetailPageProps) {
   const {
     product,
     seller,
@@ -229,7 +236,11 @@ export default function ProductDetailPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {product.relatedProducts.map((relatedProduct) => (
-                <ProductListCard key={relatedProduct.id} {...relatedProduct} />
+                <ProductListCard
+                  key={relatedProduct.id}
+                  {...relatedProduct}
+                  onQuickPlaceBid={onQuickPlaceBid}
+                />
               ))}
             </div>
           </section>

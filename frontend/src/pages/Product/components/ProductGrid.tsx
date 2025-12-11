@@ -1,12 +1,17 @@
-import { ProductListCard } from "./ProductListCard";
+import { ProductListCard, type BidProductData } from "./ProductListCard";
 import type { Product } from "../../../types/product";
 
 interface ProductGridProps {
   products: Product[];
   loading: boolean;
+  onQuickPlaceBid: (data: BidProductData) => void;
 }
 
-export function ProductGrid({ products, loading }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  loading,
+  onQuickPlaceBid,
+}: ProductGridProps) {
   if (loading) {
     return <div className="text-center py-12">Loading products...</div>;
   }
@@ -22,7 +27,11 @@ export function ProductGrid({ products, loading }: ProductGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
       {products.map((product) => (
-        <ProductListCard key={product.id} {...product} />
+        <ProductListCard
+          key={product.id}
+          {...product}
+          onQuickPlaceBid={onQuickPlaceBid}
+        />
       ))}
     </div>
   );

@@ -14,6 +14,9 @@ import { ProductGrid } from "./components/ProductGrid";
 import { ProductPagination } from "./components/ProductPagination";
 import { useProducts } from "../../hooks/useProducts";
 import { useCategories } from "../../hooks/useCategories";
+import { useState } from "react";
+import type { BidProductData } from "./components/ProductListCard";
+import { PlaceBidModal } from "./components/PlaceBidModal";
 
 export default function ProductListPage() {
   const {
@@ -42,6 +45,23 @@ export default function ProductListPage() {
   const handleResetFilters = () => {
     handleClearAllFilters();
     setPriceRange([0, 5000]);
+  };
+
+  const [selectedProduct, setSelectedProduct] = useState<BidProductData | null>(
+    null
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenBidModal = (productData: BidProductData) => {
+    setSelectedProduct(productData);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitBid = (amount: number) => {
+    if (!selectedProduct) return;
+    console.log(`Submitting bid ${amount} for product ${selectedProduct.id}`);
+    // Gọi API đấu giá ở đây
+    setIsModalOpen(false);
   };
 
   return (
@@ -142,7 +162,11 @@ export default function ProductListPage() {
             </div>
 
             {/* Product Grid */}
-            <ProductGrid products={products} loading={productsLoading} />
+            <ProductGrid
+              products={products}
+              loading={productsLoading}
+              onQuickPlaceBid={handleOpenBidModal}
+            />
 
             {/* Pagination */}
             <ProductPagination
@@ -154,6 +178,19 @@ export default function ProductListPage() {
           </main>
         </div>
       </div>
+
+      {selectedProduct && (
+        <PlaceBidModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          productId={selectedProduct.id}
+          productTitle={selectedProduct.title}
+          topBidder={selectedProduct.topBidder}
+          currentBid={selectedProduct.currentBid}
+          minimumBid={selectedProduct.minimumBid} // Lấy từ data đã truyền lên
+          onSubmitBid={handleSubmitBid}
+        />
+      )}
     </MainLayout>
   );
 }

@@ -8,6 +8,14 @@ import { Link } from "react-router-dom";
 import { useWatchlist } from "../../../hooks/useWatchlist";
 import type { WatchlistProduct } from "../../../types/watchlist";
 
+export interface BidProductData {
+  id: string;
+  title: string;
+  currentBid: number;
+  topBidder: string;
+  minimumBid: number;
+}
+
 interface ProductListCardProps {
   id: string;
   slug?: string;
@@ -19,6 +27,7 @@ interface ProductListCardProps {
   timeLeft: string;
   isNewArrival?: boolean;
   bidCount: number;
+  onQuickPlaceBid: (data: BidProductData) => void;
 }
 
 export function ProductListCard({
@@ -32,12 +41,25 @@ export function ProductListCard({
   timeLeft,
   isNewArrival = false,
   bidCount,
+  onQuickPlaceBid,
 }: ProductListCardProps) {
   const productUrl = slug ? `/product/${slug}-${id}` : `/product/${id}`;
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
 
   const productIdNumber = id;
   const isLove = isWatched(productIdNumber);
+
+  const handleQuickPlaceBid = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onQuickPlaceBid({
+      id,
+      title,
+      currentBid,
+      topBidder,
+      minimumBid: currentBid + 50,
+    });
+  };
 
   const handleToggleWatchlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -159,7 +181,7 @@ export function ProductListCard({
         </div>
 
         <div className="flex gap-2 pt-2">
-          <Button className="flex-1" size="sm">
+          <Button className="flex-1" size="sm" onClick={handleQuickPlaceBid}>
             Place Bid
           </Button>
           <Button

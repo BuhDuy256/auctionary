@@ -27,12 +27,12 @@ function calculateCategoryState(
 ): CategoryState {
   const hasChildren = category.children && category.children.length > 0;
 
-  console.log("Calculating state for:", category.name, "slug:", category.slug, "selected:", selectedCategories);
+  // console.log("Calculating state for:", category.name, "slug:", category.slug, "selected:", selectedCategories);
 
   if (!hasChildren) {
     // Leaf node - simple checked state
     const isChecked = selectedCategories.includes(category.slug);
-    console.log("  Leaf node, checked:", isChecked);
+    // console.log("  Leaf node, checked:", isChecked);
     return {
       checked: isChecked,
       indeterminate: false,
@@ -43,7 +43,6 @@ function calculateCategoryState(
   const checkedChildren = category.children!.filter((child) =>
     selectedCategories.includes(child.slug)
   );
-  console.log("  Parent node, checked children:", checkedChildren.length, "/", category.children!.length);
 
   if (checkedChildren.length === 0) {
     return { checked: false, indeterminate: false };
