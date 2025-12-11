@@ -79,6 +79,10 @@ const getStatusBadge = (status: ProductStatus) => {
           Expired
         </Badge>
       );
+    case "pending":
+      return (
+        <Badge className="bg-info/20 text-info border-info/50">Pending</Badge>
+      );
     default:
       return null;
   }

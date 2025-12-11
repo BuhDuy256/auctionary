@@ -5,8 +5,12 @@ export interface SellerDashboardStats {
   avgBidTime: number; // days
 }
 
-// need adding "pending" in the future
-export type ProductStatus = "active" | "removed" | "sold" | "expired";
+export type ProductStatus =
+  | "active"
+  | "removed"
+  | "sold"
+  | "expired"
+  | "pending";
 
 export interface SellerDashboardListing {
   id: number;
