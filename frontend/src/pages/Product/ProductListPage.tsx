@@ -17,6 +17,7 @@ import { useCategories } from "../../hooks/useCategories";
 import { useState } from "react";
 import type { BidProductData } from "./components/ProductListCard";
 import { PlaceBidModal } from "./components/PlaceBidModal";
+import { notify } from "../../utils/notify";
 
 export default function ProductListPage() {
   const {
@@ -62,6 +63,7 @@ export default function ProductListPage() {
     console.log(`Submitting bid ${amount} for product ${selectedProduct.id}`);
     // Gọi API đấu giá ở đây
     setIsModalOpen(false);
+    notify.success("Bid placed successfully");
   };
 
   return (
@@ -165,7 +167,7 @@ export default function ProductListPage() {
             <ProductGrid
               products={products}
               loading={productsLoading}
-              onQuickPlaceBid={handleOpenBidModal}
+              handleOpenBidModal={handleOpenBidModal}
             />
 
             {/* Pagination */}
@@ -187,7 +189,7 @@ export default function ProductListPage() {
           productTitle={selectedProduct.title}
           topBidder={selectedProduct.topBidder}
           currentBid={selectedProduct.currentBid}
-          minimumBid={selectedProduct.minimumBid} // Lấy từ data đã truyền lên
+          minimumBid={selectedProduct.minimumBid}
           onSubmitBid={handleSubmitBid}
         />
       )}

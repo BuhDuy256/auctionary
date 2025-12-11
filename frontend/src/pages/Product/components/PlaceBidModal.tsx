@@ -18,6 +18,8 @@ import {
   DollarSign,
   AlertCircle,
 } from "lucide-react";
+import { notify } from "../../../utils/notify";
+import { useAuth } from "../../../hooks/useAuth";
 
 interface PlaceBidModalProps {
   open: boolean;
@@ -45,6 +47,7 @@ export function PlaceBidModal({
   const [maxBid, setMaxBid] = useState("");
   const [error, setError] = useState("");
   const [showInfo, setShowInfo] = useState(false);
+  const { isAuthenticated } = useAuth();
 
   const handleBidChange = (value: string) => {
     // Only allow numbers and decimal point
@@ -59,24 +62,30 @@ export function PlaceBidModal({
 
     const bidAmount = parseFloat(maxBid);
 
+    if (!isAuthenticated) {
+      notify.error("Please login to place bid");
+      return;
+    }
+
     if (!maxBid || isNaN(bidAmount)) {
-      setError("Please enter a valid bid amount");
+      notify.error("Please enter a valid bid amount");
       return;
     }
 
     if (bidAmount < minimumBid) {
-      setError(`Your bid must be at least $${minimumBid.toLocaleString()}`);
+      notify.error(`Your bid must be at least $${minimumBid.toLocaleString()}`);
       return;
     }
 
     if (bidAmount <= currentBid) {
-      setError(
+      notify.error(
         `Your bid must be higher than the current bid of $${currentBid.toLocaleString()}`
       );
       return;
     }
 
     console.log("Placing bid for product: ", productId);
+
     onSubmitBid(bidAmount);
   };
 
@@ -99,7 +108,7 @@ export function PlaceBidModal({
           </DialogHeader>
         </div>
         <div className="flex-1 overflow-y-auto p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form className="space-y-6">
             {/* Current Bid Display */}
             <div className="p-4 rounded-lg bg-secondary border border-border">
               <div className="flex items-center justify-between">
@@ -242,6 +251,7 @@ export function PlaceBidModal({
             className="w-full"
             size="lg"
             disabled={!maxBid || !!error || isSubmitting}
+            onClick={handleSubmit}
           >
             <Gavel className="mr-2 h-5 w-5" />
             {isSubmitting ? "Placing Bid..." : "Confirm Bid"}

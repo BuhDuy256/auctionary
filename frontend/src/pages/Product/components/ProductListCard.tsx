@@ -27,7 +27,7 @@ interface ProductListCardProps {
   timeLeft: string;
   isNewArrival?: boolean;
   bidCount: number;
-  onQuickPlaceBid: (data: BidProductData) => void;
+  handleOpenBidModal: (data: BidProductData) => void;
 }
 
 export function ProductListCard({
@@ -41,7 +41,7 @@ export function ProductListCard({
   timeLeft,
   isNewArrival = false,
   bidCount,
-  onQuickPlaceBid,
+  handleOpenBidModal,
 }: ProductListCardProps) {
   const productUrl = slug ? `/product/${slug}-${id}` : `/product/${id}`;
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
@@ -52,7 +52,7 @@ export function ProductListCard({
   const handleQuickPlaceBid = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    onQuickPlaceBid({
+    handleOpenBidModal({
       id,
       title,
       currentBid,

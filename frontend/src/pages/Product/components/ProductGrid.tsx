@@ -4,13 +4,13 @@ import type { Product } from "../../../types/product";
 interface ProductGridProps {
   products: Product[];
   loading: boolean;
-  onQuickPlaceBid: (data: BidProductData) => void;
+  handleOpenBidModal: (data: BidProductData) => void;
 }
 
 export function ProductGrid({
   products,
   loading,
-  onQuickPlaceBid,
+  handleOpenBidModal,
 }: ProductGridProps) {
   if (loading) {
     return <div className="text-center py-12">Loading products...</div>;
@@ -30,7 +30,7 @@ export function ProductGrid({
         <ProductListCard
           key={product.id}
           {...product}
-          onQuickPlaceBid={onQuickPlaceBid}
+          handleOpenBidModal={handleOpenBidModal}
         />
       ))}
     </div>

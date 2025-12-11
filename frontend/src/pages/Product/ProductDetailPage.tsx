@@ -239,7 +239,7 @@ export default function ProductDetailPage({
                 <ProductListCard
                   key={relatedProduct.id}
                   {...relatedProduct}
-                  onQuickPlaceBid={onQuickPlaceBid}
+                  handleOpenBidModal={onQuickPlaceBid}
                 />
               ))}
             </div>
