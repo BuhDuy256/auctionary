@@ -1,11 +1,16 @@
 import { useState, useMemo } from "react";
-import { useSellerDashboard } from "../../hooks/useSellerDashboard";
-import { formatRelativeTime, calculateTimeLeft } from "../../utils/date";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
-import { Checkbox } from "../ui/checkbox";
+import { useSellerDashboard } from "../../../hooks/useSellerDashboard";
+import { formatRelativeTime, calculateTimeLeft } from "../../../utils/date";
+import { Button } from "../../../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../../components/ui/card";
+import { Badge } from "../../../components/ui/badge";
+import { Input } from "../../../components/ui/input";
+import { Checkbox } from "../../../components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -13,14 +18,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../ui/table";
+} from "../../../components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { ImageWithFallback } from "../ImageWithFallback";
+} from "../../../components/ui/dropdown-menu";
+import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import {
   Plus,
   Search,
@@ -41,7 +46,7 @@ import {
   ArrowUp,
   ArrowDown,
 } from "lucide-react";
-import type { ProductStatus } from "../../types/seller";
+import type { ProductStatus } from "../../../types/seller";
 
 interface SellerDashboardProps {
   onCreateAuction: () => void;

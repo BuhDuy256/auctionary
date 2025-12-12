@@ -1,4 +1,4 @@
-import { ImageGallery } from "../../../components/auction/ImageGallery";
+import { ImageGallery } from "./ImageGallery";
 
 interface ProductImagesProps {
   images: string[];

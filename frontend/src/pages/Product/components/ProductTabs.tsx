@@ -29,7 +29,7 @@ import { Badge } from "../../../components/ui/badge";
 import { MessageCircle, Plus, Check, X, User, Loader2 } from "lucide-react";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
-import { BidHistory } from "../../../components/auction/BidHistory";
+import { BidHistory } from "./BidHistory";
 import { usePermission } from "../../../hooks/usePermission";
 import type {
   BidHistoryResponse,
@@ -69,7 +69,7 @@ export function ProductTabs({
 }: ProductTabsProps) {
   const { hasRole } = usePermission();
   const { user } = useAuth();
-  
+
   // Check if current user is the seller
   const isSellerOfProduct = user?.id === sellerId;
   const [isEditing, setIsEditing] = useState(false);
@@ -184,18 +184,18 @@ export function ProductTabs({
             )}
             {isEditing && (
               <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleCancel}
                   disabled={isSavingDescription}
                 >
                   <X className="mr-2 h-4 w-4" />
                   Cancel
                 </Button>
-                <Button 
-                  variant="default" 
-                  size="sm" 
+                <Button
+                  variant="default"
+                  size="sm"
                   onClick={handleSave}
                   disabled={!editorContent.trim() || isSavingDescription}
                 >

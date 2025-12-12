@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { ImageWithFallback } from "../ImageWithFallback";
+import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "../../../components/ui/button";
 
 interface ImageGalleryProps {
   images: string[];

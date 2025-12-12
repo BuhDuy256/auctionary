@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { AdminLayout } from "../../layouts/AdminLayout";
-import { AdminOverview } from "../../components/auction/AdminOverview";
-import { CategoryManagement } from "../../components/auction/CategoryManagement";
-import { UserManagement } from "../../components/auction/UserManagement";
-import { ProductManagement } from "../../components/auction/ProductManagement";
+import { AdminOverview } from "./components/AdminOverview";
+import { CategoryManagement } from "./components/CategoryManagement";
+import { UserManagement } from "./components/UserManagement";
+import { ProductManagement } from "./components/ProductManagement";
 
 type AdminPage = "overview" | "categories" | "users" | "products";
 

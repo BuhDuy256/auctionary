@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { SellerDashboard } from "../../components/auction/SellerDashboard";
+import { SellerDashboard } from "./components/SellerDashboard";
 import MainLayout from "../../layouts/MainLayout";
 
 export default function SellerDashboardPage() {

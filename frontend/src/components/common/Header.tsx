@@ -15,6 +15,7 @@ import {
   BookA,
   Sun,
   Moon,
+  UserStar,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
@@ -150,7 +151,15 @@ const Header: React.FC = () => {
                 </div>
 
                 {/* Upgrade Button */}
-                {hasRole("seller") ? (
+                {hasRole("admin") ? (
+                  <Button
+                    className="hidden lg:flex"
+                    onClick={() => navigate("/admin/dashboard")}
+                  >
+                    <UserStar className="mr h-4 w-4" />
+                    Admin Dashboard
+                  </Button>
+                ) : hasRole("seller") ? (
                   <Button
                     className="hidden lg:flex"
                     onClick={() => navigate("/seller/dashboard")}

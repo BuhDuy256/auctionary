@@ -1,5 +1,5 @@
 import { Button } from "../../../components/ui/button";
-import { WatchlistCard } from "../../../components/auction/WatchlistCard";
+import { WatchlistCard } from "./WatchlistCard";
 import { useWatchlist } from "../../../hooks/useWatchlist";
 import { Loader2, Trash2, HeartCrack } from "lucide-react";
 import type { WatchlistProduct } from "../../../types/watchlist";
