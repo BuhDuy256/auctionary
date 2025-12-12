@@ -1,7 +1,5 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
 import {
@@ -12,10 +10,26 @@ import {
   FolderTree,
   Settings,
   Bell,
-  Search,
   LogOut,
   Activity,
+  User,
+  Sun,
+  Moon,
+  CircleUserRound,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../components/ui/dropdown-menu";
+import { useTheme } from "../hooks/useTheme";
+import { useAuth } from "../hooks/useAuth";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -55,120 +69,213 @@ export function AdminLayout({
   currentPage,
   onNavigate,
 }: AdminLayoutProps) {
+  const { theme, setTheme } = useTheme();
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const currentPageLabel =
+    navigationItems.find((item) => item.id === currentPage)?.label ||
+    "Dashboard";
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-border bg-card/50 flex flex-col flex-shrink-0">
-        {/* Logo */}
-        <div className="p-6 border-b border-border">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-accent/10 border border-accent/30">
+      <aside
+        className={`sticky top-0 h-screen border-r border-border bg-card/50 flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out ${
+          isCollapsed ? "w-[80px]" : "w-64"
+        }`}
+      >
+        <div
+          className={`p-4 border-border flex-shrink-0 flex items-center ${
+            isCollapsed ? "justify-center" : ""
+          }`}
+        >
+          <Link
+            to="/"
+            className="flex items-center gap-2 flex-shrink-0 hover:opacity-80 transition-opacity text-accent overflow-hidden whitespace-nowrap"
+          >
+            <div className="p-2 rounded-lg bg-accent/10 border border-accent/30 flex-shrink-0">
               <BookA className="h-5 w-5 text-accent" />
             </div>
-            <div>
-              <div className="tracking-tight">Auctionary</div>
-              <div className="text-xs text-muted-foreground">Admin Panel</div>
-            </div>
-          </div>
+            <span
+              className={`tracking-tight text-lg transition-all duration-300 ${
+                isCollapsed ? "opacity-0 w-0 hidden" : "opacity-100 w-auto"
+              }`}
+            >
+              Auctionary
+            </span>
+          </Link>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto overflow-x-hidden">
+          <Separator className="mb-6" />
           {navigationItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentPage === item.id;
 
             return (
-              <button
+              <Button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+                variant={isActive ? "default" : "ghost"}
+                title={isCollapsed ? item.label : undefined}
+                className={`group w-full flex items-center transition-all h-12 relative ${
+                  isCollapsed ? "justify-center px-0" : "justify-between px-4"
+                } ${
                   isActive
-                    ? "bg-accent/10 border border-accent/30 text-accent"
-                    : "hover:bg-secondary/50 border border-transparent"
+                    ? "bg-accent/10 border border-accent/30 text-accent hover:bg-accent/20"
+                    : "hover:bg-secondary/50 border border-transparent hover:border-accent/30 hover:text-accent"
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div
+                  className={`flex items-center gap-3 ${
+                    !isCollapsed ? "flex-1" : ""
+                  }`}
+                >
                   <Icon
-                    className={`h-5 w-5 ${
+                    className={`h-5 w-5 flex-shrink-0 group-hover:text-accent ${
                       isActive ? "text-accent" : "text-muted-foreground"
                     }`}
                   />
-                  <span className="text-sm">{item.label}</span>
+                  {!isCollapsed && (
+                    <span className="text-sm truncate">{item.label}</span>
+                  )}
                 </div>
-                {item.badge && (
-                  <Badge className="bg-destructive/20 text-destructive border-destructive/50 text-xs">
-                    {item.badge}
-                  </Badge>
-                )}
-              </button>
+
+                {item.badge &&
+                  (!isCollapsed ? (
+                    <Badge className="bg-destructive/20 text-destructive border-destructive/50 text-xs">
+                      {item.badge}
+                    </Badge>
+                  ) : (
+                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive" />
+                  ))}
+              </Button>
             );
           })}
 
           <Separator className="my-4" />
 
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary/50 border border-transparent transition-all">
-            <Settings className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm">Settings</span>
+          <button
+            title={isCollapsed ? "Settings" : undefined}
+            className={`w-full flex items-center px-4 py-3 rounded-lg hover:bg-secondary/50 border border-transparent transition-all h-12 ${
+              isCollapsed ? "justify-center px-0" : "gap-3"
+            }`}
+          >
+            <Settings className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            {!isCollapsed && <span className="text-sm">Settings</span>}
           </button>
 
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-secondary/50 border border-transparent transition-all">
-            <Activity className="h-5 w-5 text-muted-foreground" />
-            <span className="text-sm">Activity Logs</span>
+          <button
+            title={isCollapsed ? "Activity Logs" : undefined}
+            className={`w-full flex items-center px-4 py-3 rounded-lg hover:bg-secondary/50 border border-transparent transition-all h-12 ${
+              isCollapsed ? "justify-center px-0" : "gap-3"
+            }`}
+          >
+            <Activity className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+            {!isCollapsed && <span className="text-sm">Activity Logs</span>}
           </button>
         </nav>
 
-        {/* Admin User */}
-        <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar className="h-10 w-10 border-2 border-accent/30">
-              <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" />
-              <AvatarFallback>AD</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="text-sm">Admin User</div>
-              <div className="text-xs text-muted-foreground">Super Admin</div>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" className="w-full">
-            <LogOut className="h-4 w-4 mr-2" />
-            Logout
+        <div className="p-4 mt-auto">
+          <Button
+            variant="ghost"
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="w-full flex items-center justify-center h-10 hover:bg-secondary/50"
+          >
+            {isCollapsed ? (
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+            ) : (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <ChevronLeft className="h-5 w-5" />
+                <span className="text-sm">Collapse Sidebar</span>
+              </div>
+            )}
           </Button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <header className="border-b border-border bg-card/30 backdrop-blur">
+      <div className="flex-1 flex flex-col overflow-hidden transition-all duration-300">
+        <header className="border-b border-border bg-card/30 backdrop-blur sticky top-0 z-30">
           <div className="px-6 py-4 flex items-center justify-between">
-            {/* Search */}
-            <div className="flex-1 max-w-xl">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Search users, products, transactions..."
-                  className="pl-10 h-11 bg-background border-border"
-                />
-              </div>
-            </div>
+            <h2 className="text-lg font-semibold text-foreground tracking-tight">
+              {currentPageLabel}
+            </h2>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
+              {theme === "tactical" ? (
+                <Button
+                  variant="ghost"
+                  className="lg:flex"
+                  onClick={() => setTheme("light")}
+                >
+                  <Sun className="h-5 w-5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="ghost"
+                  className="lg:flex"
+                  onClick={() => setTheme("tactical")}
+                >
+                  <Moon className="h-5 w-5" />
+                </Button>
+              )}
+
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="h-5 w-5" />
                 <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
               </Button>
-              <Badge className="bg-success/20 text-success border-success/50">
-                <Activity className="h-3 w-3 mr-1" />
-                All Systems Operational
-              </Badge>
+
+              <Separator orientation="vertical" className="h-6" />
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pl-4 border-l border-border">
+                  <div className="hidden md:block text-right">
+                    <div className="text-sm">Welcome back,</div>
+                    <div className="text-xs text-muted-foreground">
+                      {user?.fullName || user?.email}
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button className="cursor-pointer outline-none">
+                        <CircleUserRound className="h-10 w-10 text-muted-foreground hover:text-foreground transition-colors" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="max-w-60">
+                      <DropdownMenuLabel className="font-bold">
+                        {user?.fullName || user?.email}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => navigate("/profile")}
+                        className="group cursor-pointer"
+                      >
+                        <User className="h-5 w-5 text-muted-foreground group-focus:text-accent-foreground transition-colors" />
+                        <span>Profile</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="group cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
+                      >
+                        <LogOut className="h-5 w-5 text-destructive group-focus:text-destructive" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="flex-1 overflow-auto">
           <div className="p-6">{children}</div>
         </main>
