@@ -86,6 +86,8 @@ export function UserManagement() {
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const {
     users,
@@ -102,16 +104,19 @@ export function UserManagement() {
     handleRejectRequest,
   } = useUpgradeRequests();
 
-  // Filter users
+  // Filter users - optimized to cache toLowerCase results
   const filteredUsers = useMemo(() => {
+    const searchLower = searchQuery.toLowerCase();
+    const roleLower = roleFilter.toLowerCase();
+    const statusLower = statusFilter.toLowerCase();
+
     return users.filter((user) => {
       const matchesSearch =
-        user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRole =
-        roleFilter === "all" || user.role === roleFilter.toLowerCase();
+        user.fullName.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower);
+      const matchesRole = roleFilter === "all" || user.role === roleLower;
       const matchesStatus =
-        statusFilter === "all" || user.status === statusFilter.toLowerCase();
+        statusFilter === "all" || user.status === statusLower;
 
       return matchesSearch && matchesRole && matchesStatus;
     });
@@ -121,6 +126,19 @@ export function UserManagement() {
   const pendingRequests = useMemo(() => {
     return requests.filter((req) => req.status === "pending");
   }, [requests]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredUsers.slice(startIndex, endIndex);
+  }, [filteredUsers, currentPage, itemsPerPage]);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter, statusFilter, itemsPerPage]);
 
   // Loading skeleton for table
   const TableSkeleton = () => (
@@ -296,11 +314,6 @@ export function UserManagement() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
-
-                <Button variant="outline">
-                  <Filter className="h-4 w-4 mr-2" />
-                  More Filters
-                </Button>
               </div>
             </CardContent>
           </Card>
@@ -344,7 +357,7 @@ export function UserManagement() {
                     </TableBody>
                   ) : (
                     <TableBody>
-                      {filteredUsers.map((user) => (
+                      {paginatedUsers.map((user) => (
                         <TableRow key={user.id}>
                           <TableCell>
                             <div className="flex items-center gap-3">
@@ -463,7 +476,100 @@ export function UserManagement() {
               </CardContent>
             </Card>
           )}
-          {/* TODO: Infinite scroll pagination */}
+
+          {/* Pagination Controls */}
+          {!usersLoading && !usersError && filteredUsers.length > 0 && (
+            <Card className="border-border">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                      {Math.min(
+                        currentPage * itemsPerPage,
+                        filteredUsers.length
+                      )}{" "}
+                      of {filteredUsers.length} users
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">Items per page:</span>
+                      <Select
+                        value={itemsPerPage.toString()}
+                        onValueChange={(value) =>
+                          setItemsPerPage(Number(value))
+                        }
+                      >
+                        <SelectTrigger className="w-[80px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="20">20</SelectItem>
+                          <SelectItem value="30">30</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((page) => {
+                          // Show first page, last page, current page, and pages around current
+                          return (
+                            page === 1 ||
+                            page === totalPages ||
+                            Math.abs(page - currentPage) <= 1
+                          );
+                        })
+                        .map((page, index, array) => {
+                          // Add ellipsis if there's a gap
+                          const showEllipsisBefore =
+                            index > 0 && page - array[index - 1] > 1;
+
+                          return (
+                            <div key={page} className="flex items-center gap-1">
+                              {showEllipsisBefore && (
+                                <span className="px-2 text-muted-foreground">
+                                  ...
+                                </span>
+                              )}
+                              <Button
+                                variant={
+                                  currentPage === page ? "default" : "outline"
+                                }
+                                size="sm"
+                                className="w-8 h-8 p-0"
+                                onClick={() => setCurrentPage(page)}
+                              >
+                                {page}
+                              </Button>
+                            </div>
+                          );
+                        })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Upgrade Requests Tab */}
