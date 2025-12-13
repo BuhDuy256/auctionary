@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { usePermission } from "../../hooks/usePermission";
 import { useTheme } from "../../hooks/useTheme";
+import { useUpgradeRequest } from "../../hooks/useUpgradeRequest";
 import {
   LogIn,
   LogOut,
@@ -16,6 +17,7 @@ import {
   Sun,
   Moon,
   UserStar,
+  Clock,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
@@ -28,12 +30,31 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { UpgradeRequestModal } from "../modals/UpgradeRequestModal";
+import { RequestStatusModal } from "../modals/RequestStatusModal";
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const { hasRole } = usePermission();
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
+  const {
+    requestStatus,
+    isLoading: isUpgradeLoading,
+    fetchStatus,
+    submitRequest,
+    cancelRequest,
+  } = useUpgradeRequest();
+
+  const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
+  const [showStatusModal, setShowStatusModal] = React.useState(false);
+
+  // Fetch upgrade request status on component mount if authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      fetchStatus();
+    }
+  }, [isAuthenticated, user, fetchStatus]);
 
   const handleLogout = () => {
     logout();
@@ -150,7 +171,7 @@ const Header: React.FC = () => {
                   </DropdownMenu>
                 </div>
 
-                {/* Upgrade Button */}
+                {/* Upgrade Button - Dynamic based on user status */}
                 {hasRole("admin") ? (
                   <Button
                     className="hidden lg:flex"
@@ -167,12 +188,24 @@ const Header: React.FC = () => {
                     <BadgeDollarSign className="mr h-4 w-4" />
                     Seller Dashboard
                   </Button>
-                ) : (
-                  <Button className="hidden lg:flex">
+                ) : user?.status === "pending_upgrade" ? (
+                  <Button
+                    className="hidden lg:flex"
+                    variant="outline"
+                    onClick={() => setShowStatusModal(true)}
+                  >
+                    <Clock className="mr h-4 w-4" />
+                    Pending Request
+                  </Button>
+                ) : user?.status === "active" && user?.isVerified ? (
+                  <Button
+                    className="hidden lg:flex"
+                    onClick={() => setShowUpgradeModal(true)}
+                  >
                     <Sparkles className="mr h-4 w-4" />
                     Upgrade to Seller
                   </Button>
-                )}
+                ) : null}
               </div>
             ) : (
               <div className="flex items-center gap-2">
@@ -197,6 +230,22 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Upgrade Request Modals */}
+      <UpgradeRequestModal
+        open={showUpgradeModal}
+        onOpenChange={setShowUpgradeModal}
+        onSubmit={submitRequest}
+        isSubmitting={isUpgradeLoading}
+      />
+
+      <RequestStatusModal
+        open={showStatusModal}
+        onOpenChange={setShowStatusModal}
+        request={requestStatus}
+        onCancel={cancelRequest}
+        isCancelling={isUpgradeLoading}
+      />
     </header>
   );
 };

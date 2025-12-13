@@ -103,6 +103,7 @@ export const getAllUpgradeRequests =
 /**
  * Approve an upgrade request
  * Validates the request exists and is pending before approval
+ * Updates user role to seller and status to active
  */
 export const approveUpgradeRequest = async (
   requestId: number
@@ -118,7 +119,21 @@ export const approveUpgradeRequest = async (
     throw new BadRequestError(`Request has already been ${request.status}`);
   }
 
+  // Approve the request
   const result = await adminRepository.approveUpgradeRequest(requestId);
+
+  // Get seller role ID
+  const sellerRoleId = await adminRepository.getRoleIdByName("seller");
+  if (!sellerRoleId) {
+    throw new Error("Seller role not found in database");
+  }
+
+  // Assign seller role to user
+  await adminRepository.assignRoleToUser(request.user_id, sellerRoleId);
+
+  // Update user status to active
+  await adminRepository.updateUserStatus(request.user_id, "active");
+
   return mapUpgradeRequestActionResponse(result);
 };
 

@@ -108,3 +108,49 @@ export const suspendUser = async (userId: number) => {
 export const findUserById = async (userId: number) => {
   return await db("users").where({ id: userId }).first();
 };
+
+/**
+ * Get role ID by role name
+ * Used to find seller role ID for assignment
+ */
+export const getRoleIdByName = async (roleName: string) => {
+  const role = await db("roles").where({ name: roleName }).first();
+  return role ? role.role_id : null;
+};
+
+/**
+ * Assign a role to a user
+ * Inserts into users_roles table
+ */
+export const assignRoleToUser = async (userId: number, roleId: number) => {
+  // Check if role already assigned
+  const existing = await db("users_roles")
+    .where({ user_id: userId, role_id: roleId })
+    .first();
+
+  if (existing) {
+    return existing; // Role already assigned
+  }
+
+  const [result] = await db("users_roles")
+    .insert({
+      user_id: userId,
+      role_id: roleId,
+    })
+    .returning("*");
+
+  return result;
+};
+
+/**
+ * Update user status by ID
+ * Used to change user status (e.g., pending_upgrade -> active)
+ */
+export const updateUserStatus = async (userId: number, status: string) => {
+  const [result] = await db("users")
+    .where({ id: userId })
+    .update({ status })
+    .returning(["id", "status"]);
+
+  return result;
+};
