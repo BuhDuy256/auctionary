@@ -126,8 +126,7 @@ CREATE TABLE public.product_comments (
   user_id integer NOT NULL,
   content text NOT NULL,
   parent_id integer,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp without time zone,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT product_comments_pkey PRIMARY KEY (comment_id),
   CONSTRAINT product_comments_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT product_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -246,9 +245,10 @@ CREATE TABLE public.upgrade_requests (
   request_id integer NOT NULL DEFAULT nextval('upgrade_requests_request_id_seq'::regclass),
   user_id integer NOT NULL,
   status USER-DEFINED NOT NULL DEFAULT 'pending'::upgrade_status_enum,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  approved_at timestamp without time zone,
-  expires_at timestamp without time zone DEFAULT (CURRENT_TIMESTAMP + '7 days'::interval),
+  created_at timestamp with time zone NOT NULL,
+  approved_at timestamp with time zone,
+  expires_at timestamp with time zone,
+  message text DEFAULT 'I want to be a Seller'::text,
   CONSTRAINT upgrade_requests_pkey PRIMARY KEY (request_id),
   CONSTRAINT upgrade_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
