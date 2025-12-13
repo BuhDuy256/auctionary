@@ -6,7 +6,7 @@ CREATE TABLE public.auto_bids (
   product_id integer NOT NULL,
   bidder_id integer NOT NULL,
   max_amount numeric NOT NULL CHECK (max_amount > 0::numeric),
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT auto_bids_pkey PRIMARY KEY (auto_bid_id),
   CONSTRAINT auto_bids_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT auto_bids_bidder_id_fkey FOREIGN KEY (bidder_id) REFERENCES public.users(id)
@@ -16,7 +16,7 @@ CREATE TABLE public.bids (
   product_id integer NOT NULL,
   bidder_id integer NOT NULL,
   amount numeric NOT NULL CHECK (amount > 0::numeric),
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT bids_pkey PRIMARY KEY (bid_id),
   CONSTRAINT bids_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT bids_bidder_id_fkey FOREIGN KEY (bidder_id) REFERENCES public.users(id)
@@ -32,7 +32,7 @@ CREATE TABLE public.categories (
 CREATE TABLE public.conversation_participants (
   user_id integer NOT NULL,
   conversation_id integer NOT NULL,
-  joined_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  joined_at timestamp with time zone,
   CONSTRAINT conversation_participants_pkey PRIMARY KEY (user_id, conversation_id),
   CONSTRAINT conversation_participants_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT conversation_participants_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversations(id)
@@ -42,7 +42,7 @@ CREATE TABLE public.conversations (
   name character varying,
   is_group boolean DEFAULT false,
   creator_id integer NOT NULL,
-  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone,
   CONSTRAINT conversations_pkey PRIMARY KEY (id),
   CONSTRAINT conversations_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.users(id)
 );
@@ -52,8 +52,8 @@ CREATE TABLE public.invoices (
   shipping_address text,
   payment_proof_url character varying,
   shipping_tracking_code character varying,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp without time zone,
+  created_at timestamp with time zone NOT NULL,
+  updated_at timestamp with time zone,
   CONSTRAINT invoices_pkey PRIMARY KEY (invoice_id),
   CONSTRAINT invoices_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id)
 );
@@ -62,7 +62,7 @@ CREATE TABLE public.messages (
   conversation_id integer NOT NULL,
   sender_id integer NOT NULL,
   body text NOT NULL,
-  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone,
   CONSTRAINT messages_pkey PRIMARY KEY (id),
   CONSTRAINT messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversations(id),
   CONSTRAINT messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
@@ -76,7 +76,7 @@ CREATE TABLE public.notifications (
   is_read boolean NOT NULL DEFAULT false,
   read_at timestamp without time zone,
   action_url character varying,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT notifications_pkey PRIMARY KEY (notification_id),
   CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -86,7 +86,7 @@ CREATE TABLE public.order_chat (
   sender_id integer NOT NULL,
   receiver_id integer NOT NULL,
   content text NOT NULL,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT order_chat_pkey PRIMARY KEY (message_id),
   CONSTRAINT order_chat_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id),
   CONSTRAINT order_chat_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id),
@@ -100,7 +100,7 @@ CREATE TABLE public.orders (
   final_price numeric NOT NULL,
   status USER-DEFINED NOT NULL DEFAULT 'pending'::order_status_enum,
   cancellation_reason text,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT orders_pkey PRIMARY KEY (order_id),
   CONSTRAINT orders_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT orders_winner_id_fkey FOREIGN KEY (winner_id) REFERENCES public.users(id),
@@ -111,7 +111,7 @@ CREATE TABLE public.otp_verifications (
   user_id integer NOT NULL,
   otp character varying NOT NULL,
   is_used boolean DEFAULT false,
-  created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone,
   CONSTRAINT otp_verifications_pkey PRIMARY KEY (id),
   CONSTRAINT otp_verifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -126,8 +126,7 @@ CREATE TABLE public.product_comments (
   user_id integer NOT NULL,
   content text NOT NULL,
   parent_id integer,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp without time zone,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT product_comments_pkey PRIMARY KEY (comment_id),
   CONSTRAINT product_comments_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT product_comments_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
@@ -140,7 +139,7 @@ CREATE TABLE public.product_descriptions (
   content text NOT NULL,
   lang character varying NOT NULL DEFAULT 'vi'::character varying,
   version integer NOT NULL DEFAULT 1,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT product_descriptions_pkey PRIMARY KEY (description_id),
   CONSTRAINT product_descriptions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id),
   CONSTRAINT product_descriptions_author_id_fkey FOREIGN KEY (author_id) REFERENCES public.users(id)
@@ -157,7 +156,7 @@ CREATE TABLE public.product_rejections (
   product_id integer NOT NULL,
   bidder_id integer NOT NULL,
   reason text,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT product_rejections_pkey PRIMARY KEY (rejection_id),
   CONSTRAINT product_rejections_bidder_id_fkey FOREIGN KEY (bidder_id) REFERENCES public.users(id),
   CONSTRAINT product_rejections_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id)
@@ -178,7 +177,7 @@ CREATE TABLE public.products (
   auto_extend boolean NOT NULL DEFAULT false,
   status USER-DEFINED NOT NULL DEFAULT 'active'::product_status_enum,
   fts tsvector,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   slug text,
   CONSTRAINT products_pkey PRIMARY KEY (product_id),
   CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id) REFERENCES public.categories(category_id),
@@ -189,10 +188,10 @@ CREATE TABLE public.refresh_tokens (
   token_id integer NOT NULL DEFAULT nextval('refresh_tokens_token_id_seq'::regclass),
   user_id integer NOT NULL,
   token_hash character varying NOT NULL UNIQUE,
-  expires_at timestamp without time zone NOT NULL,
+  expires_at timestamp with time zone NOT NULL,
   device_info text,
   ip_address character varying,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   last_used_at timestamp without time zone,
   CONSTRAINT refresh_tokens_pkey PRIMARY KEY (token_id),
   CONSTRAINT refresh_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
@@ -204,8 +203,8 @@ CREATE TABLE public.reviews (
   reviewered_id integer NOT NULL,
   rating integer NOT NULL CHECK (rating = ANY (ARRAY[1, '-1'::integer])),
   content text,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp without time zone,
+  created_at timestamp with time zone NOT NULL,
+  updated_at timestamp with time zone,
   CONSTRAINT reviews_pkey PRIMARY KEY (review_id),
   CONSTRAINT reviews_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(order_id),
   CONSTRAINT reviews_reviewer_id_fkey FOREIGN KEY (reviewer_id) REFERENCES public.users(id),
@@ -231,7 +230,7 @@ CREATE TABLE public.social_accounts (
   email character varying,
   name character varying,
   avatar_url character varying,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT social_accounts_pkey PRIMARY KEY (id),
   CONSTRAINT social_accounts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -239,16 +238,17 @@ CREATE TABLE public.system_settings (
   setting_key character varying NOT NULL,
   setting_value character varying NOT NULL,
   description text,
-  updated_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp with time zone NOT NULL,
   CONSTRAINT system_settings_pkey PRIMARY KEY (setting_key)
 );
 CREATE TABLE public.upgrade_requests (
   request_id integer NOT NULL DEFAULT nextval('upgrade_requests_request_id_seq'::regclass),
   user_id integer NOT NULL,
   status USER-DEFINED NOT NULL DEFAULT 'pending'::upgrade_status_enum,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  approved_at timestamp without time zone,
-  expires_at timestamp without time zone DEFAULT (CURRENT_TIMESTAMP + '7 days'::interval),
+  created_at timestamp with time zone NOT NULL,
+  approved_at timestamp with time zone,
+  expires_at timestamp with time zone,
+  message text DEFAULT 'I want to be a Seller'::text,
   CONSTRAINT upgrade_requests_pkey PRIMARY KEY (request_id),
   CONSTRAINT upgrade_requests_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -257,9 +257,9 @@ CREATE TABLE public.user_otps (
   user_id integer NOT NULL,
   otp_code character varying NOT NULL,
   purpose USER-DEFINED NOT NULL,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  expires_at timestamp without time zone NOT NULL,
-  consumed_at timestamp without time zone,
+  created_at timestamp with time zone NOT NULL,
+  expires_at timestamp with time zone NOT NULL,
+  consumed_at timestamp with time zone,
   CONSTRAINT user_otps_pkey PRIMARY KEY (otp_id),
   CONSTRAINT user_otps_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
@@ -276,8 +276,8 @@ CREATE TABLE public.users (
   password_updated_at timestamp without time zone,
   failed_login_attempts integer NOT NULL DEFAULT 0,
   last_login_at timestamp without time zone,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
+  updated_at timestamp with time zone NOT NULL,
   CONSTRAINT users_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.users_roles (
@@ -290,7 +290,7 @@ CREATE TABLE public.users_roles (
 CREATE TABLE public.watchlist (
   user_id integer NOT NULL,
   product_id integer NOT NULL,
-  created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at timestamp with time zone NOT NULL,
   CONSTRAINT watchlist_pkey PRIMARY KEY (user_id, product_id),
   CONSTRAINT watchlist_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id),
   CONSTRAINT watchlist_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(product_id)
