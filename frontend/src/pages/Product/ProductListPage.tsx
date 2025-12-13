@@ -11,7 +11,7 @@ import {
 } from "../../components/ui/select";
 import { ProductFilters } from "./components/ProductFilters";
 import { ProductGrid } from "./components/ProductGrid";
-import { ProductPagination } from "./components/ProductPagination";
+import { Pagination } from "../../components/common/Pagination";
 import { useProducts } from "../../hooks/useProducts";
 import { useCategories } from "../../hooks/useCategories";
 import { PlaceBidModal } from "./components/PlaceBidModal";
@@ -165,12 +165,18 @@ export default function ProductListPage() {
             />
 
             {/* Pagination */}
-            <ProductPagination
-              currentPage={pagination.page}
-              totalPages={pagination.totalPages}
-              disabled={productsLoading}
-              onPageChange={handlePageChange}
-            />
+            {!productsLoading && pagination.total > 0 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={pagination.totalPages}
+                totalItems={pagination.total}
+                itemsPerPage={pagination.limit}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={() => {}} // Server-side pagination, no items per page control for now
+                itemLabel="products"
+                pageSizeOptions={[]} // Hide items per page selector for server-side pagination
+              />
+            )}
           </main>
         </div>
       </div>

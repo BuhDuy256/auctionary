@@ -35,7 +35,6 @@ import {
 import {
   Users,
   Search,
-  Filter,
   UserPlus,
   MoreVertical,
   Eye,
@@ -50,6 +49,7 @@ import {
 } from "lucide-react";
 import { useAdminUsers } from "../../../hooks/useAdminUsers";
 import { useUpgradeRequests } from "../../../hooks/useUpgradeRequests";
+import { Pagination } from "../../../components/common/Pagination";
 
 // Status display mapping
 const getStatusDisplay = (status: string): string => {
@@ -479,96 +479,16 @@ export function UserManagement() {
 
           {/* Pagination Controls */}
           {!usersLoading && !usersError && filteredUsers.length > 0 && (
-            <Card className="border-border">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm text-muted-foreground">
-                      Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-                      {Math.min(
-                        currentPage * itemsPerPage,
-                        filteredUsers.length
-                      )}{" "}
-                      of {filteredUsers.length} users
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">Items per page:</span>
-                      <Select
-                        value={itemsPerPage.toString()}
-                        onValueChange={(value) =>
-                          setItemsPerPage(Number(value))
-                        }
-                      >
-                        <SelectTrigger className="w-[80px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="10">10</SelectItem>
-                          <SelectItem value="20">20</SelectItem>
-                          <SelectItem value="30">30</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage - 1)}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter((page) => {
-                          // Show first page, last page, current page, and pages around current
-                          return (
-                            page === 1 ||
-                            page === totalPages ||
-                            Math.abs(page - currentPage) <= 1
-                          );
-                        })
-                        .map((page, index, array) => {
-                          // Add ellipsis if there's a gap
-                          const showEllipsisBefore =
-                            index > 0 && page - array[index - 1] > 1;
-
-                          return (
-                            <div key={page} className="flex items-center gap-1">
-                              {showEllipsisBefore && (
-                                <span className="px-2 text-muted-foreground">
-                                  ...
-                                </span>
-                              )}
-                              <Button
-                                variant={
-                                  currentPage === page ? "default" : "outline"
-                                }
-                                size="sm"
-                                className="w-8 h-8 p-0"
-                                onClick={() => setCurrentPage(page)}
-                              >
-                                {page}
-                              </Button>
-                            </div>
-                          );
-                        })}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              totalItems={filteredUsers.length}
+              itemsPerPage={itemsPerPage}
+              onPageChange={setCurrentPage}
+              onItemsPerPageChange={setItemsPerPage}
+              itemLabel="users"
+              pageSizeOptions={[10, 20, 30, 50]}
+            />
           )}
         </TabsContent>
 
