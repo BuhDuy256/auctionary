@@ -124,7 +124,7 @@ const allUsers: User[] = [
     name: "Alex Turner",
     email: "alex.turner@email.com",
     role: "Seller",
-    status: "Active",
+    status: "Pending",
     joined: "Aug 5, 2024",
     totalSales: 178,
     reputation: 88,
