@@ -50,6 +50,7 @@ import {
 import { useAdminUsers } from "../../../hooks/useAdminUsers";
 import { useUpgradeRequests } from "../../../hooks/useUpgradeRequests";
 import { Pagination } from "../../../components/common/Pagination";
+import { notify } from "../../../utils/notify";
 
 // Status display mapping
 const getStatusDisplay = (status: string): string => {
@@ -103,6 +104,10 @@ export function UserManagement() {
     handleApproveRequest,
     handleRejectRequest,
   } = useUpgradeRequests();
+
+  const handleViewUserProfile = (_userId: number) => {
+    notify.error("Not implemented yet");
+  };
 
   // Filter users - optimized to cache toLowerCase results
   const filteredUsers = useMemo(() => {
@@ -445,23 +450,22 @@ export function UserManagement() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                  <Eye className="h-4 w-4 mr-2" />
+                                <DropdownMenuItem
+                                  className="group"
+                                  onClick={() => handleViewUserProfile(user.id)}
+                                >
+                                  <Eye className="h-4 w-4 mr-2 group-focus:text-accent-foreground" />
                                   View Profile
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Shield className="h-4 w-4 mr-2" />
-                                  View Activity
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 {user.status !== "suspended" && (
                                   <DropdownMenuItem
-                                    className="text-destructive"
+                                    className="group focus:bg-destructive/10 text-destructive focus:text-destructive"
                                     onClick={() =>
                                       handleSuspendUser(user.id, user.fullName)
                                     }
                                   >
-                                    <Ban className="h-4 w-4 mr-2" />
+                                    <Ban className="h-4 w-4 mr-2 group-focus:text-destructive" />
                                     Suspend User
                                   </DropdownMenuItem>
                                 )}

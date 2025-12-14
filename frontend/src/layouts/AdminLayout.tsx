@@ -48,7 +48,7 @@ const navigationItems = [
     id: "users" as const,
     label: "User Management",
     icon: Users,
-    badge: "12",
+    badge: null,
   },
   {
     id: "categories" as const,
@@ -60,7 +60,7 @@ const navigationItems = [
     id: "products" as const,
     label: "Product Management",
     icon: Package,
-    badge: "3",
+    badge: null,
   },
 ];
 

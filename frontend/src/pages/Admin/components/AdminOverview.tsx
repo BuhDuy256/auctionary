@@ -11,22 +11,12 @@ import {
   Package,
   DollarSign,
   UserPlus,
-  AlertCircle,
   Clock,
   CheckCircle2,
   Activity,
   ArrowUp,
   ArrowDown,
-  Eye,
 } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../../components/ui/table";
 
 const statsCards = [
   {
@@ -103,33 +93,6 @@ const recentActivities = [
     action: "upgraded to seller account",
     time: "3 hours ago",
     status: "completed",
-  },
-];
-
-const flaggedAuctions = [
-  {
-    id: "#8923",
-    product: "Designer Handbag",
-    seller: "Mike Davis",
-    reason: "Counterfeit Product",
-    reports: 5,
-    status: "Under Review",
-  },
-  {
-    id: "#7821",
-    product: "iPhone 15 Pro",
-    seller: "Tech Dealer",
-    reason: "Misleading Description",
-    reports: 3,
-    status: "Under Review",
-  },
-  {
-    id: "#6745",
-    product: "Rolex Watch",
-    seller: "Watch Seller",
-    reason: "Fake Product",
-    reports: 8,
-    status: "Action Required",
   },
 ];
 
@@ -338,79 +301,6 @@ export function AdminOverview() {
           </Card>
         </div>
       </div>
-
-      {/* Flagged Auctions Table */}
-      <Card className="border-border">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" />
-              Flagged Auctions
-            </CardTitle>
-            <Button variant="outline" size="sm">
-              View All Reports
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Auction ID</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Seller</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>Reports</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {flaggedAuctions.map((auction) => (
-                <TableRow key={auction.id}>
-                  <TableCell>
-                    <code className="text-xs font-mono px-2 py-1 rounded bg-secondary border border-border">
-                      {auction.id}
-                    </code>
-                  </TableCell>
-                  <TableCell>{auction.product}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {auction.seller}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className="bg-red-500/20 text-red-500 border-red-500/50"
-                    >
-                      {auction.reason}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className="bg-accent/20 text-accent border-accent/50">
-                      {auction.reports}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">
-                      {auction.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        Review
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -7,7 +7,6 @@ import {
 import { Button } from "../../../components/ui/button";
 import { Input } from "../../../components/ui/input";
 import { Badge } from "../../../components/ui/badge";
-import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import {
   Table,
@@ -45,7 +44,6 @@ import {
 import {
   Package,
   Search,
-  Filter,
   MoreVertical,
   Eye,
   Trash2,
@@ -57,16 +55,6 @@ import {
 import { useAdminProducts } from "../../../hooks/useAdminProducts";
 import { useCountdown } from "../../../hooks/useCountdown";
 import { Pagination } from "../../../components/common/Pagination";
-
-// Helper: Get initials from seller name
-const getInitials = (name: string): string => {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-};
 
 // Helper: Get status badge className
 const getStatusBadgeClass = (status: string): string => {
@@ -138,9 +126,6 @@ const ProductRow = ({ product, onRemove }: ProductRowProps) => {
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8 border border-border">
-            <AvatarFallback>{getInitials(product.seller.name)}</AvatarFallback>
-          </Avatar>
           <span className="text-sm">{product.seller.name}</span>
         </div>
       </TableCell>
@@ -443,11 +428,6 @@ export function ProductManagement() {
                 <SelectItem value="removed">Removed</SelectItem>
               </SelectContent>
             </Select>
-
-            <Button variant="outline">
-              <Filter className="h-4 w-4 mr-2" />
-              More Filters
-            </Button>
           </div>
         </CardContent>
       </Card>
