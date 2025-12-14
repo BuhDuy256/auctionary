@@ -14,40 +14,30 @@ import {
   Clock,
   CheckCircle2,
   Activity,
-  ArrowUp,
-  ArrowDown,
 } from "lucide-react";
 
 const statsCards = [
   {
     title: "Total Users",
     value: "12,458",
-    change: "+12.5%",
-    trend: "up" as const,
     icon: Users,
     color: "blue",
   },
   {
     title: "Active Auctions",
     value: "1,234",
-    change: "+8.2%",
-    trend: "up" as const,
     icon: Package,
     color: "accent",
   },
   {
     title: "New Seller Requests",
     value: "12",
-    change: "+3",
-    trend: "up" as const,
     icon: UserPlus,
     color: "red",
   },
   {
     title: "Total Revenue",
     value: "$842,390",
-    change: "+23.1%",
-    trend: "up" as const,
     icon: DollarSign,
     color: "green",
   },
@@ -134,20 +124,6 @@ export function AdminOverview() {
                   >
                     <Icon className="h-6 w-6" />
                   </div>
-                  <div className="flex items-center gap-1 text-sm">
-                    {stat.trend === "up" ? (
-                      <ArrowUp className="h-4 w-4 text-green-500" />
-                    ) : (
-                      <ArrowDown className="h-4 w-4 text-red-500" />
-                    )}
-                    <span
-                      className={
-                        stat.trend === "up" ? "text-green-500" : "text-red-500"
-                      }
-                    >
-                      {stat.change}
-                    </span>
-                  </div>
                 </div>
                 <div className="text-2xl mb-1">{stat.value}</div>
                 <div className="text-sm text-muted-foreground">
@@ -168,7 +144,7 @@ export function AdminOverview() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Activity className="h-5 w-5 text-accent" />
-                  Newest Users
+                  Newest Auctions
                 </CardTitle>
               </div>
             </CardHeader>
