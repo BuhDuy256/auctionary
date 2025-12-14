@@ -52,3 +52,38 @@ export interface SuspendUserResponse {
   id: number;
   status: "suspended";
 }
+
+// Admin product management types
+export interface AdminProductSeller {
+  id: number;
+  name: string;
+}
+
+export interface AdminProductCategory {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface AdminProductHighestBidder {
+  id: number | null;
+  name: string | null;
+}
+
+export interface AdminProduct {
+  id: number;
+  title: string;
+  seller: AdminProductSeller;
+  category: AdminProductCategory;
+  currentBid: number;
+  bids: number;
+  status: "active" | "sold" | "expired" | "pending" | "removed";
+  endTime: string; // ISO 8601
+  thumbnailUrl: string;
+  createdAt: string;
+  highestBidder: AdminProductHighestBidder;
+}
+
+export interface AdminProductListResponse {
+  products: AdminProduct[];
+}

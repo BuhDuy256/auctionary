@@ -4,6 +4,7 @@ import type {
   UpgradeRequestListResponse,
   UpgradeRequestActionResponse,
   SuspendUserResponse,
+  AdminProductListResponse,
 } from "../types/admin";
 
 /**
@@ -54,4 +55,21 @@ export const suspendUser = async (
   userId: number
 ): Promise<SuspendUserResponse> => {
   return apiClient.patch(`/admin/users/${userId}/suspend`, {}, true);
+};
+
+/**
+ * Get all products for admin management
+ * TODO: Backend endpoint /admin/products not implemented yet
+ */
+export const getAdminProducts = async (): Promise<AdminProductListResponse> => {
+  return apiClient.get("/admin/products", true);
+};
+
+/**
+ * Remove a product (admin action)
+ * TODO: Backend endpoint DELETE /admin/products/:id not implemented yet
+ * TODO: Add reason parameter for email notification to seller in future
+ */
+export const removeProduct = async (productId: number): Promise<void> => {
+  return apiClient.delete(`/admin/products/${productId}`, true);
 };

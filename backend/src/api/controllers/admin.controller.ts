@@ -92,3 +92,38 @@ export const suspendUser = async (
     next(error);
   }
 };
+
+/**
+ * Get all products for admin management
+ * GET /admin/products
+ */
+export const getAllProducts = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const data = await adminService.getAllProducts();
+    res.status(200).message("Products retrieved successfully").json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Remove a product
+ * DELETE /admin/products/:id
+ */
+export const removeProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params as unknown as { id: number };
+    await adminService.removeProduct(id);
+    res.status(200).message("Product removed successfully").json({});
+  } catch (error) {
+    next(error);
+  }
+};

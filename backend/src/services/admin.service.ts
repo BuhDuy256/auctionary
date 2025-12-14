@@ -4,12 +4,14 @@ import {
   mapUpgradeRequestToListItem,
   mapUpgradeRequestActionResponse,
   mapSuspendUserResponse,
+  mapProductToAdminListItem,
 } from "../mappers/admin.mapper";
 import type {
   AdminUserListResponse,
   UpgradeRequestListResponse,
   UpgradeRequestActionResponse,
   SuspendUserResponse,
+  AdminProductListResponse,
 } from "../api/dtos/responses/admin.type";
 import { NotFoundError, BadRequestError } from "../errors";
 
@@ -179,4 +181,43 @@ export const suspendUser = async (
 
   const result = await adminRepository.suspendUser(userId);
   return mapSuspendUserResponse(result);
+};
+
+/**
+ * Get all products for admin management
+ * Returns products with seller, category, and highest bidder details
+ */
+export const getAllProducts = async (): Promise<AdminProductListResponse> => {
+  const rawProducts = await adminRepository.getAllProducts();
+
+  // Map raw DB data to response format using mapper
+  const mappedProducts = rawProducts.map(mapProductToAdminListItem);
+
+  return {
+    products: mappedProducts,
+  };
+};
+
+/**
+ * Remove a product
+ * Validates the product exists before removal
+ * TODO: Add email notification to seller with reason
+ */
+export const removeProduct = async (productId: number): Promise<void> => {
+  // Validate product exists
+  const product = await adminRepository.findProductById(productId);
+  if (!product) {
+    throw new NotFoundError("Product not found");
+  }
+
+  // Check if already removed
+  if (product.status === "removed") {
+    throw new BadRequestError("Product is already removed");
+  }
+
+  // Update product status to 'removed'
+  await adminRepository.removeProduct(productId);
+
+  // TODO: Send email to seller with removal reason
+  // await emailService.sendProductRemovedNotification(product.seller_id, reason);
 };

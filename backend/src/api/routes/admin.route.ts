@@ -6,6 +6,7 @@ import * as adminController from "../controllers/admin.controller";
 import {
   upgradeRequestActionSchema,
   suspendUserSchema,
+  removeProductSchema,
 } from "../dtos/requests/admin.schema";
 
 const router = Router();
@@ -39,6 +40,15 @@ router.patch(
   adminAuth,
   validate(upgradeRequestActionSchema, "params"),
   adminController.rejectUpgradeRequest
+);
+
+// Product management
+router.get("/products", adminAuth, adminController.getAllProducts);
+router.delete(
+  "/products/:id",
+  adminAuth,
+  validate(removeProductSchema, "params"),
+  adminController.removeProduct
 );
 
 export default router;
