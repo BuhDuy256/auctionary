@@ -127,3 +127,23 @@ export const removeProduct = async (
     next(error);
   }
 };
+
+/**
+ * Get admin overview dashboard data
+ * GET /admin/overview
+ */
+export const getAdminOverview = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const data = await adminService.getAdminOverview();
+    res
+      .status(200)
+      .message("Admin overview data retrieved successfully")
+      .json(data);
+  } catch (error) {
+    next(error);
+  }
+};

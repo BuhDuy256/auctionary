@@ -5,6 +5,7 @@ import type {
   UpgradeRequestActionResponse,
   SuspendUserResponse,
   AdminProductListResponse,
+  AdminOverviewResponse,
 } from "../types/admin";
 
 /**
@@ -72,4 +73,12 @@ export const getAdminProducts = async (): Promise<AdminProductListResponse> => {
  */
 export const removeProduct = async (productId: number): Promise<void> => {
   return apiClient.delete(`/admin/products/${productId}`, true);
+};
+
+/**
+ * Get admin overview dashboard data
+ * Fetches stats, recent auctions, pending approvals, and system status
+ */
+export const getAdminOverview = async (): Promise<AdminOverviewResponse> => {
+  return apiClient.get("/admin/overview", true);
 };

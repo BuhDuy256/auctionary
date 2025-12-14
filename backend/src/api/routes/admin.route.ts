@@ -14,6 +14,9 @@ const router = Router();
 // All admin routes require authentication and admin role/permission
 const adminAuth = [requireAuth, authorize("admin")];
 
+// Overview dashboard
+router.get("/overview", adminAuth, adminController.getAdminOverview);
+
 // User management
 router.get("/users", adminAuth, adminController.getAllUsers);
 router.patch(

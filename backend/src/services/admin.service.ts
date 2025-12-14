@@ -5,6 +5,10 @@ import {
   mapUpgradeRequestActionResponse,
   mapSuspendUserResponse,
   mapProductToAdminListItem,
+  mapAdminOverviewStats,
+  mapAdminOverviewRecentAuction,
+  mapAdminOverviewPendingApprovals,
+  mapAdminOverviewSystemStatus,
 } from "../mappers/admin.mapper";
 import type {
   AdminUserListResponse,
@@ -12,6 +16,7 @@ import type {
   UpgradeRequestActionResponse,
   SuspendUserResponse,
   AdminProductListResponse,
+  AdminOverviewResponse,
 } from "../api/dtos/responses/admin.type";
 import { NotFoundError, BadRequestError } from "../errors";
 
@@ -220,4 +225,31 @@ export const removeProduct = async (productId: number): Promise<void> => {
 
   // TODO: Send email to seller with removal reason
   // await emailService.sendProductRemovedNotification(product.seller_id, reason);
+};
+
+/**
+ * Get admin overview data
+ * Fetches dashboard stats, recent auctions, pending approvals, and system status
+ */
+export const getAdminOverview = async (): Promise<AdminOverviewResponse> => {
+  // Fetch all data in parallel for performance
+  const [rawStats, rawRecentAuctions, rawPendingApprovals] = await Promise.all([
+    adminRepository.getOverviewStats(),
+    adminRepository.getRecentAuctions(),
+    adminRepository.getPendingApprovalsCount(),
+  ]);
+
+  // Transform using mappers
+  const stats = mapAdminOverviewStats(rawStats);
+  const recentAuctions = rawRecentAuctions.map(mapAdminOverviewRecentAuction);
+  const pendingApprovals =
+    mapAdminOverviewPendingApprovals(rawPendingApprovals);
+  const systemStatus = mapAdminOverviewSystemStatus();
+
+  return {
+    stats,
+    recentAuctions,
+    pendingApprovals,
+    systemStatus,
+  };
 };

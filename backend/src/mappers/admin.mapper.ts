@@ -8,6 +8,10 @@ import type {
   AdminProductSeller,
   AdminProductCategory,
   AdminProductHighestBidder,
+  AdminOverviewStats,
+  AdminOverviewRecentAuction,
+  AdminOverviewPendingApprovals,
+  AdminOverviewSystemStatus,
 } from "../api/dtos/responses/admin.type";
 
 /**
@@ -150,5 +154,60 @@ export const mapProductToAdminListItem = (
     thumbnailUrl: product.thumbnail_url || "",
     createdAt: product.created_at,
     highestBidder: mapProductHighestBidder(product),
+  };
+};
+
+/**
+ * Map raw DB stats data to AdminOverviewStats
+ * Converts snake_case to camelCase
+ */
+export const mapAdminOverviewStats = (stats: any): AdminOverviewStats => {
+  return {
+    totalBidders: stats.total_bidders || 0,
+    totalSellers: stats.total_sellers || 0,
+    totalAuctions: stats.total_auctions || 0,
+    totalRevenue: parseFloat(stats.total_revenue) || 0,
+  };
+};
+
+/**
+ * Map raw DB recent auction data to AdminOverviewRecentAuction
+ * Converts snake_case to camelCase
+ */
+export const mapAdminOverviewRecentAuction = (
+  auction: any
+): AdminOverviewRecentAuction => {
+  return {
+    id: auction.id,
+    title: auction.title,
+    category: auction.category,
+    thumbnail: auction.thumbnail || "",
+    seller: auction.seller,
+    time: auction.time,
+  };
+};
+
+/**
+ * Map raw DB pending approvals data to AdminOverviewPendingApprovals
+ * Converts snake_case to camelCase
+ */
+export const mapAdminOverviewPendingApprovals = (
+  data: any
+): AdminOverviewPendingApprovals => {
+  return {
+    sellerRequests: data.seller_requests || 0,
+  };
+};
+
+/**
+ * Map static system status data to AdminOverviewSystemStatus
+ * Static values for decorative purposes
+ */
+export const mapAdminOverviewSystemStatus = (): AdminOverviewSystemStatus => {
+  return {
+    database: "operational",
+    paymentGateway: "operational",
+    emailService: "operational",
+    api: "operational",
   };
 };

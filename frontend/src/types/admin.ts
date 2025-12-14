@@ -87,3 +87,38 @@ export interface AdminProduct {
 export interface AdminProductListResponse {
   products: AdminProduct[];
 }
+
+// Admin Overview types
+export interface AdminOverviewStats {
+  totalBidders: number;
+  totalSellers: number;
+  totalAuctions: number;
+  totalRevenue: number;
+}
+
+export interface AdminOverviewRecentAuction {
+  id: number;
+  title: string;
+  category: string;
+  thumbnail: string;
+  seller: string;
+  time: string; // ISO 8601 format
+}
+
+export interface AdminOverviewPendingApprovals {
+  sellerRequests: number;
+}
+
+export interface AdminOverviewSystemStatus {
+  database: "operational" | "degraded" | "down";
+  paymentGateway: "operational" | "degraded" | "down";
+  emailService: "operational" | "degraded" | "down";
+  api: "operational" | "degraded" | "down";
+}
+
+export interface AdminOverviewResponse {
+  stats: AdminOverviewStats;
+  recentAuctions: AdminOverviewRecentAuction[];
+  pendingApprovals: AdminOverviewPendingApprovals;
+  systemStatus: AdminOverviewSystemStatus;
+}

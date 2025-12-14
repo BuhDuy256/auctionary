@@ -14,84 +14,100 @@ import {
   CheckCircle2,
   Activity,
   Gavel,
+  AlertCircle,
 } from "lucide-react";
-
-const statsCards = [
-  {
-    title: "Total Bidders",
-    value: "12,458",
-    icon: Gavel,
-    color: "blue",
-  },
-  {
-    title: "Total Sellers",
-    value: "1,234",
-    icon: Users,
-    color: "red",
-  },
-  {
-    title: "Total Auctions",
-    value: "12",
-    icon: Package,
-    color: "accent",
-  },
-  {
-    title: "Total Revenue",
-    value: "$842,390",
-    icon: DollarSign,
-    color: "green",
-  },
-];
-
-const recentAuctions = [
-  {
-    id: 1,
-    title: "Apple Watch Series 6",
-    category: "Electronics",
-    thumbnail:
-      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=200&h=200&q=80",
-    seller: "John Doe",
-    time: "2 minutes ago",
-  },
-  {
-    id: 2,
-    title: "Vintage Film Camera",
-    category: "Collectibles",
-    thumbnail:
-      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=200&h=200&q=80",
-    seller: "Jane Smith",
-    time: "15 minutes ago",
-  },
-  {
-    id: 3,
-    title: "Leather Designer Bag",
-    category: "Fashion",
-    thumbnail:
-      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=200&h=200&q=80",
-    seller: "Alice Johnson",
-    time: "30 minutes ago",
-  },
-  {
-    id: 4,
-    title: "Rare Coin Collection",
-    category: "Collectibles",
-    thumbnail:
-      "https://images.unsplash.com/photo-1620189507195-68309c04c0a6?auto=format&fit=crop&w=200&h=200&q=80",
-    seller: "Bob Williams",
-    time: "1 hour ago",
-  },
-  {
-    id: 5,
-    title: "Fender Electric Guitar",
-    category: "Music Instruments",
-    thumbnail:
-      "https://images.unsplash.com/photo-1550985543-f4423c9d7481?auto=format&fit=crop&w=200&h=200&q=80",
-    seller: "Charlie Brown",
-    time: "2 hours ago",
-  },
-];
+import { useAdminOverview } from "../../../hooks/useAdminOverview";
+import { formatRelativeTime } from "../../../utils/date";
+import { useNavigate } from "react-router-dom";
 
 export function AdminOverview() {
+  const { data, isLoading, error, refetch } = useAdminOverview();
+  const navigate = useNavigate();
+
+  // Stats card configuration
+  const statsCards = [
+    {
+      title: "Total Bidders",
+      value: data?.stats.totalBidders ?? 0,
+      icon: Gavel,
+      color: "blue",
+    },
+    {
+      title: "Total Sellers",
+      value: data?.stats.totalSellers ?? 0,
+      icon: Users,
+      color: "red",
+    },
+    {
+      title: "Total Auctions",
+      value: data?.stats.totalAuctions ?? 0,
+      icon: Package,
+      color: "accent",
+    },
+    {
+      title: "Total Revenue",
+      value: data?.stats.totalRevenue ?? 0,
+      icon: DollarSign,
+      color: "green",
+      isRevenue: true,
+    },
+  ];
+
+  // Loading skeleton for stats cards
+  const StatsCardSkeleton = () => (
+    <Card className="border-border">
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4 animate-pulse">
+          <div className="h-12 w-12 rounded-lg bg-secondary" />
+        </div>
+        <div className="h-8 w-20 bg-secondary rounded mb-1 animate-pulse" />
+        <div className="h-4 w-24 bg-secondary rounded animate-pulse" />
+      </CardContent>
+    </Card>
+  );
+
+  // Loading skeleton for recent auctions
+  const AuctionSkeleton = () => (
+    <div className="p-4 animate-pulse">
+      <div className="flex items-start justify-between">
+        <div className="flex gap-2 flex-1">
+          <div className="w-12 h-12 rounded bg-secondary" />
+          <div className="flex flex-col justify-center gap-2 flex-1">
+            <div className="h-4 w-1/2 bg-secondary rounded" />
+            <div className="h-3 w-1/3 bg-secondary rounded" />
+          </div>
+        </div>
+        <div className="h-3 w-20 bg-secondary rounded ml-4" />
+      </div>
+    </div>
+  );
+
+  // Error state
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl mb-2">Admin Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Monitor platform activity and manage operations
+          </p>
+        </div>
+        <Card className="border-border">
+          <CardContent className="p-12 text-center">
+            <div className="inline-flex p-4 rounded-full bg-destructive/10 mb-4">
+              <AlertCircle className="h-8 w-8 text-destructive" />
+            </div>
+            <h3 className="text-lg mb-2">Error Loading Overview</h3>
+            <p className="text-sm text-muted-foreground mb-4">{error}</p>
+            <Button variant="outline" onClick={refetch}>
+              Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -104,35 +120,45 @@ export function AdminOverview() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-4 gap-6">
-        {statsCards.map((stat) => {
-          const Icon = stat.icon;
-          const colorClasses = {
-            blue: "bg-blue-500/10 border-blue-500/30 text-blue-500",
-            accent: "bg-accent/10 border-accent/30 text-accent",
-            red: "bg-red-500/10 border-red-500/30 text-red-500",
-            green: "bg-green-500/10 border-green-500/30 text-green-500",
-          };
+        {isLoading
+          ? Array.from({ length: 4 }).map((_, i) => (
+              <StatsCardSkeleton key={i} />
+            ))
+          : statsCards.map((stat) => {
+              const Icon = stat.icon;
+              const colorClasses = {
+                blue: "bg-blue-500/10 border-blue-500/30 text-blue-500",
+                accent: "bg-accent/10 border-accent/30 text-accent",
+                red: "bg-red-500/10 border-red-500/30 text-red-500",
+                green: "bg-green-500/10 border-green-500/30 text-green-500",
+              };
 
-          return (
-            <Card key={stat.title} className="border-border">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div
-                    className={`p-3 rounded-lg border ${
-                      colorClasses[stat.color as keyof typeof colorClasses]
-                    }`}
-                  >
-                    <Icon className="h-6 w-6" />
-                  </div>
-                </div>
-                <div className="text-2xl mb-1">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">
-                  {stat.title}
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+              return (
+                <Card key={stat.title} className="border-border">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div
+                        className={`p-3 rounded-lg border ${
+                          colorClasses[stat.color as keyof typeof colorClasses]
+                        }`}
+                      >
+                        <Icon className="h-6 w-6" />
+                      </div>
+                    </div>
+                    <div className="text-2xl mb-1">
+                      {isLoading
+                        ? "---"
+                        : stat.isRevenue
+                        ? `$${stat.value.toLocaleString()}`
+                        : stat.value.toLocaleString()}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {stat.title}
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
       </div>
 
       {/* Main Grid */}
@@ -149,9 +175,15 @@ export function AdminOverview() {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="divide-y divide-border">
-                {recentAuctions.map((auction) => {
-                  return (
+              {isLoading ? (
+                <div className="divide-y divide-border">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <AuctionSkeleton key={i} />
+                  ))}
+                </div>
+              ) : data?.recentAuctions && data.recentAuctions.length > 0 ? (
+                <div className="divide-y divide-border">
+                  {data.recentAuctions.map((auction) => (
                     <div
                       key={auction.id}
                       className="p-4 hover:bg-secondary/30 transition-colors"
@@ -178,13 +210,17 @@ export function AdminOverview() {
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                          {auction.time}
+                          {formatRelativeTime(auction.time)}
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-8 text-center text-muted-foreground">
+                  No recent auctions found
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -204,10 +240,24 @@ export function AdminOverview() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm">Seller Requests</span>
                   <Badge className="bg-accent/20 text-accent border-accent/50">
-                    12
+                    {isLoading ? "---" : data?.pendingApprovals.sellerRequests}
                   </Badge>
                 </div>
-                <Button variant="outline" size="sm" className="w-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  disabled={
+                    isLoading ||
+                    !data ||
+                    data.pendingApprovals.sellerRequests === 0
+                  }
+                  onClick={() =>
+                    navigate("/admin", {
+                      state: { defaultTab: "upgrade-requests" },
+                    })
+                  }
+                >
                   Review Requests
                 </Button>
               </div>
@@ -223,30 +273,56 @@ export function AdminOverview() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Database</span>
-                <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
-                  Operational
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Payment Gateway</span>
-                <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
-                  Operational
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Email Service</span>
-                <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
-                  Operational
-                </Badge>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">API</span>
-                <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
-                  Operational
-                </Badge>
-              </div>
+              {isLoading ? (
+                <>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between animate-pulse"
+                    >
+                      <div className="h-4 w-24 bg-secondary rounded" />
+                      <div className="h-5 w-20 bg-secondary rounded" />
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Database</span>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
+                      {data?.systemStatus.database === "operational"
+                        ? "Operational"
+                        : data?.systemStatus.database}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      Payment Gateway
+                    </span>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
+                      {data?.systemStatus.paymentGateway === "operational"
+                        ? "Operational"
+                        : data?.systemStatus.paymentGateway}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Email Service</span>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
+                      {data?.systemStatus.emailService === "operational"
+                        ? "Operational"
+                        : data?.systemStatus.emailService}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">API</span>
+                    <Badge className="bg-green-500/20 text-green-500 border-green-500/50 text-xs">
+                      {data?.systemStatus.api === "operational"
+                        ? "Operational"
+                        : data?.systemStatus.api}
+                    </Badge>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
