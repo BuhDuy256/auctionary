@@ -53,46 +53,51 @@ const statsCards = [
   },
 ];
 
-const recentActivities = [
+const recentAuctions = [
   {
     id: 1,
-    type: "user",
-    user: "John Smith",
-    action: "registered as new seller",
+    title: "Apple Watch Series 6",
+    category: "Electronics",
+    thumbnail:
+      "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&w=200&h=200&q=80",
+    seller: "John Doe",
     time: "2 minutes ago",
-    status: "pending",
   },
   {
     id: 2,
-    type: "auction",
-    user: "Sarah Johnson",
-    action: 'posted new auction "Vintage Camera"',
+    title: "Vintage Film Camera",
+    category: "Collectibles",
+    thumbnail:
+      "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=200&h=200&q=80",
+    seller: "Jane Smith",
     time: "15 minutes ago",
-    status: "active",
   },
   {
     id: 3,
-    type: "violation",
-    user: "Mike Davis",
-    action: "reported auction #8923 for fake item",
-    time: "1 hour ago",
-    status: "flagged",
+    title: "Leather Designer Bag",
+    category: "Fashion",
+    thumbnail:
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=200&h=200&q=80",
+    seller: "Alice Johnson",
+    time: "30 minutes ago",
   },
   {
     id: 4,
-    type: "transaction",
-    user: "Emily Chen",
-    action: "completed transaction TXN-89234",
-    time: "2 hours ago",
-    status: "completed",
+    title: "Rare Coin Collection",
+    category: "Collectibles",
+    thumbnail:
+      "https://images.unsplash.com/photo-1620189507195-68309c04c0a6?auto=format&fit=crop&w=200&h=200&q=80",
+    seller: "Bob Williams",
+    time: "1 hour ago",
   },
   {
     id: 5,
-    type: "user",
-    user: "Alex Turner",
-    action: "upgraded to seller account",
-    time: "3 hours ago",
-    status: "completed",
+    title: "Fender Electric Guitar",
+    category: "Music Instruments",
+    thumbnail:
+      "https://images.unsplash.com/photo-1550985543-f4423c9d7481?auto=format&fit=crop&w=200&h=200&q=80",
+    seller: "Charlie Brown",
+    time: "2 hours ago",
   },
 ];
 
@@ -163,48 +168,41 @@ export function AdminOverview() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Activity className="h-5 w-5 text-accent" />
-                  Recent Activity
+                  Newest Users
                 </CardTitle>
-                <Button variant="outline" size="sm">
-                  View All
-                </Button>
               </div>
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-border">
-                {recentActivities.map((activity) => {
-                  const statusConfig = {
-                    pending: { color: "yellow-500", label: "Pending" },
-                    active: { color: "blue-500", label: "Active" },
-                    flagged: { color: "red-500", label: "Flagged" },
-                    completed: { color: "green-500", label: "Completed" },
-                  };
-
-                  const config =
-                    statusConfig[activity.status as keyof typeof statusConfig];
-
+                {recentAuctions.map((auction) => {
                   return (
                     <div
-                      key={activity.id}
+                      key={auction.id}
                       className="p-4 hover:bg-secondary/30 transition-colors"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm">{activity.user}</span>
-                            <Badge
-                              variant="outline"
-                              className={`bg-${config.color}/20 text-${config.color} border-${config.color}/50 text-xs`}
-                            >
-                              {config.label}
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {activity.action}
+                          <div className="flex gap-2 mb-1">
+                            <img
+                              src={auction.thumbnail}
+                              alt={auction.title}
+                              className="w-12 h-12 object-cover rounded"
+                            />
+                            <div className="flex flex-col justify-center">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm">{auction.title}</span>
+                                <Badge className="bg-accent/20 text-accent border-accent/50">
+                                  {auction.category}
+                                </Badge>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {auction.seller}
+                              </span>
+                            </div>
                           </div>
                         </div>
                         <div className="text-xs text-muted-foreground whitespace-nowrap ml-4">
-                          {activity.time}
+                          {auction.time}
                         </div>
                       </div>
                     </div>
@@ -235,30 +233,6 @@ export function AdminOverview() {
                 </div>
                 <Button variant="outline" size="sm" className="w-full">
                   Review Requests
-                </Button>
-              </div>
-
-              <div className="p-3 rounded-lg bg-background border border-border">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm">Reported Auctions</span>
-                  <Badge className="bg-red-500/20 text-red-500 border-red-500/50">
-                    3
-                  </Badge>
-                </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  Review Reports
-                </Button>
-              </div>
-
-              <div className="p-3 rounded-lg bg-background border border-border">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm">Disputes</span>
-                  <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
-                    7
-                  </Badge>
-                </div>
-                <Button variant="outline" size="sm" className="w-full">
-                  Review Disputes
                 </Button>
               </div>
             </CardContent>
