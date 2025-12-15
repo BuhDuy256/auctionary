@@ -22,6 +22,7 @@ import watchlistRouter from "./api/routes/watchlist.route";
 import sellerRouter from "./api/routes/seller.route";
 import adminRouter from "./api/routes/admin.route";
 import upgradeRequestRouter from "./api/routes/upgradeRequest.route";
+import homeRouter from "./api/routes/home.route";
 
 const app: Application = express();
 const PORT: number = envConfig.PORT;
@@ -48,6 +49,7 @@ app.use("/users", upgradeRequestRouter);
 app.use("/watchlist", watchlistRouter);
 app.use("/seller", sellerRouter);
 app.use("/admin", adminRouter);
+app.use("/home", homeRouter);
 
 // Error Handling
 app.use(notFoundHandler);

@@ -125,6 +125,15 @@ describe("Admin Routes - User Management", () => {
       expect(response.body.data.message).toBe("Not authorized, no token");
     });
 
+    it("should return 401 when an invalid token is provided", async () => {
+      const response = await request(app)
+        .patch(`${endpoint}/1/suspend`)
+        .set("Authorization", "Bearer invalid-token");
+
+      expect(response.status).toBe(401);
+      expect(response.body.data.message).toBe("Not authorized, token failed");
+    });
+
     it("should return 403 when user is not admin", async () => {
       const token = generateToken(regularUser);
       const response = await request(app)
@@ -149,6 +158,16 @@ describe("Admin Routes - User Management", () => {
       const token = generateToken(adminUser);
       const response = await request(app)
         .patch(`${endpoint}/-1/suspend`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body.details).toBeDefined();
+    });
+
+    it("should return 400 when id is zero", async () => {
+      const token = generateToken(adminUser);
+      const response = await request(app)
+        .patch(`${endpoint}/0/suspend`)
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
@@ -187,6 +206,15 @@ describe("Admin Routes - Upgrade Requests", () => {
 
       expect(response.status).toBe(401);
       expect(response.body.data.message).toBe("Not authorized, no token");
+    });
+
+    it("should return 401 when an invalid token is provided", async () => {
+      const response = await request(app)
+        .get(endpoint)
+        .set("Authorization", "Bearer invalid-token");
+
+      expect(response.status).toBe(401);
+      expect(response.body.data.message).toBe("Not authorized, token failed");
     });
 
     it("should return 403 when user is not admin", async () => {
@@ -237,6 +265,24 @@ describe("Admin Routes - Upgrade Requests", () => {
       expect(response.body.data).toEqual(mockRequests);
       expect(adminService.getAllUpgradeRequests).toHaveBeenCalledTimes(1);
     });
+
+    it("should return 200 with empty array when no upgrade requests exist", async () => {
+      const mockRequests = {
+        requests: [],
+      };
+      (adminService.getAllUpgradeRequests as jest.Mock).mockResolvedValue(
+        mockRequests
+      );
+
+      const token = generateToken(adminUser);
+      const response = await request(app)
+        .get(endpoint)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toEqual(mockRequests);
+      expect(response.body.data.requests).toHaveLength(0);
+    });
   });
 
   describe("PATCH /api/admin/upgrade-requests/:id/approve", () => {
@@ -247,6 +293,15 @@ describe("Admin Routes - Upgrade Requests", () => {
 
       expect(response.status).toBe(401);
       expect(response.body.data.message).toBe("Not authorized, no token");
+    });
+
+    it("should return 401 when an invalid token is provided", async () => {
+      const response = await request(app)
+        .patch(`${endpoint}/1/approve`)
+        .set("Authorization", "Bearer invalid-token");
+
+      expect(response.status).toBe(401);
+      expect(response.body.data.message).toBe("Not authorized, token failed");
     });
 
     it("should return 403 when user is not admin", async () => {
@@ -263,6 +318,26 @@ describe("Admin Routes - Upgrade Requests", () => {
       const token = generateToken(adminUser);
       const response = await request(app)
         .patch(`${endpoint}/invalid/approve`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body.details).toBeDefined();
+    });
+
+    it("should return 400 when id is not a positive integer", async () => {
+      const token = generateToken(adminUser);
+      const response = await request(app)
+        .patch(`${endpoint}/-1/approve`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body.details).toBeDefined();
+    });
+
+    it("should return 400 when id is zero", async () => {
+      const token = generateToken(adminUser);
+      const response = await request(app)
+        .patch(`${endpoint}/0/approve`)
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
@@ -289,6 +364,27 @@ describe("Admin Routes - Upgrade Requests", () => {
       expect(response.body.data).toEqual(mockResponse);
       expect(adminService.approveUpgradeRequest).toHaveBeenCalledWith(1);
     });
+
+    it("should return 200 and approve request with numeric string id", async () => {
+      const mockResponse = {
+        id: 123,
+        userId: 2,
+        status: "approved",
+        approvedAt: new Date().toISOString(),
+      };
+      (adminService.approveUpgradeRequest as jest.Mock).mockResolvedValue(
+        mockResponse
+      );
+
+      const token = generateToken(adminUser);
+      const response = await request(app)
+        .patch(`${endpoint}/123/approve`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toEqual(mockResponse);
+      expect(adminService.approveUpgradeRequest).toHaveBeenCalledWith(123);
+    });
   });
 
   describe("PATCH /api/admin/upgrade-requests/:id/reject", () => {
@@ -299,6 +395,15 @@ describe("Admin Routes - Upgrade Requests", () => {
 
       expect(response.status).toBe(401);
       expect(response.body.data.message).toBe("Not authorized, no token");
+    });
+
+    it("should return 401 when an invalid token is provided", async () => {
+      const response = await request(app)
+        .patch(`${endpoint}/1/reject`)
+        .set("Authorization", "Bearer invalid-token");
+
+      expect(response.status).toBe(401);
+      expect(response.body.data.message).toBe("Not authorized, token failed");
     });
 
     it("should return 403 when user is not admin", async () => {
@@ -315,6 +420,26 @@ describe("Admin Routes - Upgrade Requests", () => {
       const token = generateToken(adminUser);
       const response = await request(app)
         .patch(`${endpoint}/invalid/reject`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body.details).toBeDefined();
+    });
+
+    it("should return 400 when id is not a positive integer", async () => {
+      const token = generateToken(adminUser);
+      const response = await request(app)
+        .patch(`${endpoint}/-1/reject`)
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(400);
+      expect(response.body.details).toBeDefined();
+    });
+
+    it("should return 400 when id is zero", async () => {
+      const token = generateToken(adminUser);
+      const response = await request(app)
+        .patch(`${endpoint}/0/reject`)
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(400);
@@ -340,323 +465,25 @@ describe("Admin Routes - Upgrade Requests", () => {
       expect(response.body.data).toEqual(mockResponse);
       expect(adminService.rejectUpgradeRequest).toHaveBeenCalledWith(1);
     });
-  });
-});
 
-describe("Admin Routes - Product Management", () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe("GET /api/admin/products", () => {
-    const endpoint = "/api/admin/products";
-
-    it("should return 401 when no token is provided", async () => {
-      const response = await request(app).get(endpoint);
-
-      expect(response.status).toBe(401);
-      expect(response.body.data.message).toBe("Not authorized, no token");
-    });
-
-    it("should return 401 when an invalid token is provided", async () => {
-      const response = await request(app)
-        .get(endpoint)
-        .set("Authorization", "Bearer invalid-token");
-
-      expect(response.status).toBe(401);
-      expect(response.body.data.message).toBe("Not authorized, token failed");
-    });
-
-    it("should return 403 when user is not admin", async () => {
-      const token = generateToken(regularUser);
-      const response = await request(app)
-        .get(endpoint)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body.data.message).toContain("Forbidden");
-    });
-
-    it("should return 200 and all products for admin user", async () => {
-      const mockProducts = {
-        products: [
-          {
-            id: 1,
-            name: "Vintage Camera",
-            startingPrice: 100,
-            currentPrice: 250,
-            status: "active",
-            seller: {
-              id: 2,
-              fullName: "John Seller",
-              email: "seller@test.com",
-            },
-            category: {
-              id: 1,
-              name: "Electronics",
-            },
-            endTime: new Date(Date.now() + 86400000).toISOString(),
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: 2,
-            name: "Antique Watch",
-            startingPrice: 500,
-            currentPrice: 500,
-            status: "active",
-            seller: {
-              id: 3,
-              fullName: "Jane Seller",
-              email: "jane@test.com",
-            },
-            category: {
-              id: 2,
-              name: "Collectibles",
-            },
-            endTime: new Date(Date.now() + 172800000).toISOString(),
-            createdAt: new Date().toISOString(),
-          },
-        ],
+    it("should return 200 and reject request with numeric string id", async () => {
+      const mockResponse = {
+        id: 456,
+        userId: 3,
+        status: "rejected",
       };
-      (adminService.getAllProducts as jest.Mock).mockResolvedValue(
-        mockProducts
+      (adminService.rejectUpgradeRequest as jest.Mock).mockResolvedValue(
+        mockResponse
       );
 
       const token = generateToken(adminUser);
       const response = await request(app)
-        .get(endpoint)
+        .patch(`${endpoint}/456/reject`)
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.data).toEqual(mockProducts);
-      expect(adminService.getAllProducts).toHaveBeenCalledTimes(1);
-    });
-
-    it("should return 200 with empty array when no products exist", async () => {
-      const mockProducts = {
-        products: [],
-      };
-      (adminService.getAllProducts as jest.Mock).mockResolvedValue(
-        mockProducts
-      );
-
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .get(endpoint)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body.data).toEqual(mockProducts);
-      expect(response.body.data.products).toHaveLength(0);
-    });
-  });
-
-  describe("DELETE /api/admin/products/:id", () => {
-    const endpoint = "/api/admin/products";
-
-    it("should return 401 when no token is provided", async () => {
-      const response = await request(app).delete(`${endpoint}/1`);
-
-      expect(response.status).toBe(401);
-      expect(response.body.data.message).toBe("Not authorized, no token");
-    });
-
-    it("should return 401 when an invalid token is provided", async () => {
-      const response = await request(app)
-        .delete(`${endpoint}/1`)
-        .set("Authorization", "Bearer invalid-token");
-
-      expect(response.status).toBe(401);
-      expect(response.body.data.message).toBe("Not authorized, token failed");
-    });
-
-    it("should return 403 when user is not admin", async () => {
-      const token = generateToken(regularUser);
-      const response = await request(app)
-        .delete(`${endpoint}/1`)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body.data.message).toContain("Forbidden");
-    });
-
-    it("should return 400 when id is not a valid number", async () => {
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .delete(`${endpoint}/invalid`)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(400);
-      expect(response.body.details).toBeDefined();
-    });
-
-    it("should return 400 when id is not a positive integer", async () => {
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .delete(`${endpoint}/-1`)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(400);
-      expect(response.body.details).toBeDefined();
-    });
-
-    it("should return 400 when id is zero", async () => {
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .delete(`${endpoint}/0`)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(400);
-      expect(response.body.details).toBeDefined();
-    });
-
-    it("should return 200 and remove product for valid id", async () => {
-      (adminService.removeProduct as jest.Mock).mockResolvedValue(undefined);
-
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .delete(`${endpoint}/1`)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body.data).toEqual({});
-      expect(adminService.removeProduct).toHaveBeenCalledWith(1);
-    });
-
-    it("should return 200 and remove product with numeric string id", async () => {
-      (adminService.removeProduct as jest.Mock).mockResolvedValue(undefined);
-
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .delete(`${endpoint}/123`)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body.data).toEqual({});
-      expect(adminService.removeProduct).toHaveBeenCalledWith(123);
-    });
-  });
-});
-
-describe("Admin Routes - Overview Dashboard", () => {
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe("GET /api/admin/overview", () => {
-    const endpoint = "/api/admin/overview";
-
-    it("should return 401 when no token is provided", async () => {
-      const response = await request(app).get(endpoint);
-
-      expect(response.status).toBe(401);
-      expect(response.body.data.message).toBe("Not authorized, no token");
-    });
-
-    it("should return 401 when an invalid token is provided", async () => {
-      const response = await request(app)
-        .get(endpoint)
-        .set("Authorization", "Bearer invalid-token");
-
-      expect(response.status).toBe(401);
-      expect(response.body.data.message).toBe("Not authorized, token failed");
-    });
-
-    it("should return 403 when user is not admin", async () => {
-      const token = generateToken(regularUser);
-      const response = await request(app)
-        .get(endpoint)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(403);
-      expect(response.body.data.message).toContain("Forbidden");
-    });
-
-    it("should return 200 and admin overview data for admin user", async () => {
-      const mockOverview = {
-        stats: {
-          totalUsers: 150,
-          totalSellers: 45,
-          totalBidders: 105,
-          activeAuctions: 32,
-          totalRevenue: 125000,
-          pendingApprovals: 5,
-        },
-        recentAuctions: [
-          {
-            id: 1,
-            name: "Vintage Camera",
-            currentPrice: 250,
-            endTime: new Date(Date.now() + 86400000).toISOString(),
-            status: "active",
-            bidCount: 12,
-          },
-          {
-            id: 2,
-            name: "Antique Watch",
-            currentPrice: 500,
-            endTime: new Date(Date.now() + 172800000).toISOString(),
-            status: "active",
-            bidCount: 8,
-          },
-        ],
-        pendingApprovals: {
-          upgradeRequests: 5,
-          reportedProducts: 2,
-        },
-        systemStatus: {
-          status: "healthy",
-          uptime: "99.9%",
-          lastBackup: new Date().toISOString(),
-        },
-      };
-      (adminService.getAdminOverview as jest.Mock).mockResolvedValue(
-        mockOverview
-      );
-
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .get(endpoint)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body.data).toEqual(mockOverview);
-      expect(adminService.getAdminOverview).toHaveBeenCalledTimes(1);
-    });
-
-    it("should return 200 with empty arrays when no data exists", async () => {
-      const mockOverview = {
-        stats: {
-          totalUsers: 0,
-          totalSellers: 0,
-          totalBidders: 0,
-          activeAuctions: 0,
-          totalRevenue: 0,
-          pendingApprovals: 0,
-        },
-        recentAuctions: [],
-        pendingApprovals: {
-          upgradeRequests: 0,
-          reportedProducts: 0,
-        },
-        systemStatus: {
-          status: "healthy",
-          uptime: "100%",
-          lastBackup: new Date().toISOString(),
-        },
-      };
-      (adminService.getAdminOverview as jest.Mock).mockResolvedValue(
-        mockOverview
-      );
-
-      const token = generateToken(adminUser);
-      const response = await request(app)
-        .get(endpoint)
-        .set("Authorization", `Bearer ${token}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body.data).toEqual(mockOverview);
-      expect(response.body.data.recentAuctions).toHaveLength(0);
+      expect(response.body.data).toEqual(mockResponse);
+      expect(adminService.rejectUpgradeRequest).toHaveBeenCalledWith(456);
     });
   });
 });

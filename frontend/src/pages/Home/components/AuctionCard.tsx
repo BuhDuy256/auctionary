@@ -3,22 +3,31 @@ import { Card, CardContent } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
-import { Clock, TrendingUp, Gavel } from "lucide-react";
+import { Clock, Eye } from "lucide-react";
+import { Link } from "react-router-dom";
+import { cn } from "../../../components/ui/utils";
 
 interface AuctionCardProps {
   id: string;
   title: string;
   image: string;
   currentBid: number;
+  buyNowPrice: number | null;
+  seller: string;
+  topBidder: string | null;
   bidCount: number;
-  endTime: Date;
+  endTime: string; // ISO 8601 timestamp
   isHot?: boolean;
 }
 
 export function AuctionCard({
+  id,
   title,
   image,
   currentBid,
+  buyNowPrice,
+  seller,
+  topBidder,
   bidCount,
   endTime,
   isHot = false,
@@ -29,7 +38,7 @@ export function AuctionCard({
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date().getTime();
-      const end = endTime.getTime();
+      const end = new Date(endTime).getTime();
       const difference = end - now;
 
       if (difference <= 0) {
@@ -60,60 +69,95 @@ export function AuctionCard({
     return () => clearInterval(interval);
   }, [endTime]);
 
+  const productUrl = `/product/${id}`;
+
   return (
-    <Card className="group overflow-hidden border-border hover:border-accent transition-all duration-300 hover:shadow-lg hover:shadow-accent/20 flex-shrink-0 w-[280px]">
+    <Card className="group overflow-hidden border-border hover:border-accent transition-all duration-300 hover:shadow-lg hover:shadow-accent/20 flex-shrink-0 w-[280px] max-w-[300px]">
       <div className="relative aspect-square overflow-hidden bg-secondary">
-        <ImageWithFallback
-          src={image}
-          alt={title}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-        />
+        <Link to={productUrl} className="block w-full h-full">
+          <ImageWithFallback
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </Link>
         {isHot && (
-          <Badge className="absolute top-2 right-2 bg-accent text-background border-none">
+          <Badge className="absolute top-2 right-2 bg-accent text-background border-none z-10">
             HOT
           </Badge>
         )}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/90 to-transparent p-3">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 via-background/60 to-transparent p-3 pointer-events-none">
           <div
             className={`flex items-center gap-1.5 text-xs ${
-              isUrgent ? "text-error" : "text-accent"
+              isUrgent ? "text-destructive" : "text-muted-foreground"
             }`}
           >
             <Clock className="h-3.5 w-3.5" />
-            <span className="font-semibold">{timeLeft}</span>
+            <span>{timeLeft}</span>
           </div>
         </div>
       </div>
 
       <CardContent className="p-4 space-y-3">
-        <h3 className="text-sm line-clamp-2 min-h-[2.5rem]">{title}</h3>
+        <div>
+          <Link to={productUrl}>
+            <h3 className="text-sm line-clamp-2 mb-2 min-h-[2.5rem] group-hover:text-accent transition-colors">
+              {title}
+            </h3>
+          </Link>
 
-        <div className="space-y-2">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1">
+            <span>Seller:</span>
+            <span className="text-foreground">{seller}</span>
+          </div>
+
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span>Top Bidder:</span>
+            <span className="text-foreground">{topBidder || "None"}</span>
+          </div>
+        </div>
+
+        <div className="space-y-2 pt-2 border-t border-border">
           <div className="flex items-baseline justify-between">
             <span className="text-xs text-muted-foreground">Current Bid</span>
-            <div className="text-accent text-xl font-semibold">
+            <div className="text-accent text-lg">
               ${currentBid.toLocaleString()}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              <Gavel className="h-3 w-3 mr-1" />
-              {bidCount} bids
-            </Badge>
-            {bidCount > 20 && (
-              <Badge
-                variant="outline"
-                className="text-xs border-accent text-accent"
-              >
-                <TrendingUp className="h-3 w-3 mr-1" />
-                Active
-              </Badge>
+          <div className="flex items-baseline justify-between">
+            {buyNowPrice ? (
+              <span className="text-xs text-muted-foreground">Buy Now</span>
+            ) : (
+              <span className="text-xs text-muted-foreground opacity-50">
+                Buy Now
+              </span>
             )}
+
+            <div
+              className={cn(
+                "text-success text-sm",
+                !buyNowPrice && "opacity-50"
+              )}
+            >
+              {buyNowPrice ? "$" + buyNowPrice.toLocaleString() : "---"}
+            </div>
+          </div>
+
+          <div className="flex items-baseline justify-between">
+            <span className="text-xs text-muted-foreground">Bids</span>
+            <div className="text-foreground">{bidCount}</div>
           </div>
         </div>
 
-        <Button className="w-full">Bid Now</Button>
+        <div className="flex gap-2 pt-2">
+          <Link to={productUrl} className="flex-1">
+            <Button className="w-full" size="sm">
+              <Eye className="h-4 w-4 mr-2" />
+              View Product
+            </Button>
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

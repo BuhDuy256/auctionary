@@ -58,6 +58,119 @@ const unauthorizedUser = {
   permissions: [], // No category permissions
 };
 
+describe("Category Routes - Public Endpoints", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe("GET /api/categories", () => {
+    const endpoint = "/api/categories";
+
+    it("should return 200 and all categories without authentication", async () => {
+      const mockCategories = [
+        {
+          id: 1,
+          name: "Electronics",
+          slug: "electronics",
+          parentId: null,
+          depth: 0,
+        },
+        {
+          id: 2,
+          name: "Laptops",
+          slug: "laptops",
+          parentId: 1,
+          depth: 1,
+        },
+        {
+          id: 3,
+          name: "Fashion",
+          slug: "fashion",
+          parentId: null,
+          depth: 0,
+        },
+      ];
+      (categoryService.getAllCategories as jest.Mock).mockResolvedValue(
+        mockCategories
+      );
+
+      const response = await request(app).get(endpoint);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toEqual(mockCategories);
+      expect(categoryService.getAllCategories).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return 200 with empty array when no categories exist", async () => {
+      (categoryService.getAllCategories as jest.Mock).mockResolvedValue([]);
+
+      const response = await request(app).get(endpoint);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toEqual([]);
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it("should return hierarchical category structure", async () => {
+      const mockCategories = [
+        {
+          id: 1,
+          name: "Electronics",
+          slug: "electronics",
+          parentId: null,
+          depth: 0,
+        },
+        {
+          id: 2,
+          name: "Computers",
+          slug: "computers",
+          parentId: 1,
+          depth: 1,
+        },
+        {
+          id: 3,
+          name: "Gaming Laptops",
+          slug: "gaming-laptops",
+          parentId: 2,
+          depth: 2,
+        },
+      ];
+      (categoryService.getAllCategories as jest.Mock).mockResolvedValue(
+        mockCategories
+      );
+
+      const response = await request(app).get(endpoint);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toHaveLength(3);
+      expect(response.body.data[0].depth).toBe(0);
+      expect(response.body.data[1].depth).toBe(1);
+      expect(response.body.data[2].depth).toBe(2);
+    });
+
+    it("should work without authentication token", async () => {
+      const mockCategories = [
+        {
+          id: 1,
+          name: "Electronics",
+          slug: "electronics",
+          parentId: null,
+          depth: 0,
+        },
+      ];
+      (categoryService.getAllCategories as jest.Mock).mockResolvedValue(
+        mockCategories
+      );
+
+      // Explicitly test without Authorization header
+      const response = await request(app).get(endpoint);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toEqual(mockCategories);
+    });
+  });
+});
+
 describe("Category Routes - Admin Endpoints", () => {
   afterEach(() => {
     jest.clearAllMocks();

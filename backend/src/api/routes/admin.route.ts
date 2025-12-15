@@ -6,12 +6,16 @@ import * as adminController from "../controllers/admin.controller";
 import {
   upgradeRequestActionSchema,
   suspendUserSchema,
+  removeProductSchema,
 } from "../dtos/requests/admin.schema";
 
 const router = Router();
 
 // All admin routes require authentication and admin role/permission
 const adminAuth = [requireAuth, authorize("admin")];
+
+// Overview dashboard
+router.get("/overview", adminAuth, adminController.getAdminOverview);
 
 // User management
 router.get("/users", adminAuth, adminController.getAllUsers);
@@ -39,6 +43,15 @@ router.patch(
   adminAuth,
   validate(upgradeRequestActionSchema, "params"),
   adminController.rejectUpgradeRequest
+);
+
+// Product management
+router.get("/products", adminAuth, adminController.getAllProducts);
+router.delete(
+  "/products/:id",
+  adminAuth,
+  validate(removeProductSchema, "params"),
+  adminController.removeProduct
 );
 
 export default router;

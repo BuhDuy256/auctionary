@@ -1,6 +1,5 @@
 import { type ReactNode, useState } from "react";
 import { Button } from "../components/ui/button";
-import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
 import {
   BookA,
@@ -8,10 +7,7 @@ import {
   Users,
   Package,
   FolderTree,
-  Settings,
-  Bell,
   LogOut,
-  Activity,
   User,
   Sun,
   Moon,
@@ -48,7 +44,7 @@ const navigationItems = [
     id: "users" as const,
     label: "User Management",
     icon: Users,
-    badge: "12",
+    badge: null,
   },
   {
     id: "categories" as const,
@@ -60,7 +56,7 @@ const navigationItems = [
     id: "products" as const,
     label: "Product Management",
     icon: Package,
-    badge: "3",
+    badge: null,
   },
 ];
 
@@ -147,40 +143,11 @@ export function AdminLayout({
                     <span className="text-sm truncate">{item.label}</span>
                   )}
                 </div>
-
-                {item.badge &&
-                  (!isCollapsed ? (
-                    <Badge className="bg-destructive/20 text-destructive border-destructive/50 text-xs">
-                      {item.badge}
-                    </Badge>
-                  ) : (
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive" />
-                  ))}
               </Button>
             );
           })}
 
           <Separator className="my-4" />
-
-          <button
-            title={isCollapsed ? "Settings" : undefined}
-            className={`w-full flex items-center px-4 py-3 rounded-lg hover:bg-secondary/50 border border-transparent transition-all h-12 ${
-              isCollapsed ? "justify-center px-0" : "gap-3"
-            }`}
-          >
-            <Settings className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-            {!isCollapsed && <span className="text-sm">Settings</span>}
-          </button>
-
-          <button
-            title={isCollapsed ? "Activity Logs" : undefined}
-            className={`w-full flex items-center px-4 py-3 rounded-lg hover:bg-secondary/50 border border-transparent transition-all h-12 ${
-              isCollapsed ? "justify-center px-0" : "gap-3"
-            }`}
-          >
-            <Activity className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-            {!isCollapsed && <span className="text-sm">Activity Logs</span>}
-          </button>
         </nav>
 
         <div className="p-4 mt-auto">
@@ -226,11 +193,6 @@ export function AdminLayout({
                   <Moon className="h-5 w-5" />
                 </Button>
               )}
-
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="h-5 w-5" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-destructive rounded-full" />
-              </Button>
 
               <Separator orientation="vertical" className="h-6" />
 
