@@ -14,28 +14,26 @@ import {
   Check,
   Download,
   Calendar,
-  Star,
   CheckCircle2,
   PartyPopper,
+  ThumbsUp,
+  ThumbsDown,
 } from "lucide-react";
 import { toast } from "sonner";
 
-interface TransactionRoomCompleteProps {}
+interface TransactionRoomCompleteProps {
+  isSeller: boolean;
+}
 
-const feedbackTags = [
-  "Fast Shipping",
-  "Item as Described",
-  "Good Packaging",
-  "Great Communication",
-  "Professional Seller",
-  "Would Buy Again",
-];
-
-export function TransactionRoomComplete({}: TransactionRoomCompleteProps) {
-  const [rating, setRating] = useState(0);
-  const [hoverRating, setHoverRating] = useState(0);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+export function TransactionRoomComplete({ isSeller }: TransactionRoomCompleteProps) {
+  const [liked, setLiked] = useState<boolean | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
   const [reviewComment, setReviewComment] = useState("");
+
+  // Dynamic text based on role
+  const partnerType = isSeller ? "buyer" : "seller";
+  const partnerName = isSeller ? "Jane Doe" : "John Smith";
+  const itemName = "Vintage Leica M6 Camera with 50mm Lens";
 
   const handleDownloadInvoice = () => {
     toast.success("Invoice Downloaded", {
@@ -43,34 +41,32 @@ export function TransactionRoomComplete({}: TransactionRoomCompleteProps) {
     });
   };
 
-  const toggleTag = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
+  const handleLike = (isLike: boolean) => {
+    setLiked(isLike);
+    setIsAnimating(true);
+    setTimeout(() => setIsAnimating(false), 300);
   };
 
   const handleSubmitFeedback = (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0) {
+    if (liked === null) {
       toast.error("Rating Required", {
-        description: "Please select a star rating before submitting.",
+        description: "Please select like or dislike before submitting.",
       });
       return;
     }
 
     console.log("Feedback submitted:", {
-      rating,
-      tags: selectedTags,
+      liked,
       comment: reviewComment,
     });
 
     toast.success("Feedback Submitted!", {
-      description: `Thank you for rating your experience with John Smith.`,
+      description: `Thank you for rating your experience with ${partnerName}.`,
     });
 
     // Reset form
-    setRating(0);
-    setSelectedTags([]);
+    setLiked(null);
     setReviewComment("");
   };
 
@@ -93,7 +89,9 @@ export function TransactionRoomComplete({}: TransactionRoomCompleteProps) {
                 Transaction Successful
               </h2>
               <p className="text-lg text-muted-foreground mb-4">
-                The transaction is closed. Enjoy your Vintage Leica M6!
+                {isSeller
+                  ? `The transaction is closed. Funds have been released to your account.`
+                  : `The transaction is closed. Enjoy your ${itemName}!`}
               </p>
               <div className="flex items-center gap-2">
                 <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
@@ -116,11 +114,13 @@ export function TransactionRoomComplete({}: TransactionRoomCompleteProps) {
             <div className="flex items-center gap-8">
               <div>
                 <div className="text-xs text-muted-foreground mb-1">
-                  Total Paid
+                  {isSeller ? "Total Received" : "Total Paid"}
                 </div>
-                <div className="text-2xl text-accent">$1,428.00</div>
+                <div className="text-2xl text-accent">
+                  {isSeller ? "$1,400.00" : "$1,428.00"}
+                </div>
                 <div className="text-xs text-muted-foreground mt-1">
-                  Includes $28.00 escrow fee
+                  {isSeller ? "After platform fees" : "Includes $28.00 escrow fee"}
                 </div>
               </div>
               <Separator orientation="vertical" className="h-12" />
@@ -147,71 +147,67 @@ export function TransactionRoomComplete({}: TransactionRoomCompleteProps) {
       <Card className="border-border">
         <CardHeader>
           <CardTitle className="text-lg">
-            Rate your experience with John Smith
+            Rate your experience with {partnerName}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Your feedback helps maintain trust in the Auctionary community
+            Your feedback helps {isSeller ? "buyers make informed decisions" : "maintain trust in the Auctionary community"}
           </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmitFeedback} className="space-y-6">
-            {/* Star Rating */}
+            {/* Like/Dislike Buttons */}
             <div className="space-y-3">
-              <Label>Overall Rating</Label>
-              <div className="flex items-center gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    onMouseEnter={() => setHoverRating(star)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    className="transition-transform hover:scale-110"
-                  >
-                    <Star
-                      className={`h-10 w-10 transition-colors ${
-                        star <= (hoverRating || rating)
-                          ? "fill-accent text-accent"
-                          : "text-muted-foreground"
-                      }`}
-                    />
-                  </button>
-                ))}
-                {rating > 0 && (
-                  <span className="ml-3 text-sm text-muted-foreground">
-                    {rating === 1 && "Poor"}
-                    {rating === 2 && "Fair"}
-                    {rating === 3 && "Good"}
-                    {rating === 4 && "Very Good"}
-                    {rating === 5 && "Excellent"}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Tag Selection */}
-            <div className="space-y-3">
-              <Label>What did you like? (Optional)</Label>
-              <div className="flex flex-wrap gap-2">
-                {feedbackTags.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => toggleTag(tag)}
-                    className={`px-4 py-2 rounded-full text-sm border transition-all ${
-                      selectedTags.includes(tag)
-                        ? "bg-accent/20 border-accent text-accent"
-                        : "bg-secondary border-border text-muted-foreground hover:border-accent/50"
+              <Label>How was your experience?</Label>
+              <div className="flex items-center justify-center gap-8">
+                <button
+                  type="button"
+                  onClick={() => handleLike(true)}
+                  className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                    liked === true
+                      ? "bg-green-500/10 border-green-500 scale-110"
+                      : "border-border hover:border-green-500/50 hover:bg-green-500/5"
+                  } ${isAnimating && liked === true ? "animate-bounce" : ""}`}
+                >
+                  <ThumbsUp
+                    className={`h-16 w-16 transition-all ${
+                      liked === true
+                        ? "fill-green-500 text-green-500"
+                        : "text-muted-foreground group-hover:text-green-500"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm font-medium ${
+                      liked === true ? "text-green-500" : "text-muted-foreground"
                     }`}
                   >
-                    {selectedTags.includes(tag) && (
-                      <Check className="h-3 w-3 inline mr-1" />
-                    )}
-                    {tag}
-                  </button>
-                ))}
+                    Good Experience
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleLike(false)}
+                  className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
+                    liked === false
+                      ? "bg-red-500/10 border-red-500 scale-110"
+                      : "border-border hover:border-red-500/50 hover:bg-red-500/5"
+                  } ${isAnimating && liked === false ? "animate-bounce" : ""}`}
+                >
+                  <ThumbsDown
+                    className={`h-16 w-16 transition-all ${
+                      liked === false
+                        ? "fill-red-500 text-red-500"
+                        : "text-muted-foreground group-hover:text-red-500"
+                    }`}
+                  />
+                  <span
+                    className={`text-sm font-medium ${
+                      liked === false ? "text-red-500" : "text-muted-foreground"
+                    }`}
+                  >
+                    Bad Experience
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -222,14 +218,14 @@ export function TransactionRoomComplete({}: TransactionRoomCompleteProps) {
               <Label htmlFor="review">Write a review (Optional)</Label>
               <Textarea
                 id="review"
-                placeholder="Share your experience with this seller..."
+                placeholder={`Share your experience with this ${partnerType}...`}
                 value={reviewComment}
                 onChange={(e) => setReviewComment(e.target.value)}
                 rows={4}
                 className="resize-none"
               />
               <p className="text-xs text-muted-foreground">
-                Your review will be visible to other buyers
+                Your review will be visible to other {isSeller ? "sellers" : "buyers"}
               </p>
             </div>
 

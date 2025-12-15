@@ -70,7 +70,7 @@ const baseChatMessages: ChatMessage[] = [
     id: 4,
     sender: "system",
     message:
-      "Escrow payment of $1,400 has been secured. Funds will be released to seller upon delivery confirmation.",
+      "Buyer has submitted payment proof. Waiting for seller verification.",
     timestamp: "10:30 AM",
   },
 ];
@@ -191,7 +191,7 @@ const getChatMessages = (screen: Screen): ChatMessage[] => {
       {
         id: 5,
         sender: "system",
-        message: "Payment confirmed! Shipping label has been created.",
+        message: "Payment confirmed! Seller is preparing to ship the package.",
         timestamp: "11:45 AM",
       },
       {
@@ -199,7 +199,7 @@ const getChatMessages = (screen: Screen): ChatMessage[] => {
         sender: "seller",
         name: "John Smith",
         message:
-          "I've created the shipping label. Will drop it off at FedEx shortly!",
+          "I've confirmed the payment. Will ship it out today!",
         timestamp: "11:47 AM",
         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Seller",
       }
@@ -243,7 +243,7 @@ const getChatMessages = (screen: Screen): ChatMessage[] => {
         id: 7,
         sender: "system",
         message:
-          "Transaction completed. Funds have been released to the seller.",
+          "Transaction completed. Thank you for using our platform!",
         timestamp: "2:20 PM",
       },
       {
@@ -276,15 +276,39 @@ const getChatFooterText = (screen: Screen) => {
 
 export default function TransactionRoomPage() {
   // const [currentScreen] = useState<Screen>("transaction-room-payment");
-  const [currentScreen] = useState<Screen>("transaction-room-shipping");
+  // const [currentScreen] = useState<Screen>("transaction-room-shipping");
   // const [currentScreen] = useState<Screen>("transaction-room-delivery");
-  // const [currentScreen] = useState<Screen>("transaction-room-complete");
+  const [currentScreen] = useState<Screen>("transaction-room-complete");
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  
+  // Mock state to control UI - change this to test different views
+  const [isSeller] = useState(true); // true = Seller view, false = Buyer view
 
   const handleSubmitAddress = () => {
     toast.success("Address Confirmed!", {
       description:
         "Your delivery address has been saved and shared with the seller.",
+    });
+  };
+
+  const handlePaymentProof = (file: File) => {
+    console.log("Payment proof uploaded:", file.name);
+    toast.success("Payment Proof Uploaded!", {
+      description: "Your payment receipt has been submitted for verification.",
+    });
+  };
+
+  const handleShippingProof = (file: File) => {
+    console.log("Shipping proof uploaded:", file.name);
+    toast.success("Shipping Proof Uploaded!", {
+      description: "Your shipping confirmation has been submitted.",
+    });
+  };
+
+  const handleCancelTransaction = () => {
+    console.log("Transaction cancelled");
+    toast.error("Transaction Cancelled", {
+      description: "The transaction has been cancelled and buyer rating will be decreased.",
     });
   };
 
@@ -350,6 +374,9 @@ export default function TransactionRoomPage() {
             statusBadge={getStatusBadge(currentScreen)}
             description={getDescription(currentScreen)}
             transactionId={transactionData.id}
+            isSeller={isSeller}
+            currentScreen={currentScreen}
+            onCancelTransaction={handleCancelTransaction}
           />
 
           {/* Shared Product Summary */}
@@ -365,19 +392,23 @@ export default function TransactionRoomPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Stage-specific content */}
             {currentScreen === "transaction-room-payment" && (
-              <TransactionRoom onSubmitAddress={handleSubmitAddress} />
+              <TransactionRoom onPaymentProof={handlePaymentProof} />
             )}
             {currentScreen === "transaction-room-shipping" && (
-              <TransactionRoomShipping />
+              <TransactionRoomShipping 
+                isSeller={isSeller}
+                onShippingProof={handleShippingProof}
+              />
             )}
             {currentScreen === "transaction-room-delivery" && (
               <TransactionRoomDelivery
+                isSeller={isSeller}
                 onConfirmReceipt={handleConfirmReceipt}
                 onReportIssue={handleReportIssue}
               />
             )}
             {currentScreen === "transaction-room-complete" && (
-              <TransactionRoomComplete />
+              <TransactionRoomComplete isSeller={isSeller} />
             )}
 
             {/* Shared Chat Box */}
