@@ -15,7 +15,7 @@ export function generateTestEmail(): string {
 export function generateTestUser() {
   const email = generateTestEmail();
   return {
-    fullName: "Test User E2E",
+    fullName: "Test User Auctionary",
     email,
     password: "TestPassword123!",
     address: "123 Test Street, Test City",

@@ -40,7 +40,7 @@ test.describe("User Signup - Validation Errors", () => {
 
     // Verify error message for duplicate email
     await expect(
-      page.locator(`text=/${ERROR_MESSAGES.DUPLICATE_EMAIL}|already exist/i`)
+      page.locator(`text=/${ERROR_MESSAGES.DUPLICATE_EMAIL}|already in use/i`)
     ).toBeVisible({ timeout: 5000 });
   });
 
