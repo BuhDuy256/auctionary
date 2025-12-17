@@ -8,7 +8,13 @@ export const createUser = async (userData: {
   is_verified?: boolean;
   status?: any;
 }) => {
-  const [user] = await db("users").insert(userData).returning("*");
+  const [user] = await db("users")
+    .insert({
+      ...userData,
+      created_at: db.fn.now(),
+      updated_at: db.fn.now(),
+    })
+    .returning("*");
   return user;
 };
 

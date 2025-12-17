@@ -85,6 +85,8 @@ export const signupUser = async (
     email: mappedUser.email,
     fullName: mappedUser.fullName,
     isVerified: mappedUser.isVerified,
+    message:
+      "Account created successfully! Please check your email for verification code.",
   };
 };
 

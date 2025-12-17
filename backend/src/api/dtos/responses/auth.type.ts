@@ -56,6 +56,7 @@ export interface SignupResponse {
   email: string;
   fullName: string;
   isVerified: boolean;
+  message: string;
 }
 
 export interface VerificationRequiredResponse {
