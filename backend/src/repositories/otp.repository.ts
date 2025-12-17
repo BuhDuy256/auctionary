@@ -51,7 +51,7 @@ export const findValidOTP = async (
 
 export const markOTPAsUsed = async (otpId: number) => {
   const [updatedOtp] = await db("user_otps")
-    .where({ otp_id: otpId })
+    .where({ id: otpId })
     .update({ consumed_at: new Date() })
     .returning("*");
   return updatedOtp;

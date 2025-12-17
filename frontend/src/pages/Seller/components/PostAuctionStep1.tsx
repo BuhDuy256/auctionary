@@ -37,7 +37,7 @@ export function PostAuctionStep1({ onNext, onBack }: PostAuctionStep1Props) {
   const [categoryId, setCategoryId] = useState(""); // Stores ID for backend
   const [subCategory, setSubCategory] = useState("");
   const [subCategoryId, setSubCategoryId] = useState("");
-  /* eslint-enable @typescript-eslint/no-unused-vars */
+
   const [images, setImages] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [dragActive, setDragActive] = useState(false);

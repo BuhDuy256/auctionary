@@ -14,18 +14,36 @@ import {
   Check,
   AlertCircle,
   CreditCard,
-  MapPin,
   Shield,
   Info,
-  DollarSign,
+  Upload,
+  X,
+  Image as ImageIcon,
+  Building2,
+  Copy,
+  MapPin,
 } from "lucide-react";
 
 interface TransactionRoomProps {
-  onSubmitAddress: () => void;
+  onPaymentProof: (file: File) => void;
 }
 
-export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
-  const [addressForm, setAddressForm] = useState({
+// Mock bank info - in real app this would come from API
+const sellerBankInfo = {
+  bankName: "Bank of America",
+  accountNumber: "1234567890",
+  accountHolder: "John Smith",
+  routingNumber: "021000322",
+  transactionCode: "TXN-89234",
+};
+
+export function TransactionRoom({ onPaymentProof }: TransactionRoomProps) {
+  const [paymentProof, setPaymentProof] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  
+  // Shipping address form state
+  const [shippingAddress, setShippingAddress] = useState({
     fullName: "",
     addressLine1: "",
     addressLine2: "",
@@ -35,10 +53,51 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
     phone: "",
   });
 
-  const handleSubmitAddress = (e: React.FormEvent) => {
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const handleImageUpload = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (!file.type.startsWith("image/")) {
+      return;
+    }
+
+    setPaymentProof(file);
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
-    console.log("Address submitted:", addressForm);
-    onSubmitAddress();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files) {
+      handleImageUpload(e.dataTransfer.files);
+    }
+  };
+
+  const removeImage = () => {
+    setPaymentProof(null);
+  };
+
+  const handleSubmit = () => {
+    if (paymentProof) {
+      onPaymentProof(paymentProof);
+    }
   };
 
   return (
@@ -47,9 +106,7 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
       <Alert className="border-accent/30 bg-accent/5">
         <Shield className="h-4 w-4 text-accent" />
         <AlertDescription className="text-sm text-accent/90">
-          <strong>Escrow Protection Active:</strong> Your payment of $1,400 is
-          secured in escrow. Funds will only be released to the seller after you
-          confirm delivery.
+          <strong>Direct Bank Transfer:</strong> Please transfer the exact amount to the seller's bank account below. Upload your payment receipt after completing the transfer.
         </AlertDescription>
       </Alert>
 
@@ -63,49 +120,216 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
             </CardTitle>
             <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
               <AlertCircle className="h-3 w-3 mr-1" />
-              Pending
+              Awaiting Payment
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4 p-4 rounded-lg bg-secondary/50 border border-border">
-            <div>
+            <div className="col-span-2">
               <div className="text-xs text-muted-foreground mb-1">
-                Total Amount
+                Total Amount to Transfer
               </div>
-              <div className="text-xl text-accent">$1,400.00</div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">
-                Escrow Fee
-              </div>
-              <div className="text-xl">$28.00</div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">
-                Payment Method
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-6 rounded bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center text-xs text-white">
-                  VISA
-                </div>
-                <span className="text-sm">•••• 4242</span>
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-muted-foreground mb-1">Status</div>
-              <div className="text-sm">Processing...</div>
+              <div className="text-3xl text-accent font-bold">$1,400.00</div>
             </div>
           </div>
-
-          <Button className="w-full" size="lg">
-            <DollarSign className="mr-2 h-5 w-5" />
-            Complete Payment
-          </Button>
         </CardContent>
       </Card>
 
-      {/* Delivery Address Form */}
+      {/*}
+      <Card className="border-accent/30 bg-accent/5">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-accent" />
+            Seller's Bank Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="border-accent/30 bg-background">
+            <Info className="h-4 w-4 text-accent" />
+            <AlertDescription className="text-xs">
+              Transfer the exact amount to this account. Use the transaction code as transfer description.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">Bank Name</div>
+                <div className="font-medium">{sellerBankInfo.bankName}</div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopy(sellerBankInfo.bankName, "bank")}
+              >
+                {copiedField === "bank" ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">Account Holder</div>
+                <div className="font-medium">{sellerBankInfo.accountHolder}</div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopy(sellerBankInfo.accountHolder, "holder")}
+              >
+                {copiedField === "holder" ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">Account Number</div>
+                <code className="font-mono text-lg tracking-wider text-accent">
+                  {sellerBankInfo.accountNumber}
+                </code>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopy(sellerBankInfo.accountNumber, "account")}
+              >
+                {copiedField === "account" ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-secondary border border-border">
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">Routing Number</div>
+                <code className="font-mono text-lg tracking-wider">
+                  {sellerBankInfo.routingNumber}
+                </code>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopy(sellerBankInfo.routingNumber, "routing")}
+              >
+                {copiedField === "routing" ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-lg bg-accent/10 border-2 border-accent/30">
+              <div className="flex-1">
+                <div className="text-xs text-muted-foreground mb-1">
+                  Transfer Description (Required)
+                </div>
+                <code className="font-mono text-lg tracking-wider text-accent font-bold">
+                  {sellerBankInfo.transactionCode}
+                </code>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleCopy(sellerBankInfo.transactionCode, "code")}
+              >
+                {copiedField === "code" ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      */}
+
+      {/* Upload Payment Proof */}
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Upload className="h-5 w-5 text-accent" />
+            Upload Payment Receipt
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="border-border bg-secondary/30">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              After completing the bank transfer, upload a screenshot or photo of your payment receipt for verification.
+            </AlertDescription>
+          </Alert>
+
+          {/* Upload Area */}
+          <div
+            className={`relative border-2 border-dashed rounded-lg transition-all ${
+              dragActive
+                ? "border-accent bg-accent/10"
+                : "border-border hover:border-accent/50 hover:bg-accent/5"
+            }`}
+            onDragEnter={handleDrag}
+            onDragLeave={handleDrag}
+            onDragOver={handleDrag}
+            onDrop={handleDrop}
+          >
+            <input
+              type="file"
+              id="payment-proof-upload"
+              accept="image/*"
+              onChange={(e) => handleImageUpload(e.target.files)}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              disabled={!!paymentProof}
+            />
+            <div className="p-8 text-center">
+              <div className="p-4 rounded-full bg-secondary/50 w-fit mx-auto mb-4">
+                <ImageIcon className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="mb-2">
+                Drag and drop your receipt here, or{" "}
+                <span className="text-accent">click to browse</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                PNG, JPG or WEBP (Max 5MB)
+              </p>
+            </div>
+          </div>
+
+          {/* Image Preview */}
+          {paymentProof && (
+            <div className="relative rounded-lg overflow-hidden border-2 border-border">
+              <img
+                src={URL.createObjectURL(paymentProof)}
+                alt="Payment receipt"
+                className="w-full h-auto max-h-96 object-contain bg-secondary"
+              />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 p-2 rounded-full bg-destructive/90 backdrop-blur text-white hover:bg-destructive transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+              <Badge className="absolute bottom-2 left-2 bg-green-500/90 backdrop-blur border-0">
+                <Check className="h-3 w-3 mr-1" />
+                Receipt Uploaded
+              </Badge>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Shipping Address Form */}
       <Card className="border-border">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -113,8 +337,15 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
             Delivery Address
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmitAddress} className="space-y-4">
+        <CardContent className="space-y-4">
+          <Alert className="border-border bg-secondary/30">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              Please provide your delivery address. This will be shared with the seller for shipping.
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="fullName">
                 Full Name <span className="text-destructive">*</span>
@@ -122,10 +353,10 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
               <Input
                 id="fullName"
                 placeholder="John Doe"
-                value={addressForm.fullName}
+                value={shippingAddress.fullName}
                 onChange={(e) =>
-                  setAddressForm({
-                    ...addressForm,
+                  setShippingAddress({
+                    ...shippingAddress,
                     fullName: e.target.value,
                   })
                 }
@@ -140,10 +371,10 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
               <Input
                 id="addressLine1"
                 placeholder="123 Main Street"
-                value={addressForm.addressLine1}
+                value={shippingAddress.addressLine1}
                 onChange={(e) =>
-                  setAddressForm({
-                    ...addressForm,
+                  setShippingAddress({
+                    ...shippingAddress,
                     addressLine1: e.target.value,
                   })
                 }
@@ -156,10 +387,10 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
               <Input
                 id="addressLine2"
                 placeholder="Apartment, suite, etc."
-                value={addressForm.addressLine2}
+                value={shippingAddress.addressLine2}
                 onChange={(e) =>
-                  setAddressForm({
-                    ...addressForm,
+                  setShippingAddress({
+                    ...shippingAddress,
                     addressLine2: e.target.value,
                   })
                 }
@@ -174,9 +405,12 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
                 <Input
                   id="city"
                   placeholder="New York"
-                  value={addressForm.city}
+                  value={shippingAddress.city}
                   onChange={(e) =>
-                    setAddressForm({ ...addressForm, city: e.target.value })
+                    setShippingAddress({
+                      ...shippingAddress,
+                      city: e.target.value,
+                    })
                   }
                   required
                 />
@@ -189,10 +423,10 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
                 <Input
                   id="state"
                   placeholder="NY"
-                  value={addressForm.state}
+                  value={shippingAddress.state}
                   onChange={(e) =>
-                    setAddressForm({
-                      ...addressForm,
+                    setShippingAddress({
+                      ...shippingAddress,
                       state: e.target.value,
                     })
                   }
@@ -209,10 +443,10 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
                 <Input
                   id="zipCode"
                   placeholder="10001"
-                  value={addressForm.zipCode}
+                  value={shippingAddress.zipCode}
                   onChange={(e) =>
-                    setAddressForm({
-                      ...addressForm,
+                    setShippingAddress({
+                      ...shippingAddress,
                       zipCode: e.target.value,
                     })
                   }
@@ -228,10 +462,10 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
                   id="phone"
                   type="tel"
                   placeholder="(555) 123-4567"
-                  value={addressForm.phone}
+                  value={shippingAddress.phone}
                   onChange={(e) =>
-                    setAddressForm({
-                      ...addressForm,
+                    setShippingAddress({
+                      ...shippingAddress,
                       phone: e.target.value,
                     })
                   }
@@ -239,22 +473,20 @@ export function TransactionRoom({ onSubmitAddress }: TransactionRoomProps) {
                 />
               </div>
             </div>
-
-            <Alert className="border-border bg-secondary/30">
-              <Info className="h-4 w-4" />
-              <AlertDescription className="text-xs">
-                This address will be shared with the seller for shipping
-                purposes only.
-              </AlertDescription>
-            </Alert>
-
-            <Button type="submit" className="w-full" size="lg">
-              <Check className="mr-2 h-5 w-5" />
-              Confirm Delivery Address
-            </Button>
-          </form>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Confirm Payment Button */}
+      <Button
+        className="w-full"
+        size="lg"
+        disabled={!paymentProof}
+        onClick={handleSubmit}
+      >
+        <Check className="mr-2 h-5 w-5" />
+        Confirm Payment Sent
+      </Button>
     </div>
   );
 }

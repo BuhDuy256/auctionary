@@ -7,7 +7,6 @@ import {
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { Alert, AlertDescription } from "../../../components/ui/alert";
-import { ImageWithFallback } from "../../../components/ImageWithFallback";
 import {
   Check,
   MapPin,
@@ -16,16 +15,20 @@ import {
   CheckCircle2,
   AlertTriangle,
   Shield,
-  Camera,
   Flag,
+  Loader2,
+  Info,
+  PackageCheck,
 } from "lucide-react";
 
 interface TransactionRoomDeliveryProps {
+  isSeller: boolean;
   onConfirmReceipt: () => void;
   onReportIssue: () => void;
 }
 
 export function TransactionRoomDelivery({
+  isSeller,
   onConfirmReceipt,
   onReportIssue,
 }: TransactionRoomDeliveryProps) {
@@ -37,6 +40,134 @@ export function TransactionRoomDelivery({
     onReportIssue();
   };
 
+  // SELLER VIEW - Waiting for buyer confirmation
+  if (isSeller) {
+    return (
+      <div className="lg:col-span-2 space-y-6">
+        {/* Delivery Confirmation Alert */}
+        <Alert className="border-green-500/30 bg-green-500/5">
+          <Shield className="h-4 w-4 text-green-500" />
+          <AlertDescription className="text-sm text-green-500/90">
+            <strong>Package Delivered:</strong> The item has been delivered to the buyer. Waiting for buyer confirmation to release funds.
+          </AlertDescription>
+        </Alert>
+
+        {/* Waiting State Card */}
+        <Card className="border-border">
+          <CardContent className="p-12">
+            <div className="flex flex-col items-center text-center space-y-6">
+              {/* Animated Icon */}
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full bg-accent/10 border-2 border-accent/30 flex items-center justify-center">
+                  <PackageCheck className="h-16 w-16 text-accent" />
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <div className="w-12 h-12 rounded-full bg-secondary border-2 border-border flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 text-accent animate-spin" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Waiting Message */}
+              <div className="space-y-3">
+                <h2 className="text-2xl">Waiting for Buyer Confirmation</h2>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  The package has been delivered successfully. The buyer is inspecting the item.
+                  Funds will be released to your account once they confirm receipt.
+                </p>
+              </div>
+
+              {/* Status Badges */}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
+                  <Check className="h-3 w-3 mr-1" />
+                  Package Delivered
+                </Badge>
+                <Badge className="bg-accent/20 text-accent border-accent/50">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Awaiting Buyer Confirmation
+                </Badge>
+              </div>
+
+              {/* Information */}
+              <Alert className="border-border bg-secondary/30 max-w-md">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  The buyer has up to 72 hours to confirm receipt and inspect the item.
+                  If no issues are reported, funds will be automatically released.
+                </AlertDescription>
+              </Alert>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Timeline Preview */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-5 w-5 text-accent" />
+              Transaction Timeline
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/20">
+                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm">Payment Received</div>
+                  <div className="text-xs text-muted-foreground">Nov 28, 11:45 AM</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/20">
+                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm">Package Shipped</div>
+                  <div className="text-xs text-muted-foreground">Nov 28, 2:00 PM</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-green-500/5 border border-green-500/20">
+                <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm">Package Delivered</div>
+                  <div className="text-xs text-muted-foreground">Nov 30, 2:15 PM</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
+                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-muted-foreground">Buyer Confirmation</div>
+                  <div className="text-xs text-muted-foreground">Pending...</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
+                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-muted-foreground">Funds Released</div>
+                  <div className="text-xs text-muted-foreground">Pending...</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // BUYER VIEW - Confirm delivery
   return (
     <div className="lg:col-span-2 space-y-6">
       {/* Map Visualization */}
@@ -205,41 +336,6 @@ export function TransactionRoomDelivery({
               Escrow Protection: $1,400 + $28 fee secured until confirmation
             </span>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Delivery Proof */}
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Camera className="h-5 w-5 text-accent" />
-            Photo on Delivery
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Proof of delivery captured by carrier
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div className="relative aspect-video rounded-lg overflow-hidden bg-secondary border border-border">
-            <ImageWithFallback
-              src="https://images.unsplash.com/photo-1601758228041-f3b2795255f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=800"
-              alt="Delivery proof"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-              <Badge className="bg-background/80 backdrop-blur text-foreground border-border">
-                <MapPin className="h-3 w-3 mr-1" />
-                123 Main St, Apt 4B
-              </Badge>
-              <Badge className="bg-background/80 backdrop-blur text-foreground border-border">
-                <Clock className="h-3 w-3 mr-1" />
-                Nov 30, 2:15 PM
-              </Badge>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-3">
-            This photo was taken by the delivery driver at the time of delivery.
-          </p>
         </CardContent>
       </Card>
     </div>

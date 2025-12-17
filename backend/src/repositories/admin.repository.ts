@@ -29,7 +29,7 @@ export const getAllUpgradeRequests = async () => {
   return await db("upgrade_requests")
     .join("users", "upgrade_requests.user_id", "users.id")
     .select(
-      "upgrade_requests.request_id",
+      "upgrade_requests.id as request_id",
       "upgrade_requests.user_id",
       "upgrade_requests.status",
       "upgrade_requests.message",
@@ -53,12 +53,12 @@ export const getAllUpgradeRequests = async () => {
  */
 export const approveUpgradeRequest = async (requestId: number) => {
   const [result] = await db("upgrade_requests")
-    .where({ request_id: requestId })
+    .where({ id: requestId })
     .update({
       status: "approved",
       approved_at: db.fn.now(),
     })
-    .returning(["request_id", "user_id", "status", "approved_at"]);
+    .returning(["id", "user_id", "status", "approved_at"]);
 
   return result;
 };
@@ -69,11 +69,11 @@ export const approveUpgradeRequest = async (requestId: number) => {
  */
 export const rejectUpgradeRequest = async (requestId: number) => {
   const [result] = await db("upgrade_requests")
-    .where({ request_id: requestId })
+    .where({ id: requestId })
     .update({
       status: "rejected",
     })
-    .returning(["request_id", "user_id", "status"]);
+    .returning(["id", "user_id", "status"]);
 
   return result;
 };
@@ -83,7 +83,7 @@ export const rejectUpgradeRequest = async (requestId: number) => {
  * Used for validation before approve/reject
  */
 export const findUpgradeRequestById = async (requestId: number) => {
-  return await db("upgrade_requests").where({ request_id: requestId }).first();
+  return await db("upgrade_requests").where({ id: requestId }).first();
 };
 
 /**
@@ -115,7 +115,7 @@ export const findUserById = async (userId: number) => {
  */
 export const getRoleIdByName = async (roleName: string) => {
   const role = await db("roles").where({ name: roleName }).first();
-  return role ? role.role_id : null;
+  return role ? role.id : null;
 };
 
 /**
@@ -170,7 +170,7 @@ export const getAllProducts = async () => {
     )
     .select(
       // Product fields
-      "products.product_id",
+      "products.id as product_id",
       "products.name",
       "products.current_price",
       "products.bid_count",
@@ -198,11 +198,11 @@ export const getAllProducts = async () => {
  */
 export const removeProduct = async (productId: number) => {
   const [result] = await db("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .update({
       status: "removed",
     })
-    .returning(["product_id", "name", "status"]);
+    .returning(["id", "name", "status"]);
 
   return result;
 };
@@ -212,7 +212,7 @@ export const removeProduct = async (productId: number) => {
  * Used for validation before removal
  */
 export const findProductById = async (productId: number) => {
-  return await db("products").where({ product_id: productId }).first();
+  return await db("products").where({ id: productId }).first();
 };
 
 /**
@@ -260,7 +260,7 @@ export const getRecentAuctions = async () => {
     .join("users", "products.seller_id", "users.id")
     .join("categories", "products.category_id", "categories.category_id")
     .select(
-      "products.product_id as id",
+      "products.id as id",
       "products.name as title",
       "categories.name as category",
       "products.thumbnail_url as thumbnail",

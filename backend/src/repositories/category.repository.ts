@@ -7,7 +7,7 @@ import { NotFoundError } from "../errors";
 export const getCategoryBySlug = async (slug: string) => {
   const category = await db("categories")
     .where({ slug })
-    .select("category_id", "parent_id")
+    .select("id as category_id", "parent_id")
     .first();
 
   if (!category) {
@@ -23,7 +23,7 @@ export const getCategoryBySlug = async (slug: string) => {
 export const getChildCategories = async (parentId: number) => {
   return await db("categories")
     .where({ parent_id: parentId })
-    .select("category_id");
+    .select("id as category_id");
 };
 
 /**
@@ -32,7 +32,7 @@ export const getChildCategories = async (parentId: number) => {
 export const getCategoryIds = async (slug: string): Promise<number[]> => {
   const category = await db("categories")
     .where({ slug })
-    .select("category_id", "parent_id")
+    .select("id", "parent_id")
     .first();
 
   if (!category) return [];
@@ -40,12 +40,12 @@ export const getCategoryIds = async (slug: string): Promise<number[]> => {
   if (category.parent_id === null) {
     const children = await db("categories")
       .where({ parent_id: category.category_id })
-      .select("category_id");
+      .select("id");
 
-    return [category.category_id, ...children.map((c) => c.category_id)];
+    return [category.id, ...children.map((c) => c.id)];
   }
 
-  return [category.category_id];
+  return [category.id];
 };
 
 /**
@@ -60,9 +60,9 @@ export const getAllCategories = async () => {
  */
 export const getCategorySlugs = async (categoryId: number) => {
   return await db("categories as sub")
-    .leftJoin("categories as parent", "sub.parent_id", "parent.category_id")
+    .leftJoin("categories as parent", "sub.parent_id", "parent.id")
     .select("sub.slug as subSlug", "parent.slug as parentSlug")
-    .where("sub.category_id", categoryId)
+    .where("sub.id", categoryId)
     .first();
 };
 
@@ -74,8 +74,8 @@ export const getCategorySlugs = async (categoryId: number) => {
  */
 export const getAllCategoriesForAdmin = async () => {
   return await db("categories")
-    .select("category_id", "name", "slug", "parent_id")
-    .orderBy("category_id", "asc");
+    .select("id as category_id", "name", "slug", "parent_id")
+    .orderBy("id", "asc");
 };
 
 /**
@@ -84,12 +84,12 @@ export const getAllCategoriesForAdmin = async () => {
  */
 export const getCategoryStats = async () => {
   const totalResult = await db("categories")
-    .count("category_id as total")
+    .count("id as total")
     .first();
 
   const mainResult = await db("categories")
     .where({ parent_id: null })
-    .count("category_id as main")
+    .count("id as main")
     .first();
 
   const total = totalResult ? parseInt(totalResult.total as string) : 0;
@@ -107,8 +107,8 @@ export const getCategoryStats = async () => {
  */
 export const findCategoryById = async (categoryId: number) => {
   return await db("categories")
-    .where({ category_id: categoryId })
-    .select("category_id", "name", "slug", "parent_id")
+    .where({ id: categoryId })
+    .select("id as category_id", "name", "slug", "parent_id")
     .first();
 };
 
@@ -122,7 +122,7 @@ export const categoryNameExists = async (
   let query = db("categories").whereRaw("LOWER(name) = LOWER(?)", [name]);
 
   if (excludeId) {
-    query = query.whereNot({ category_id: excludeId });
+    query = query.whereNot({ id: excludeId });
   }
 
   const result = await query.first();
@@ -139,7 +139,7 @@ export const slugExists = async (
   let query = db("categories").where({ slug });
 
   if (excludeId) {
-    query = query.whereNot({ category_id: excludeId });
+    query = query.whereNot({ id: excludeId });
   }
 
   const result = await query.first();
@@ -177,7 +177,7 @@ export const updateCategory = async (
   }
 ) => {
   const [category] = await db("categories")
-    .where({ category_id: categoryId })
+    .where({ id: categoryId })
     .update(data)
     .returning("*");
 
@@ -189,7 +189,7 @@ export const updateCategory = async (
  * Note: Will fail if products reference this category (FK constraint)
  */
 export const deleteCategoryById = async (categoryId: number): Promise<void> => {
-  await db("categories").where({ category_id: categoryId }).del();
+  await db("categories").where({ id: categoryId }).del();
 };
 
 /**
@@ -214,7 +214,7 @@ export const hasSubcategories = async (
 ): Promise<boolean> => {
   const result = await db("categories")
     .where({ parent_id: categoryId })
-    .count("category_id as total")
+    .count("id as total")
     .first();
 
   const count = result ? parseInt(result.total as string) : 0;
@@ -238,7 +238,7 @@ export const wouldCreateCircularReference = async (
     if (currentId === categoryId) return true;
 
     const parent: { parent_id: number | null } = await db("categories")
-      .where({ category_id: currentId })
+      .where({ id: currentId })
       .select("parent_id")
       .first();
 
@@ -257,7 +257,7 @@ export const getCategoryDepth = async (categoryId: number): Promise<number> => {
 
   while (currentId !== null) {
     const category: { parent_id: number | null } = await db("categories")
-      .where({ category_id: currentId })
+      .where({ id: currentId })
       .select("parent_id")
       .first();
 

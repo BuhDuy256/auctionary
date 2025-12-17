@@ -15,7 +15,7 @@ export const getEndingSoonAuctions = async () => {
     )
     .select(
       // Product fields
-      "products.product_id",
+      "products.id",
       "products.name",
       "products.thumbnail_url",
       "products.current_price",
@@ -47,7 +47,7 @@ export const getMostActiveAuctions = async () => {
     )
     .select(
       // Product fields
-      "products.product_id",
+      "products.id",
       "products.name",
       "products.thumbnail_url",
       "products.current_price",
@@ -79,7 +79,7 @@ export const getHighestPriceAuctions = async () => {
     )
     .select(
       // Product fields
-      "products.product_id",
+      "products.id",
       "products.name",
       "products.thumbnail_url",
       "products.current_price",

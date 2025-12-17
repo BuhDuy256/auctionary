@@ -33,7 +33,7 @@ export const getUserActiveRequest = async (userId: number) => {
  */
 export const cancelUpgradeRequest = async (requestId: number) => {
   const [result] = await db("upgrade_requests")
-    .where({ request_id: requestId })
+    .where({ id: requestId })
     .update({
       status: "cancelled",
     })

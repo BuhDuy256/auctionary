@@ -57,12 +57,12 @@ export const searchProducts = async (
   }
 
   if (excludeProductIds && excludeProductIds.length > 0) {
-    query = query.whereNotIn("products.product_id", excludeProductIds);
+    query = query.whereNotIn("products.id", excludeProductIds);
   }
 
   const countQuery = query
     .clone()
-    .count("products.product_id as total")
+    .count("products.id as total")
     .first();
 
   if (sort && Array.isArray(sort) && sort.length > 0) {
@@ -87,7 +87,7 @@ export const searchProducts = async (
   const products = await query
     .leftJoin("users", "products.highest_bidder_id", "users.id")
     .select(
-      "products.product_id",
+      "products.id",
       "products.slug",
       "products.thumbnail_url",
       "products.name",
@@ -140,7 +140,7 @@ export const createProduct = async (data: {
       .returning("*");
 
     await tx("product_descriptions").insert({
-      product_id: product.product_id,
+      product_id: product.id,
       author_id: data.seller_id,
       content: data.description,
       lang: "vi",
@@ -150,7 +150,7 @@ export const createProduct = async (data: {
     if (data.image_urls.length > 0) {
       await tx("product_images").insert(
         data.image_urls.map((image_url) => ({
-          product_id: product.product_id,
+          product_id: product.id,
           image_url,
         }))
       );
@@ -161,7 +161,7 @@ export const createProduct = async (data: {
 };
 
 export const findDetailById = async (productId: number) => {
-  const product = await db("products").where({ product_id: productId }).first();
+  const product = await db("products").where({ id: productId }).first();
 
   if (!product) {
     return null;
@@ -170,7 +170,7 @@ export const findDetailById = async (productId: number) => {
   const [images, seller, description, category] = await Promise.all([
     db("product_images")
       .where({ product_id: productId })
-      .orderBy("image_id", "asc")
+      .orderBy("id", "asc")
       .select("image_url"),
     db("users")
       .where({ id: product.seller_id })
@@ -181,14 +181,14 @@ export const findDetailById = async (productId: number) => {
       .orderBy("version", "desc")
       .select("content")
       .first(),
-    db("categories").where({ category_id: product.category_id }).first(),
+    db("categories").where({ id: product.category_id }).first(),
   ]);
 
   let parentCategory = null;
   if (category && category.parent_id) {
     parentCategory = await db("categories")
-      .where({ category_id: category.parent_id })
-      .select("category_id", "name", "slug")
+      .where({ id: category.parent_id })
+      .select("id", "name", "slug")
       .first();
   }
 
@@ -227,13 +227,13 @@ export const findCommentsById = async (
       product_id: productId,
       parent_id: null,
     })
-    .count("comment_id as total")
+    .count("id as total")
     .first();
 
   const total = totalResult ? parseInt(totalResult.total as string) : 0;
 
   // Fetch replies for these comments
-  const commentIds = parentComments.map((c) => c.comment_id);
+  const commentIds = parentComments.map((c) => c.id);
   const replies = await db("product_comments")
     .join("users", "product_comments.user_id", "users.id")
     .whereIn("product_comments.parent_id", commentIds)
@@ -261,7 +261,7 @@ export const findCommentsById = async (
 
 export const getStepPriceById = async (productId: number): Promise<number> => {
   const product = await db("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .select("step_price")
     .first();
   return toNum(product?.step_price);
@@ -269,7 +269,7 @@ export const getStepPriceById = async (productId: number): Promise<number> => {
 
 export const getStartPriceById = async (productId: number): Promise<number> => {
   const product = await db("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .select("start_price")
     .first();
   return toNum(product?.start_price);
@@ -279,7 +279,7 @@ export const getHighestBidderId = async (
   productId: number
 ): Promise<number | null> => {
   const product = await db("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .select("highest_bidder_id")
     .first();
   return product?.highest_bidder_id ?? null;
@@ -292,7 +292,7 @@ export const updateProductBidStats = async (
   trx?: Knex.Transaction
 ): Promise<void> => {
   await (trx || db)("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .update({
       highest_bidder_id: highestBidderId,
       current_price: currentPrice,
@@ -305,7 +305,7 @@ export const increaseProductBidCount = async (
   trx?: Knex.Transaction
 ): Promise<void> => {
   await (trx || db)("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .increment("bid_count", 1);
 };
 
@@ -362,7 +362,7 @@ export const getProductBidInfo = async (
   trx?: Knex.Transaction
 ) => {
   const product = await (trx || db)("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .select("step_price", "start_price", "current_price", "highest_bidder_id")
     .forUpdate() // Lock the row for consistency
     .first();
@@ -377,13 +377,13 @@ export const getProductBidInfo = async (
 // Product Detail Page Methods
 export const getProductDetailById = async (productId: number) => {
   const product = await db("products")
-    .leftJoin("categories", "products.category_id", "categories.category_id")
+    .leftJoin("categories", "products.category_id", "categories.id")
     .leftJoin("users as seller", "products.seller_id", "seller.id")
     .leftJoin("users as bidder", "products.highest_bidder_id", "bidder.id")
-    .where("products.product_id", productId)
+    .where("products.id", productId)
     .select(
       "products.*",
-      "categories.category_id",
+      "categories.id as category_id",
       "categories.name as category_name",
       "categories.slug as category_slug",
       "categories.parent_id",
@@ -400,7 +400,7 @@ export const getProductDetailById = async (productId: number) => {
 
 export const getProductBidCount = async (productId: number, trx?: Knex.Transaction): Promise<number> => {
   const product = await (trx || db)("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .select("products.bid_count")
     .first();
   return product?.bid_count || 0;
@@ -410,7 +410,7 @@ export const getProductImages = async (productId: number) => {
   return await db("product_images")
     .where({ product_id: productId })
     .select("image_url")
-    .orderBy("image_id", "asc");
+    .orderBy("id", "asc");
 };
 
 export const getProductDescription = async (productId: number) => {
@@ -424,15 +424,15 @@ export const getCategoryWithParents = async (categoryId: number) => {
   const categories = await db.raw(
     `
     WITH RECURSIVE category_path AS (
-      SELECT category_id, name, slug, parent_id, 0 as level
+      SELECT id, name, slug, parent_id, 0 as level
       FROM categories 
-      WHERE category_id = ?
+      WHERE id = ?
       
       UNION ALL
       
-      SELECT c.category_id, c.name, c.slug, c.parent_id, cp.level + 1
+      SELECT c.id, c.name, c.slug, c.parent_id, cp.level + 1
       FROM categories c 
-      INNER JOIN category_path cp ON c.category_id = cp.parent_id
+      INNER JOIN category_path cp ON c.id = cp.parent_id
     )
     SELECT * FROM category_path ORDER BY level DESC
   `,
@@ -493,7 +493,7 @@ export const getProductQuestions = async (
       "pc.parent_id": null,
     })
     .select(
-      "pc.comment_id",
+      "pc.id",
       "pc.content as question",
       "pc.created_at",
       "asker.full_name as asker_name"
@@ -503,7 +503,7 @@ export const getProductQuestions = async (
     .offset(offset);
 
   // Get first reply (answer) for each question
-  const questionIds = questions.map((q) => q.comment_id);
+  const questionIds = questions.map((q) => q.id);
   const answers = await db("product_comments as reply")
     .leftJoin("users as answerer", "reply.user_id", "answerer.id")
     .whereIn("reply.parent_id", questionIds)
@@ -526,7 +526,7 @@ export const getProductQuestions = async (
   // Get total count
   const totalResult = await db("product_comments")
     .where({ product_id: productId, parent_id: null })
-    .count("comment_id as total")
+    .count("id as total")
     .first();
 
   const total = totalResult ? parseInt(totalResult.total as string) : 0;
@@ -534,7 +534,7 @@ export const getProductQuestions = async (
   return {
     questions: questions.map((q) => ({
       ...q,
-      answer: answerMap.get(q.comment_id) || null,
+      answer: answerMap.get(q.id) || null,
     })),
     total,
   };
@@ -551,7 +551,7 @@ export const getProductBidHistory = async (
     .leftJoin("users", "bids.bidder_id", "users.id")
     .where("bids.product_id", productId)
     .select(
-      "bids.bid_id",
+      "bids.id",
       "bids.amount",
       "bids.created_at",
       "users.full_name as bidder_name",
@@ -564,13 +564,13 @@ export const getProductBidHistory = async (
 
   const totalResult = await db("bids")
     .where({ product_id: productId })
-    .count("bid_id as total")
+    .count("id as total")
     .first();
 
   const total = totalResult ? parseInt(totalResult.total as string) : 0;
 
   const product = await db("products")
-    .where({ product_id: productId })
+    .where({ id: productId })
     .select("highest_bidder_id", "current_price")
     .first();
 

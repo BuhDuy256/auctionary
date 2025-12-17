@@ -8,7 +8,7 @@ export const getSellerStats = async (sellerId: number) => {
   const activeAuctions = await db("products")
     .where({ seller_id: sellerId, status: "active" })
     .where("end_time", ">", new Date())
-    .count("product_id as count")
+    .count("id as count")
     .first();
 
   // Total bids across all seller's products
@@ -27,7 +27,7 @@ export const getSellerStats = async (sellerId: number) => {
   // Calculate average bid time (time between auction start and first bid)
   // This is a simplified calculation - you may want to adjust based on business logic
   const avgBidTimeResult = await db("bids")
-    .join("products", "bids.product_id", "products.product_id")
+    .join("products", "bids.product_id", "products.id")
     .where("products.seller_id", sellerId)
     .select(
       db.raw(
@@ -52,7 +52,7 @@ export const getSellerListings = async (sellerId: number) => {
     .leftJoin("categories", "products.category_id", "categories.category_id")
     .where("products.seller_id", sellerId)
     .select(
-      "products.product_id as id",
+      "products.id as id",
       "products.name as title",
       "products.thumbnail_url as thumbnailUrl",
       "categories.name as categoryName",

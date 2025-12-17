@@ -13,6 +13,9 @@ export const useBidding = () => {
   const openBidModal = (productData: BidProductData) => {
     // TODO: Add validation to check if auction is still active before opening modal
     // TODO: Check if user is authenticated, redirect to login if not
+
+    // TODO: navigate("TRANSACTION PAGE") if user is winner || seller
+
     setSelectedProduct(productData);
     setIsModalOpen(true);
   };

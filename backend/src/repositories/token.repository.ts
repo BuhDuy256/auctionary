@@ -41,7 +41,7 @@ export const findRefreshToken = async (tokenHash: string) => {
 
 export const updateLastUsed = async (tokenId: number) => {
   const [updatedToken] = await db("refresh_tokens")
-    .where({ token_id: tokenId })
+    .where({ id: tokenId })
     .update({ last_used_at: new Date() })
     .returning("*");
   return updatedToken;
