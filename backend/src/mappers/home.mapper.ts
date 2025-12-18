@@ -4,7 +4,7 @@ import type { HomeAuctionItem } from "../api/dtos/responses/home.type";
  * Raw database row structure for home auction items
  */
 interface RawHomeAuctionRow {
-  product_id: string;
+  id: string;
   name: string;
   thumbnail_url: string | null;
   current_price: string; // Knex returns numeric as string
@@ -23,7 +23,7 @@ export const mapToHomeAuctionItem = (
   row: RawHomeAuctionRow
 ): HomeAuctionItem => {
   return {
-    id: row.product_id,
+    id: row.id,
     title: row.name,
     image: row.thumbnail_url || "",
     currentBid: parseFloat(row.current_price),

@@ -67,7 +67,7 @@ export const mapUpgradeRequestToListItem = (
   request: any
 ): UpgradeRequestListItem => {
   return {
-    id: request.request_id,
+    id: request.id,
     userId: request.user_id,
     user: mapUpgradeRequestUser(request.user),
     message: request.message,
@@ -85,7 +85,7 @@ export const mapUpgradeRequestActionResponse = (
   data: any
 ): UpgradeRequestActionResponse => {
   return {
-    id: data.request_id,
+    id: data.id,
     userId: data.user_id,
     status: data.status,
     approvedAt: data.approved_at,
@@ -143,7 +143,7 @@ export const mapProductToAdminListItem = (
   product: any
 ): AdminProductListItem => {
   return {
-    id: product.product_id,
+    id: product.id,
     title: product.name,
     seller: mapProductSeller(product),
     category: mapProductCategory(product),

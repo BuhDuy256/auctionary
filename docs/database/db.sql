@@ -29,23 +29,6 @@ CREATE TABLE public.categories (
   CONSTRAINT categories_pkey PRIMARY KEY (id),
   CONSTRAINT categories_parent_id_fkey FOREIGN KEY (parent_id) REFERENCES public.categories(id)
 );
-CREATE TABLE public.conversation_participants (
-  user_id integer NOT NULL,
-  conversation_id integer NOT NULL,
-  joined_at timestamp with time zone,
-  CONSTRAINT conversation_participants_pkey PRIMARY KEY (user_id, conversation_id),
-  CONSTRAINT conversation_participants_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversations(id),
-  CONSTRAINT conversation_participants_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
-);
-CREATE TABLE public.conversations (
-  id integer NOT NULL DEFAULT nextval('conversations_id_seq'::regclass),
-  name character varying,
-  is_group boolean DEFAULT false,
-  creator_id integer NOT NULL,
-  created_at timestamp with time zone,
-  CONSTRAINT conversations_pkey PRIMARY KEY (id),
-  CONSTRAINT conversations_creator_id_fkey FOREIGN KEY (creator_id) REFERENCES public.users(id)
-);
 CREATE TABLE public.invoices (
   id integer NOT NULL DEFAULT nextval('invoices_invoice_id_seq'::regclass),
   order_id integer NOT NULL UNIQUE,
@@ -54,18 +37,7 @@ CREATE TABLE public.invoices (
   shipping_tracking_code character varying,
   created_at timestamp with time zone NOT NULL,
   updated_at timestamp with time zone,
-  CONSTRAINT invoices_pkey PRIMARY KEY (id),
-  CONSTRAINT invoices_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id)
-);
-CREATE TABLE public.messages (
-  id integer NOT NULL DEFAULT nextval('messages_id_seq'::regclass),
-  conversation_id integer NOT NULL,
-  sender_id integer NOT NULL,
-  body text NOT NULL,
-  created_at timestamp with time zone,
-  CONSTRAINT messages_pkey PRIMARY KEY (id),
-  CONSTRAINT messages_conversation_id_fkey FOREIGN KEY (conversation_id) REFERENCES public.conversations(id),
-  CONSTRAINT messages_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
+  CONSTRAINT invoices_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.notifications (
   id integer NOT NULL DEFAULT nextval('notifications_notification_id_seq'::regclass),
@@ -79,32 +51,6 @@ CREATE TABLE public.notifications (
   created_at timestamp with time zone NOT NULL,
   CONSTRAINT notifications_pkey PRIMARY KEY (id),
   CONSTRAINT notifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
-);
-CREATE TABLE public.order_chat (
-  id integer NOT NULL DEFAULT nextval('order_chat_message_id_seq'::regclass),
-  order_id integer NOT NULL,
-  sender_id integer NOT NULL,
-  receiver_id integer NOT NULL,
-  content text NOT NULL,
-  created_at timestamp with time zone NOT NULL,
-  CONSTRAINT order_chat_pkey PRIMARY KEY (id),
-  CONSTRAINT order_chat_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id),
-  CONSTRAINT order_chat_receiver_id_fkey FOREIGN KEY (receiver_id) REFERENCES public.users(id),
-  CONSTRAINT order_chat_sender_id_fkey FOREIGN KEY (sender_id) REFERENCES public.users(id)
-);
-CREATE TABLE public.orders (
-  id integer NOT NULL DEFAULT nextval('orders_order_id_seq'::regclass),
-  product_id integer NOT NULL UNIQUE,
-  winner_id integer NOT NULL,
-  seller_id integer NOT NULL,
-  final_price numeric NOT NULL,
-  status USER-DEFINED NOT NULL DEFAULT 'pending'::order_status_enum,
-  cancellation_reason text,
-  created_at timestamp with time zone NOT NULL,
-  CONSTRAINT orders_pkey PRIMARY KEY (id),
-  CONSTRAINT orders_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
-  CONSTRAINT orders_seller_id_fkey FOREIGN KEY (seller_id) REFERENCES public.users(id),
-  CONSTRAINT orders_winner_id_fkey FOREIGN KEY (winner_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.otp_verifications (
   id integer NOT NULL DEFAULT nextval('otp_verifications_id_seq'::regclass),
@@ -206,7 +152,6 @@ CREATE TABLE public.reviews (
   created_at timestamp with time zone NOT NULL,
   updated_at timestamp with time zone,
   CONSTRAINT reviews_pkey PRIMARY KEY (id),
-  CONSTRAINT reviews_order_id_fkey FOREIGN KEY (order_id) REFERENCES public.orders(id),
   CONSTRAINT reviews_reviewer_id_fkey FOREIGN KEY (reviewer_id) REFERENCES public.users(id),
   CONSTRAINT reviews_reviewered_id_fkey FOREIGN KEY (reviewered_id) REFERENCES public.users(id)
 );
@@ -248,8 +193,8 @@ CREATE TABLE public.transaction_messages (
   content text NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT transaction_messages_pkey PRIMARY KEY (id),
-  CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id),
-  CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES public.users(id)
+  CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES public.users(id),
+  CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id)
 );
 CREATE TABLE public.transactions (
   id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -270,8 +215,8 @@ CREATE TABLE public.transactions (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT transactions_pkey PRIMARY KEY (id),
-  CONSTRAINT transactions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
   CONSTRAINT transactions_buyer_id_fkey FOREIGN KEY (buyer_id) REFERENCES public.users(id),
+  CONSTRAINT transactions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
   CONSTRAINT transactions_seller_id_fkey FOREIGN KEY (seller_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.upgrade_requests (

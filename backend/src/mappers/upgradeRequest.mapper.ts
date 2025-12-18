@@ -7,7 +7,7 @@ export const mapUpgradeRequestToResponse = (
   request: any
 ): UpgradeRequestStatus => {
   return {
-    requestId: request.request_id,
+    requestId: request.id,
     userId: request.user_id,
     status: request.status,
     message: request.message,

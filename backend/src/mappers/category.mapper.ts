@@ -13,13 +13,13 @@ export const mapToCategories = (rawCategories: any[]): Category[] => {
   const parents = rawCategories.filter((c) => c.parent_id === null);
 
   return parents.map((parent) => ({
-    id: parent.category_id,
+    id: parent.id,
     slug: parent.slug,
     name: parent.name,
     children: rawCategories
-      .filter((c) => c.parent_id === parent.category_id)
+      .filter((c) => c.parent_id === parent.id)
       .map((child) => ({
-        id: child.category_id,
+        id: child.id,
         slug: child.slug,
         name: child.name,
       })),
@@ -37,11 +37,11 @@ const buildCategoryTree = (
   return categories
     .filter((c) => c.parent_id === parentId)
     .map((category) => ({
-      id: category.category_id,
+      id: category.id,
       name: category.name,
       slug: category.slug,
       parentId: category.parent_id,
-      subcategories: buildCategoryTree(categories, category.category_id),
+      subcategories: buildCategoryTree(categories, category.id),
     }));
 };
 
@@ -82,7 +82,7 @@ export const mapToAdminCategoryResponse = (
   rawCategory: any
 ): AdminCategoryResponse => {
   return {
-    id: rawCategory.category_id,
+    id: rawCategory.id,
     name: rawCategory.name,
     slug: rawCategory.slug,
     parentId: rawCategory.parent_id,
