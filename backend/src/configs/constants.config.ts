@@ -1,4 +1,9 @@
-export const ALLOWED_SORT_FIELDS = ["endTime", "price", "bidCount", "createdAt"] as const;
+export const ALLOWED_SORT_FIELDS = [
+  "endTime",
+  "price",
+  "bidCount",
+  "createdAt",
+] as const;
 
 export const MASK_CONSTANTS = {
   NAME_VISIBLE_CHARS: 4,
@@ -21,3 +26,4 @@ export const RECAPTCHA_CONSTANTS = {
 } as const;
 
 export const OTP_EXPIRY_MINUTES = AUTH_CONSTANTS.OTP_EXPIRY_MINUTES;
+export const REFRESH_TOKEN_EXPIRY_DAYS = JWT_CONSTANTS.REFRESH_EXPIRY_DAYS;

@@ -193,8 +193,8 @@ CREATE TABLE public.transaction_messages (
   content text NOT NULL,
   created_at timestamp with time zone DEFAULT now(),
   CONSTRAINT transaction_messages_pkey PRIMARY KEY (id),
-  CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id),
-  CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES public.users(id)
+  CONSTRAINT fk_sender FOREIGN KEY (sender_id) REFERENCES public.users(id),
+  CONSTRAINT fk_transaction FOREIGN KEY (transaction_id) REFERENCES public.transactions(id)
 );
 CREATE TABLE public.transactions (
   id integer GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -215,8 +215,8 @@ CREATE TABLE public.transactions (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   CONSTRAINT transactions_pkey PRIMARY KEY (id),
-  CONSTRAINT transactions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
   CONSTRAINT transactions_buyer_id_fkey FOREIGN KEY (buyer_id) REFERENCES public.users(id),
+  CONSTRAINT transactions_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id),
   CONSTRAINT transactions_seller_id_fkey FOREIGN KEY (seller_id) REFERENCES public.users(id)
 );
 CREATE TABLE public.upgrade_requests (

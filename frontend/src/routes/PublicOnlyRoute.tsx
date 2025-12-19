@@ -1,26 +1,20 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
-/**
- * Component gác cổng cho các route chỉ dành cho khách (chưa login).
- * Ví dụ: Trang Login, Register.
- * Nếu người dùng đã đăng nhập, điều hướng họ về trang chủ "/".
- */
 const PublicOnlyRoute = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
 
-  // Nếu đang kiểm tra token, hiển thị loading
   if (isLoading) {
-    return <div>Đang tải...</div>;
+    return <div>Đang tải...</div>; // Nên thay bằng LoadingSpinner
   }
 
-  // Nếu kiểm tra xong và *đã* đăng nhập
   if (isAuthenticated) {
-    // Điều hướng về trang chủ
+    if (user?.status === "pending_verification") {
+      return <Navigate to="/verify-otp" replace />;
+    }
     return <Navigate to="/" replace />;
   }
 
-  // Nếu chưa đăng nhập, cho phép render component con (Login/Register)
   return <Outlet />;
 };
 

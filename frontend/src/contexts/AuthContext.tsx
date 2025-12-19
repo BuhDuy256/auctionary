@@ -31,6 +31,9 @@ export interface AuthContextType {
   signup: (formData: SignupData) => Promise<SignupResponse>;
   logout: () => Promise<void>;
 
+  verifyAccount: (otp: string) => Promise<void>;
+  resendVerificationEmail: () => Promise<void>;
+
   forgotPassword: (email: string) => Promise<GenericResponse>;
   resetPassword: (
     email: string,
@@ -86,31 +89,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     recaptchaToken: string
   ): Promise<LoginResponse> => {
     try {
-      // 1. Call service (returns unwrapped data)
-      const loginResponse = await authService.login(
+      const loginResponse: LoginResponse = await authService.login(
         email,
         password,
         recaptchaToken
       );
 
-      // 2. If successful, save token immediately
       localStorage.setItem("token", loginResponse.accessToken);
 
-      // 3. Update user state if verification is not required
-      if (!loginResponse.requiresVerification) {
-        try {
-          const user = await authService.getMe();
-          setUser(user);
-        } catch (error: any) {
-          console.error("Failed to fetch user data after login:", error);
-          // If getMe fails, token might be invalid or server error
-          // Either way, clear user state (token already handled by apiClient)
-          setUser(null);
-          throw new Error("Login succeeded but failed to verify user.");
-        }
+      try {
+        const user = await authService.getMe();
+        setUser(user);
+      } catch (error: any) {
+        console.error("Failed to fetch user data after login:", error);
+        setUser(null);
       }
 
-      // 4. Return original response
       return loginResponse;
     } catch (error) {
       console.error("Login failed:", error);
@@ -120,9 +114,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (formData: SignupData): Promise<SignupResponse> => {
     try {
-      return await authService.signup(formData);
+      const signupResponse = await authService.signup(formData);
+
+      localStorage.setItem("token", signupResponse.accessToken);
+
+      try {
+        const user = await authService.getMe();
+        setUser(user);
+      } catch (error: any) {
+        console.error("Signup success but GetMe failed:", error);
+        localStorage.removeItem("token");
+        setUser(null);
+        throw new Error(
+          "Account created but auto-login failed. Please login manually."
+        );
+      }
+
+      return signupResponse;
     } catch (error) {
       console.error("Signup failed:", error);
+      throw error;
+    }
+  };
+
+  const verifyAccount = async (otp: string): Promise<void> => {
+    try {
+      // Gọi service (lúc này service đã bỏ userId)
+      const response = await authService.verifyOTP(otp);
+
+      // Backend trả về AccessToken mới và User đã active -> Lưu ngay lập tức
+      localStorage.setItem("token", response.accessToken);
+      setUser(response.user); // Cập nhật State -> UI tự đổi sang đã đăng nhập
+    } catch (error) {
+      console.error("Verification failed:", error);
+      throw error;
+    }
+  };
+
+  const resendVerificationEmail = async (): Promise<void> => {
+    try {
+      await authService.resendOTP();
+    } catch (error) {
+      console.error("Resend OTP failed:", error);
       throw error;
     }
   };
@@ -183,6 +216,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isLoading,
       login,
       signup,
+      verifyAccount,
+      resendVerificationEmail,
       forgotPassword,
       resetPassword,
       loginWithGoogle,

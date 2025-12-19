@@ -1,27 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import * as authService from "../../services/authService";
+import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import InputOTP from "../../components/ui/input-otp";
 import { Button } from "../../components/ui/button";
-import toast from "react-hot-toast";
-
-interface LocationState {
-  email?: string;
-  userId?: number;
-  message?: string;
-}
+import { notify } from "../../utils/notify";
+import { useAuth } from "../../hooks/useAuth";
 
 const VerifyOTPPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Get email, user_id and message from navigation state
-  const state = location.state as LocationState;
-  console.log(state);
-  const email = state?.email;
-  const userId = state?.userId;
-  const customMessage = state?.message;
+  const { user, verifyAccount, resendVerificationEmail, logout } = useAuth();
 
   // Form state
   const [otp, setOtp] = useState<string>("");
@@ -33,13 +20,13 @@ const VerifyOTPPage: React.FC = () => {
   const [cooldownSeconds, setCooldownSeconds] = useState<number>(60);
   const [canResend, setCanResend] = useState<boolean>(false);
 
-  // Redirect if no email or user_id provided
+  // Redirect if no user data available
   useEffect(() => {
-    if (!email || !userId) {
-      toast.error("No email provided. Please start from signup or login.");
+    if (!user) {
+      notify.error("Unable to verify account. Please try logging in again.");
       navigate("/login");
     }
-  }, [email, userId, navigate]);
+  }, [user, navigate]);
 
   // Cooldown timer for resend button
   useEffect(() => {
@@ -62,8 +49,8 @@ const VerifyOTPPage: React.FC = () => {
       return;
     }
 
-    if (!userId) {
-      setError("User ID is missing. Please try logging in again.");
+    if (!user) {
+      setError("Unable to verify account. Please try logging in again.");
       return;
     }
 
@@ -71,90 +58,67 @@ const VerifyOTPPage: React.FC = () => {
     setError("");
 
     try {
-      // Verify OTP - returns unwrapped tokens
-      const response = await authService.verifyOTP(userId, otp);
+      await verifyAccount(otp);
 
-      // Success: Save token and log user in
-      const { accessToken } = response;
-      localStorage.setItem("token", accessToken);
+      notify.success("Account verified successfully!");
 
-      toast.success("Account verified successfully! 🎉");
-
-      // Navigate to homepage
-      setTimeout(() => {
-        navigate("/", { replace: true });
-        window.location.reload();
-      }, 500);
+      navigate("/", { replace: true });
     } catch (err: any) {
       console.error("OTP verification failed:", err);
       const errorMessage =
         err.message || "Invalid or expired OTP. Please try again.";
       setError(errorMessage);
-      toast.error(errorMessage);
-      setOtp(""); // Clear OTP input
+      notify.error(errorMessage);
+      setOtp("");
     } finally {
       setIsVerifying(false);
     }
   };
 
-  // Handle OTP auto-complete
   const handleOTPComplete = (value: string) => {
-    // Automatically submit when all 6 digits are entered
     setOtp(value);
   };
 
-  // Handle resend OTP
   const handleResendOTP = async () => {
-    if (!canResend || isResending || !userId) return;
+    if (!canResend || isResending || !user) return;
 
     setIsResending(true);
     setError("");
 
     try {
-      await authService.resendOTP(userId);
+      await resendVerificationEmail();
 
-      toast.success("A new verification code has been sent to your email! 📧");
+      notify.success("A new verification code has been sent to your email!");
 
-      // Reset cooldown
       setCooldownSeconds(60);
       setCanResend(false);
-      setOtp(""); // Clear current OTP input
+      setOtp("");
     } catch (err: any) {
       console.error("Resend OTP failed:", err);
       const errorMessage =
         err.message || "Failed to resend code. Please try again.";
-      toast.error(errorMessage);
+      notify.error(errorMessage);
     } finally {
       setIsResending(false);
     }
   };
 
-  // Handle back to login
-  const handleBackToLogin = () => {
+  const handleBackToLogin = async () => {
+    await logout();
     navigate("/login");
   };
-
-  if (!email || !userId) {
-    return null; // Will redirect in useEffect
-  }
 
   return (
     <AuthLayout title="Verify Your Account">
       <div className="w-full max-w-[400px] mx-auto px-4 sm:px-0">
         {/* Info Message */}
         <div className="text-center mb-8">
-          {customMessage ? (
-            <p className="font-semibold text-[var(--accent-color)] mb-2">
-              {customMessage}
-            </p>
-          ) : (
-            <p className="text-sm text-[var(--text-main)] leading-relaxed mb-2">
-              We've sent a 6-digit verification code to{" "}
-              <strong className="font-semibold text-[var(--text-main)]">
-                {email}
-              </strong>
-            </p>
-          )}
+          <p className="text-sm text-[var(--text-main)] leading-relaxed mb-2">
+            We've sent a 6-digit verification code to{" "}
+            <strong className="font-semibold text-[var(--text-main)]">
+              {user?.email}
+            </strong>
+          </p>
           <p className="text-[13px] text-[var(--text-muted)]">
             Please check your inbox and enter the code below.
           </p>

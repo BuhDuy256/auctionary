@@ -1,13 +1,12 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
-import { toast } from "react-toastify";
-import AuthLayout from "../../layouts/AuthLayout"; // 1. Import layout
+import { notify } from "../../utils/notify";
+import AuthLayout from "../../layouts/AuthLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { useAuth } from "../../hooks/useAuth";
 
-// 2. Get Site Key
 const RECAPTCHA_SITE_KEY = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
 export default function SignupPage() {
@@ -15,12 +14,11 @@ export default function SignupPage() {
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { signup } = useAuth();
 
-  // 3. Update state according to new schema
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
-    confirm_password: "", // Still needed for UI validation
+    confirm_password: "",
     address: "",
   });
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +33,6 @@ export default function SignupPage() {
     setIsLoading(true);
     setError(null);
 
-    // 4. Get reCAPTCHA token
     const recaptchaToken = recaptchaRef.current?.getValue();
 
     if (formData.password !== formData.confirm_password) {
@@ -50,20 +47,17 @@ export default function SignupPage() {
     }
 
     try {
-      // 5. Prepare data, remove 'confirm_password'
       const { confirm_password, ...signupData } = formData;
 
-      // 6. Send new payload, including token (returns unwrapped data)
       const newUserData = await signup({
         ...signupData,
         recaptchaToken,
       });
 
-      toast.success(
+      notify.success(
         newUserData.message || "Account created! Please verify your email."
       );
 
-      // Navigate to OTP verification page with email
       navigate("/verify-otp", {
         state: {
           email: newUserData.email,
@@ -80,10 +74,8 @@ export default function SignupPage() {
   };
 
   return (
-    // 7. Use AuthLayout
     <AuthLayout title="Sign up for Auctionary">
       <form className="flex w-full flex-col gap-3" onSubmit={handleSignup}>
-        {/* 8. Update fields according to new schema */}
         <Input
           name="fullName"
           placeholder="Full Name"

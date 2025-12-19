@@ -35,8 +35,8 @@ export const findByIdWithOTP = async (userId: number) => {
 
   if (!user) return null;
 
-  const otpVerifications = await db("otp_verifications")
-    .where({ user_id: userId, is_used: false })
+  const otpVerifications = await db("user_otps")
+    .where({ user_id: userId, purpose: "signup", consumed_at: null })
     .orderBy("created_at", "desc")
     .limit(1);
 
@@ -93,11 +93,7 @@ export const findByIdWithRoles = async (userId: number) => {
       "users_roles.role_id",
       "roles_permissions.role_id"
     )
-    .join(
-      "permissions",
-      "roles_permissions.permission_id",
-      "permissions.permission_id"
-    )
+    .join("permissions", "roles_permissions.permission_id", "permissions.id")
     .where({ user_id: userId })
     .select("permissions.name")
     .distinct();
@@ -116,11 +112,7 @@ export const getUserPermissions = async (userId: number): Promise<string[]> => {
     .join("users_roles", "users.id", "users_roles.user_id")
     .join("roles", "users_roles.role_id", "roles.id")
     .join("roles_permissions", "roles.id", "roles_permissions.role_id")
-    .join(
-      "permissions",
-      "roles_permissions.permission_id",
-      "permissions.permission_id"
-    )
+    .join("permissions", "roles_permissions.permission_id", "permissions.id")
     .where("users.id", userId)
     .select("permissions.name as permission")
     .distinct();

@@ -10,15 +10,23 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
+  if (isLoading) return <div>Loading...</div>;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if user has ANY of the allowed roles
+  if (user?.status === "pending_verification") {
+    if (location.pathname === "/verify-otp") {
+      return <Outlet />;
+    }
+    return <Navigate to="/verify-otp" replace />;
+  }
+
+  if (user?.status === "active" && location.pathname === "/verify-otp") {
+    return <Navigate to="/" replace />;
+  }
+
   const hasPermission = user?.roles?.some((role) =>
     allowedRoles.includes(role)
   );

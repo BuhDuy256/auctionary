@@ -9,6 +9,7 @@ const REFRESH_SECRET = envConfig.JWT_REFRESH_SECRET;
 interface TokenPayload {
   id: number;
   email: string;
+  isVerified: boolean;
 }
 
 export const generateAccessToken = (payload: TokenPayload): string => {

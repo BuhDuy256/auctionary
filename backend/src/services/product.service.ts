@@ -264,7 +264,7 @@ export const getProductBidHistory = async (
 
   return {
     bids: bids.map((bid: any) => ({
-      bidId: bid.bid_id,
+      bidId: bid.id,
       amount: toNum(bid.amount),
       bidder: maskBidderName(bid.bidder_name),
       bidTime: bid.created_at,
@@ -293,7 +293,7 @@ export const getProductQuestions = async (
 
   return {
     questions: questions.map((q: any) => ({
-      questionId: q.comment_id,
+      questionId: q.id,
       question: q.question,
       askedBy: q.asker_name,
       askedAt: q.created_at,

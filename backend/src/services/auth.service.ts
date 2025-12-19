@@ -16,11 +16,10 @@ import * as googleService from "./google.service";
 import * as facebookService from "./facebook.service";
 import { BadRequestError, NotFoundError, UnauthorizedError } from "../errors";
 import {
-  SignupResponse,
-  LoginResponse,
   VerificationRequiredResponse,
   UserWithRoles,
   RefreshTokenResponse,
+  AuthResult,
 } from "../api/dtos/responses/auth.type";
 import { OTP_EXPIRY_MINUTES } from "../configs/constants.config";
 import {
@@ -32,14 +31,20 @@ import {
   FacebookLoginSchema,
 } from "../api/dtos/requests/auth.schema";
 import { mapUserToResponse } from "../mappers/auth.mapper";
+import { REFRESH_TOKEN_EXPIRY_DAYS } from "../configs/constants.config";
 
 // Helper function to create standardized user payload for JWT
-const createUserPayload = async (userId: number, email: string) => {
+const createUserPayload = async (
+  userId: number,
+  email: string,
+  isVerified: boolean
+) => {
   const roles = await userRepo.getUserRoles(userId);
   const permissions = await userRepo.getUserPermissions(userId);
   return {
     id: userId,
     email,
+    isVerified,
     roles,
     permissions,
   };
@@ -47,7 +52,7 @@ const createUserPayload = async (userId: number, email: string) => {
 
 export const signupUser = async (
   userData: SignupSchema
-): Promise<SignupResponse> => {
+): Promise<AuthResult> => {
   const { fullName, email, password, address } = userData;
 
   const existingUser = await userRepo.findByEmail(email);
@@ -61,16 +66,16 @@ export const signupUser = async (
     email,
     password: hashedPassword,
     address: address || null,
+    is_verified: false,
+    status: "pending_verification",
   };
 
   const user = await userRepo.createUser(newUser);
-
-  if (!user) {
-    throw new BadRequestError("Failed to create user");
-  }
+  if (!user) throw new BadRequestError("Failed to create user");
 
   const mappedUser = mapUserToResponse(user)!;
 
+  // Generate OTP for email verification
   const otp = generateOTP(6);
   await otpRepo.createOTP(
     mappedUser.id,
@@ -80,11 +85,33 @@ export const signupUser = async (
   );
   await sendOTPEmail(mappedUser.email, otp, mappedUser.fullName);
 
+  // Generate tokens for auto-login
+  const userPayload = await createUserPayload(
+    mappedUser.id,
+    mappedUser.email,
+    mappedUser.isVerified
+  );
+  const accessToken = generateAccessToken(userPayload);
+  const refreshToken = generateRefreshToken(userPayload);
+
+  // Store refresh token in database
+  await tokenRepo.createRefreshToken(
+    mappedUser.id,
+    refreshToken,
+    new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
+  );
+
   return {
-    id: mappedUser.id,
-    email: mappedUser.email,
-    fullName: mappedUser.fullName,
-    isVerified: mappedUser.isVerified,
+    user: {
+      id: mappedUser.id,
+      email: mappedUser.email,
+      fullName: mappedUser.fullName,
+      isVerified: mappedUser.isVerified,
+      roles: userPayload.roles,
+      permissions: userPayload.permissions,
+    },
+    accessToken,
+    refreshToken,
     message:
       "Account created successfully! Please check your email for verification code.",
   };
@@ -94,7 +121,7 @@ export const loginUser = async (
   loginData: LoginSchema,
   deviceInfo?: string,
   ipAddress?: string
-): Promise<LoginResponse | VerificationRequiredResponse> => {
+): Promise<AuthResult | VerificationRequiredResponse> => {
   const { email, password } = loginData;
 
   const user = await userRepo.findByEmail(email);
@@ -111,6 +138,17 @@ export const loginUser = async (
   if (!isPasswordValid) {
     throw new UnauthorizedError("Invalid email or password");
   }
+
+  const roles = await userRepo.getUserRoles(mappedUser.id);
+  const permissions = await userRepo.getUserPermissions(mappedUser.id);
+  const userPayload = await createUserPayload(
+    mappedUser.id,
+    mappedUser.email,
+    mappedUser.isVerified
+  );
+
+  const accessToken = generateAccessToken(userPayload);
+  const refreshToken = generateRefreshToken(userPayload);
 
   if (!mappedUser.isVerified) {
     await otpRepo.deleteUserOTPs(mappedUser.id);
@@ -130,17 +168,10 @@ export const loginUser = async (
         email: mappedUser.email,
         fullName: mappedUser.fullName,
         isVerified: false,
-        // Chưa verified thì chưa cần role/permission
       },
+      accessToken: accessToken,
     };
   }
-
-  const roles = await userRepo.getUserRoles(mappedUser.id);
-  const permissions = await userRepo.getUserPermissions(mappedUser.id);
-  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
-
-  const accessToken = generateAccessToken(userPayload);
-  const refreshToken = generateRefreshToken(userPayload);
 
   const tokenHash = hashToken(refreshToken);
   const expiresAt = getRefreshTokenExpiry();
@@ -231,7 +262,8 @@ export const refreshAccessToken = async (
   // Fetch fresh roles and permissions from database
   const userPayload = await createUserPayload(
     decoded.id as number,
-    decoded.email as string
+    decoded.email as string,
+    decoded.isVerified as boolean
   );
 
   const newAccessToken = generateAccessToken(userPayload);
@@ -265,7 +297,7 @@ export const logoutAllDevices = async (
 export const verifyOTP = async (
   userId: number,
   otp: string
-): Promise<LoginResponse> => {
+): Promise<AuthResult> => {
   const otpRecord = await otpRepo.findValidOTP(userId, otp, "signup");
 
   if (!otpRecord) {
@@ -276,7 +308,7 @@ export const verifyOTP = async (
     throw new BadRequestError("OTP has expired. Please request a new one");
   }
 
-  await otpRepo.markOTPAsUsed(otpRecord.otp_id);
+  await otpRepo.markOTPAsUsed(otpRecord.id);
 
   const verifiedUser = await userRepo.verifyUser(userId);
 
@@ -288,7 +320,11 @@ export const verifyOTP = async (
 
   await sendWelcomeEmail(mappedUser.email, mappedUser.fullName);
 
-  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
+  const userPayload = await createUserPayload(
+    mappedUser.id,
+    mappedUser.email,
+    mappedUser.isVerified
+  );
 
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
@@ -379,7 +415,7 @@ export const loginWithGoogle = async (
   data: GoogleLoginSchema,
   deviceInfo?: string,
   ipAddress?: string
-): Promise<LoginResponse> => {
+): Promise<AuthResult> => {
   const { code } = data;
   const googlePayload = await googleService.verifyGoogleToken(code);
 
@@ -403,7 +439,11 @@ export const loginWithGoogle = async (
 
   const mappedUser = mapUserToResponse(user)!;
 
-  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
+  const userPayload = await createUserPayload(
+    mappedUser.id,
+    mappedUser.email,
+    mappedUser.isVerified
+  );
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
 
@@ -434,7 +474,7 @@ export const loginWithFacebook = async (
   data: FacebookLoginSchema,
   deviceInfo?: string,
   ipAddress?: string
-): Promise<LoginResponse> => {
+): Promise<AuthResult> => {
   const { accessToken } = data;
   const fbPayload = await facebookService.verifyFacebookToken(accessToken);
 
@@ -458,7 +498,11 @@ export const loginWithFacebook = async (
 
   const mappedUser = mapUserToResponse(user)!;
 
-  const userPayload = await createUserPayload(mappedUser.id, mappedUser.email);
+  const userPayload = await createUserPayload(
+    mappedUser.id,
+    mappedUser.email,
+    mappedUser.isVerified
+  );
   const jwtAccessToken = generateAccessToken(userPayload);
   const jwtRefreshToken = generateRefreshToken(userPayload);
 
@@ -472,6 +516,7 @@ export const loginWithFacebook = async (
 
   return {
     accessToken: jwtAccessToken,
+    refreshToken: jwtRefreshToken,
     user: {
       id: mappedUser.id,
       email: mappedUser.email,

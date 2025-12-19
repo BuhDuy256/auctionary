@@ -38,24 +38,8 @@ export default function LoginPage() {
     }
 
     try {
-      // Call login with the new schema (returns unwrapped data)
-      const response = await login(email, password, recaptchaToken);
+      await login(email, password, recaptchaToken);
 
-      // Check if user requires verification
-      if (response.requiresVerification) {
-        toast.error("Please verify your account first.");
-        navigate("/verify-otp", {
-          state: {
-            email: email,
-            userId: response.user.id, // Pass userId for OTP verification
-            message:
-              "Your account is not verified. A new verification code has been sent to your email.",
-          },
-        });
-        return;
-      }
-
-      // Verified user - token already saved by AuthContext
       toast.success("Welcome back!");
       navigate("/");
     } catch (err: any) {
@@ -67,7 +51,7 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = useGoogleLogin({
-    flow: "auth-code", // <--- THAY ĐỔI QUAN TRỌNG NHẤT
+    flow: "auth-code",
     onSuccess: async (codeResponse) => {
       try {
         setIsLoading(true);

@@ -36,6 +36,7 @@ const authenticatedUser = {
   id: 1,
   userId: 1,
   email: "user@test.com",
+  isVerified: false,
   roles: ["bidder"],
   permissions: [],
 };
@@ -149,8 +150,14 @@ describe("Auth Routes - Signup & Login", () => {
           id: 1,
           fullName: "John Doe",
           email: "test@example.com",
-          emailVerified: false,
+          isVerified: false,
+          roles: ["bidder"],
+          permissions: [],
         },
+        accessToken: "fake-access-token",
+        refreshToken: "fake-refresh-token",
+        message:
+          "Account created successfully! Please check your email for verification code.",
       };
       (authService.signupUser as jest.Mock).mockResolvedValue(mockResult);
 
@@ -163,7 +170,15 @@ describe("Auth Routes - Signup & Login", () => {
       });
 
       expect(response.status).toBe(201);
-      expect(response.body.data).toEqual(mockResult);
+      // Controller returns flat structure: {id, email, fullName, isVerified, message, accessToken}
+      expect(response.body.data.id).toBe(1);
+      expect(response.body.data.fullName).toBe("John Doe");
+      expect(response.body.data.email).toBe("test@example.com");
+      expect(response.body.data.isVerified).toBe(false);
+      expect(response.body.data.accessToken).toBe("fake-access-token");
+      expect(response.body.data.message).toBe(mockResult.message);
+      expect(response.headers["set-cookie"]).toBeDefined();
+      expect(response.headers["set-cookie"][0]).toContain("refreshToken");
       expect(authService.signupUser).toHaveBeenCalledWith({
         fullName: "John Doe",
         email: "test@example.com",
@@ -243,6 +258,7 @@ describe("Auth Routes - Signup & Login", () => {
           email: "unverified@example.com",
           emailVerified: false,
         },
+        accessToken: "fake-access-token-unverified",
       };
       (authService.loginUser as jest.Mock).mockResolvedValue(mockResult);
 
@@ -255,6 +271,9 @@ describe("Auth Routes - Signup & Login", () => {
       expect(response.status).toBe(200);
       expect(response.body.data.requiresVerification).toBe(true);
       expect(response.body.data.user).toEqual(mockResult.user);
+      expect(response.body.data.accessToken).toBe(
+        "fake-access-token-unverified"
+      );
     });
   });
 });
@@ -495,42 +514,63 @@ describe("Auth Routes - OTP Verification", () => {
   describe("POST /api/auth/verify-otp", () => {
     const endpoint = "/api/auth/verify-otp";
 
-    it("should return 400 when userId is missing", async () => {
+    it("should return 401 when no token is provided", async () => {
       const response = await request(app)
         .post(endpoint)
         .send({ otp: "123456" });
 
-      expect(response.status).toBe(400);
-      expect(response.body.details).toBeDefined();
+      expect(response.status).toBe(401);
+      expect(response.body.data.message).toBe("Not authorized, no token");
     });
 
     it("should return 400 when OTP is missing", async () => {
-      const response = await request(app).post(endpoint).send({ userId: 1 });
+      const token = generateToken(authenticatedUser);
+      const response = await request(app)
+        .post(endpoint)
+        .set("Authorization", `Bearer ${token}`)
+        .send({});
 
       expect(response.status).toBe(400);
       expect(response.body.details).toBeDefined();
     });
 
-    it("should return 200 and verify OTP with valid data", async () => {
+    it("should return 400 when user is already verified", async () => {
+      const verifiedUser = { ...authenticatedUser, isVerified: true };
+      const token = generateToken(verifiedUser);
+
+      const response = await request(app)
+        .post(endpoint)
+        .set("Authorization", `Bearer ${token}`)
+        .send({ otp: "123456" });
+
+      expect(response.status).toBe(400);
+      expect(response.body.data.message).toContain("already verified");
+    });
+
+    it("should return 200 and verify OTP for authenticated pending user", async () => {
       const mockResult = {
-        accessToken: "fake-access-token",
-        refreshToken: "fake-refresh-token",
+        accessToken: "new-fake-access-token",
+        refreshToken: "new-fake-refresh-token",
         user: {
           id: 1,
           fullName: "John Doe",
-          email: "test@example.com",
-          emailVerified: true,
+          email: "user@test.com",
+          isVerified: true,
+          roles: ["bidder"],
+          permissions: [],
         },
       };
       (authService.verifyOTP as jest.Mock).mockResolvedValue(mockResult);
 
+      const token = generateToken(authenticatedUser);
       const response = await request(app)
         .post(endpoint)
-        .send({ userId: 1, otp: "123456" });
+        .set("Authorization", `Bearer ${token}`)
+        .send({ otp: "123456" });
 
       expect(response.status).toBe(200);
-      expect(response.body.data.accessToken).toBe("fake-access-token");
-      expect(response.body.data.user).toEqual(mockResult.user);
+      expect(response.body.data.accessToken).toBe("new-fake-access-token");
+      expect(response.body.data.user.isVerified).toBe(true);
       expect(response.headers["set-cookie"]).toBeDefined();
       expect(authService.verifyOTP).toHaveBeenCalledWith(1, "123456");
     });
@@ -539,20 +579,37 @@ describe("Auth Routes - OTP Verification", () => {
   describe("POST /api/auth/resend-otp", () => {
     const endpoint = "/api/auth/resend-otp";
 
-    it("should return 400 when userId is missing", async () => {
+    it("should return 401 when no token is provided", async () => {
       const response = await request(app).post(endpoint).send({});
 
-      expect(response.status).toBe(400);
-      expect(response.body.details).toBeDefined();
+      expect(response.status).toBe(401);
+      expect(response.body.data.message).toBe("Not authorized, no token");
     });
 
-    it("should return 200 and resend OTP for valid userId", async () => {
+    it("should return 400 when user is already verified", async () => {
+      const verifiedUser = { ...authenticatedUser, isVerified: true };
+      const token = generateToken(verifiedUser);
+
+      const response = await request(app)
+        .post(endpoint)
+        .set("Authorization", `Bearer ${token}`)
+        .send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body.data.message).toContain("already verified");
+    });
+
+    it("should return 200 and resend OTP for authenticated pending user", async () => {
       const mockResult = {
         message: "OTP resent successfully",
       };
       (authService.resendOTP as jest.Mock).mockResolvedValue(mockResult);
 
-      const response = await request(app).post(endpoint).send({ userId: 1 });
+      const token = generateToken(authenticatedUser);
+      const response = await request(app)
+        .post(endpoint)
+        .set("Authorization", `Bearer ${token}`)
+        .send({});
 
       expect(response.status).toBe(200);
       expect(authService.resendOTP).toHaveBeenCalledWith(1);

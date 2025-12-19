@@ -43,7 +43,7 @@ export function ProductListCard({
   bidCount,
   handleOpenBidModal,
 }: ProductListCardProps) {
-  const productUrl = slug ? `/product/${slug}-${id}` : `/product/${id}`;
+  const productUrl = slug ? `/products/${slug}-${id}` : `/products/${id}`;
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
 
   const productIdNumber = id;

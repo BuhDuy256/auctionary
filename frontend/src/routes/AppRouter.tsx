@@ -42,7 +42,6 @@ const AppRouter = () => {
       <Route path="/dev/ui-kit" element={<UIKitPage />} />
       <Route path="/products" element={<ProductListPage />} />
       {/* Support both /product/:id and /product/:slug-id formats */}
-      <Route path="/product/:id" element={<ProductDetailPage />} />
       <Route path="/products/:id" element={<ProductDetailPage />} />
       <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
       <Route path="/seller/auction/create" element={<CreateAuctionPage />} />
@@ -56,9 +55,7 @@ const AppRouter = () => {
       <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/verify-otp" element={<VerifyOTPPage />} />{" "}
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        {/* Add this */}
       </Route>
 
       {/* ============================================== */}
@@ -72,6 +69,7 @@ const AppRouter = () => {
         }
       >
         <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/verify-otp" element={<VerifyOTPPage />} />
       </Route>
 
       <Route

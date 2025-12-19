@@ -11,8 +11,9 @@ import {
   googleLoginSchema,
   facebookLoginSchema,
 } from "../dtos/requests/auth.schema";
-import { verifyOTPSchema, resendOTPSchema } from "../dtos/requests/otp.schema";
+import { verifyOTPSchema } from "../dtos/requests/otp.schema";
 import { requireAuth } from "../middlewares/require-auth.middleware";
+import { requirePendingUser } from "../middlewares/require-pending.middleware";
 
 const router = express.Router();
 
@@ -47,8 +48,19 @@ router.post("/refresh", authController.refreshToken);
 router.post("/logout", authController.logout);
 
 // OTP routes
-router.post("/verify-otp", validate(verifyOTPSchema), otpController.verifyOTP);
-router.post("/resend-otp", validate(resendOTPSchema), otpController.resendOTP);
+router.post(
+  "/verify-otp",
+  validate(verifyOTPSchema),
+  requireAuth,
+  requirePendingUser,
+  otpController.verifyOTP
+);
+router.post(
+  "/resend-otp",
+  requireAuth,
+  requirePendingUser,
+  otpController.resendOTP
+);
 router.post(
   "/forgot-password",
   validate(forgotPasswordSchema),

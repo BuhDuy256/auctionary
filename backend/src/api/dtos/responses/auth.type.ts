@@ -30,11 +30,6 @@ export interface LoginData {
   recaptchaToken: string;
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
-}
-
 export interface UserResponse {
   id: number;
   email: string;
@@ -47,7 +42,6 @@ export interface UserResponse {
 
 export interface LoginResponse {
   accessToken: string;
-  refreshToken?: string;
   user: UserResponse;
 }
 
@@ -57,11 +51,20 @@ export interface SignupResponse {
   fullName: string;
   isVerified: boolean;
   message: string;
+  accessToken: string;
+}
+
+export interface AuthResult {
+  user: UserResponse;
+  accessToken: string;
+  refreshToken: string;
+  message?: string;
 }
 
 export interface VerificationRequiredResponse {
   requiresVerification: true;
   user: UserResponse;
+  accessToken: string;
 }
 
 export interface GoogleLoginData {

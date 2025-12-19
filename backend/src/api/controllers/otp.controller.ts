@@ -10,7 +10,8 @@ export const verifyOTP = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { userId, otp } = request.body;
+    const { otp } = request.body;
+    const userId = (request as any).user.id;
 
     const result = await authService.verifyOTP(userId, otp);
 
@@ -21,13 +22,10 @@ export const verifyOTP = async (
       maxAge: AUTH_CONSTANTS.REFRESH_TOKEN_COOKIE_MAX_AGE,
     });
 
-    response
-      .status(200)
-      .message("Email verified successfully")
-      .json({
-        accessToken: result.accessToken,
-        user: result.user,
-      });
+    response.status(200).message("Email verified successfully").json({
+      accessToken: result.accessToken,
+      user: result.user,
+    });
   } catch (error) {
     logger.error("OTPController", "Failed to verify OTP", error);
     next(error);
@@ -40,7 +38,7 @@ export const resendOTP = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const { userId } = request.body;
+    const userId = (request as any).user.id;
 
     const result = await authService.resendOTP(userId);
 

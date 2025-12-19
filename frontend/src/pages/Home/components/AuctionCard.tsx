@@ -69,7 +69,7 @@ export function AuctionCard({
     return () => clearInterval(interval);
   }, [endTime]);
 
-  const productUrl = `/product/${id}`;
+  const productUrl = `/products/${id}`;
 
   return (
     <Card className="group overflow-hidden border-border hover:border-accent transition-all duration-300 hover:shadow-lg hover:shadow-accent/20 flex-shrink-0 w-[280px] max-w-[300px]">

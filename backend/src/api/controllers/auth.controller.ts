@@ -11,6 +11,7 @@ import {
   FacebookLoginSchema,
 } from "../dtos/requests/auth.schema";
 import { envConfig } from "../../configs/env.config";
+import { SignupResponse, LoginResponse } from "../dtos/responses/auth.type";
 
 const REFRESH_TOKEN_COOKIE_OPTIONS = {
   httpOnly: true,
@@ -37,7 +38,21 @@ export const signup = async (
     const body = request.body as SignupSchema;
     const result = await authService.signupUser(body);
 
-    response.status(201).message("User created successfully").json(result);
+    // Set refresh token cookie
+    response.cookie(
+      "refreshToken",
+      result.refreshToken,
+      REFRESH_TOKEN_COOKIE_OPTIONS
+    );
+
+    response.status(201).json({
+      id: result.user.id,
+      email: result.user.email,
+      fullName: result.user.fullName,
+      isVerified: result.user.isVerified,
+      message: result.message,
+      accessToken: result.accessToken,
+    } as SignupResponse);
   } catch (error) {
     logger.error("AuthController", "Failed to signup user", error);
     next(error);
@@ -64,6 +79,7 @@ export const login = async (
         .json({
           requiresVerification: true,
           user: result.user,
+          accessToken: result.accessToken,
         });
       return;
     }
@@ -74,10 +90,13 @@ export const login = async (
       REFRESH_TOKEN_COOKIE_OPTIONS
     );
 
-    response.status(200).message("Login successful").json({
-      accessToken: result.accessToken,
-      user: result.user,
-    });
+    response
+      .status(200)
+      .message("Login successful")
+      .json({
+        accessToken: result.accessToken,
+        user: result.user,
+      } as LoginResponse);
   } catch (error) {
     logger.error("AuthController", "Failed to login user", error);
     next(error);
@@ -239,10 +258,10 @@ export const googleLogin = async (
       REFRESH_TOKEN_COOKIE_OPTIONS
     );
 
-    response.status(200).message("Google login successful").json({
+    response.status(200).json({
       accessToken: result.accessToken,
       user: result.user,
-    });
+    } as LoginResponse);
   } catch (error) {
     logger.error("AuthController", "Failed to login with Google", error);
     next(error);
@@ -268,10 +287,10 @@ export const facebookLogin = async (
       REFRESH_TOKEN_COOKIE_OPTIONS
     );
 
-    response.status(200).message("Facebook login successful").json({
+    response.status(200).json({
       accessToken: result.accessToken,
       user: result.user,
-    });
+    } as LoginResponse);
   } catch (error) {
     logger.error("AuthController", "Failed to login with Facebook", error);
     next(error);

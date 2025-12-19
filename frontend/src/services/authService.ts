@@ -3,7 +3,6 @@ import type {
   LoginResponse,
   SignupResponse,
   AuthResponse,
-  VerifyOTPResponse,
   GenericResponse,
 } from "../types/auth";
 import type { User } from "../types/user";
@@ -55,6 +54,29 @@ export const signup = async (
   return apiClient.post("/auth/signup", signupData, false);
 };
 
+/**
+ * Verifies the OTP code sent to user's email
+ * @param {string} otp - 6-digit OTP code
+ * @returns {Promise<LoginResponse>} Returns new tokens and updated user
+ */
+export const verifyOTP = async (
+  // BỎ userId ở tham số đầu vào
+  otp: string
+): Promise<LoginResponse> => {
+  // Backend giờ trả về LoginResponse (có user + token mới)
+  // Chỉ gửi otp, userId backend tự lấy từ token
+  return apiClient.post("/auth/verify-otp", { otp }, true);
+};
+
+/**
+ * Resends OTP code to user's email
+ * @returns {Promise<GenericResponse>} Success message
+ */
+export const resendOTP = async (): Promise<GenericResponse> => {
+  // Không cần truyền userId, backend tự lấy từ token
+  return apiClient.post("/auth/resend-otp", {}, true);
+};
+
 export const loginWithGoogle = async (code: string): Promise<AuthResponse> => {
   return apiClient.post("/auth/google-login", { code }, false);
 };
@@ -90,30 +112,6 @@ export const logout = async (): Promise<void> => {
     // Always remove the token from local storage
     localStorage.removeItem("token");
   }
-};
-
-/**
- * Verifies the OTP code sent to user's email
- * @param {number} userId - User's ID
- * @param {string} otp - 6-digit OTP code
- * @returns {Promise<VerifyOTPResponse>} Auth tokens and user data
- * @throws {Error} If verification fails
- */
-export const verifyOTP = async (
-  userId: number,
-  otp: string
-): Promise<VerifyOTPResponse> => {
-  return apiClient.post("/auth/verify-otp", { userId, otp }, false);
-};
-
-/**
- * Resends OTP code to user's email
- * @param {number} userId - User's ID
- * @returns {Promise<GenericResponse>} Success message
- * @throws {Error} If request fails
- */
-export const resendOTP = async (userId: number): Promise<GenericResponse> => {
-  return apiClient.post("/auth/resend-otp", { user_id: userId }, false);
 };
 
 export const forgotPassword = async (
