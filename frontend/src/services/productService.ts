@@ -44,7 +44,8 @@ export const searchProducts = async (
   const queryString = queryParams.toString();
   const endpoint = `/products${queryString ? `?${queryString}` : ""}`;
 
-  return apiClient.get<PaginatedResult<Product>>(endpoint);
+  // Send auth token if user is logged in so backend can return transaction info
+  return apiClient.get<PaginatedResult<Product>>(endpoint, true);
 };
 
 export const getProductDetail = async (

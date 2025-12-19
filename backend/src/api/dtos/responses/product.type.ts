@@ -17,8 +17,8 @@ export interface ProductListCardProps {
   buyNowPrice?: number;
   topBidder: string;
   timeLeft: string;
-  endTimse: string;
-  statu: string;
+  endTime: string;
+  status: string;
   isNewArrival?: boolean;
   bidCount: number;
   transaction?: {

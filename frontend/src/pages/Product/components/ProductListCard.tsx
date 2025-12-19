@@ -29,6 +29,10 @@ interface ProductListCardProps {
   status: string;
   isNewArrival?: boolean;
   bidCount: number;
+  transaction?: {
+    id: number;
+    canAccess: boolean;
+  };
   handleOpenBidModal: (data: BidProductData) => void;
 }
 
@@ -45,9 +49,17 @@ export function ProductListCard({
   status,
   isNewArrival = false,
   bidCount,
+  transaction,
   handleOpenBidModal,
 }: ProductListCardProps) {
-  const productUrl = slug ? `/products/${slug}-${id}` : `/products/${id}`;
+  // Determine the URL based on product status and transaction access
+  const productUrl = 
+    status === 'sold' && transaction?.canAccess 
+      ? `/transaction-room` 
+      : slug 
+        ? `/products/${slug}-${id}` 
+        : `/products/${id}`;
+        
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
 
   const productIdNumber = id;

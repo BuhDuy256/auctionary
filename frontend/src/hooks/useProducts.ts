@@ -47,6 +47,12 @@ export const useProducts = () => {
           limit: 9,
           sort: sortParam,
         });
+
+        if (result.data[0].transaction) {
+          console.log("Transaction data found in products:", result.data[0].transaction);
+        } else {
+          console.log("No transaction data in products.");
+        }
         console.log("Fetched products:", result);
         setProducts(result.data);
         setPagination(result.pagination);
