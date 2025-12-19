@@ -21,18 +21,20 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await cleanupTestUser(testUser.email);
   });
 
-  test("should redirect to login when accessing OTP page directly without email/userId", async ({
+  test("should redirect to login when accessing OTP page directly without authentication", async ({
     page,
   }) => {
-    // Try to access OTP page directly
+    // Try to access OTP page directly without being logged in (no token)
     await page.goto("/verify-otp");
 
-    // Should redirect to login page
+    // Should redirect to login page because:
+    // 1. No token in localStorage (not authenticated)
+    // 2. Backend /verify-otp requires requireAuth middleware
     await waitForNavigation(page, /login/);
 
     // Verify error/info message (toast or alert)
     const errorMessage = page.locator(
-      "text=/No email|Please.*signup|start from/i"
+      "text=/Unable to verify|Please.*log.*in|authentication required/i"
     );
 
     // Message might be a toast that disappears quickly
@@ -63,7 +65,7 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     await expect(page.locator("text=/Log in|Login/i")).toBeVisible();
   });
 
-  test("should preserve email and userId in URL or state after page refresh", async ({
+  test("should preserve user context after page refresh (via stored token)", async ({
     page,
   }) => {
     // Complete signup
@@ -76,20 +78,32 @@ test.describe("OTP Page Navigation & Edge Cases", () => {
     // Verify email is displayed
     await expect(page.locator(`text=${testUser.email}`)).toBeVisible();
 
+    // Verify token is stored in localStorage
+    const tokenBeforeRefresh = await page.evaluate(() =>
+      localStorage.getItem("token")
+    );
+    expect(tokenBeforeRefresh).toBeTruthy();
+
     // Refresh the page
     await page.reload();
 
     // Check behavior after refresh
-    // Implementation-dependent: might store in sessionStorage, URL params, or redirect to login
+    // Token persists in localStorage, so AuthContext can decode it and get user info
     await page.waitForTimeout(1000);
 
     const currentUrl = page.url();
 
     if (currentUrl.includes("verify-otp")) {
-      // If still on OTP page, email should still be visible
+      // Token still exists, user context restored from token
+      const tokenAfterRefresh = await page.evaluate(() =>
+        localStorage.getItem("token")
+      );
+      expect(tokenAfterRefresh).toBeTruthy();
+
+      // Email should still be visible (retrieved from decoded JWT)
       await expect(page.locator(`text=${testUser.email}`)).toBeVisible();
     } else {
-      // If redirected to login, that's also acceptable behavior
+      // If token expired or invalid, redirected to login
       expect(currentUrl).toContain("login");
     }
   });

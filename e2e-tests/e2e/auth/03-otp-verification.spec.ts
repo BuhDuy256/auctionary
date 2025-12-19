@@ -24,12 +24,14 @@ test.describe("OTP Verification Flow", () => {
     testUser = generateTestUser();
 
     // Complete signup to get to OTP page
+    // Note: Signup auto-logs in the user (stores token in localStorage)
+    // This is required because /verify-otp endpoint needs authentication
     await page.goto("/signup");
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
     await page.click('button[type="submit"]');
 
-    // Wait for OTP verification page
+    // Wait for OTP verification page (user is now logged in but unverified)
     await waitForNavigation(page, /verify-otp/);
   });
 
@@ -39,7 +41,9 @@ test.describe("OTP Verification Flow", () => {
 
   test("should verify account with valid OTP", async ({ page }) => {
     // Verify we're on OTP page
-    await expect(page.locator("text=/verify/i")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Verify Your Account" })
+    ).toBeVisible();
 
     // Get OTP code (from database or test endpoint)
     // Note: In real tests, implement getOTPForUser() to retrieve actual OTP
@@ -75,7 +79,9 @@ test.describe("OTP Verification Flow", () => {
   });
 
   test("should reject invalid OTP code", async ({ page }) => {
-    await expect(page.locator("text=/verify/i")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Verify Your Account" })
+    ).toBeVisible();
 
     // Enter invalid OTP
     await fillOTPInput(page, INVALID_OTP);

@@ -32,8 +32,15 @@ test.describe("User Signup - Validation Errors", () => {
     // Wait for OTP page (successful signup)
     await page.waitForURL(/verify-otp/, { timeout: 10000 });
 
+    // Clear authentication token to access signup page again
+    await page.evaluate(() => localStorage.removeItem("token"));
+
     // Navigate back to signup with same email
     await page.goto("/signup");
+
+    // Wait for signup page to load
+    await page.waitForSelector('input[name="fullName"]', { timeout: 5000 });
+
     await fillSignupForm(page, testUser);
     await handleRecaptcha(page);
     await page.click('button[type="submit"]', { force: true });

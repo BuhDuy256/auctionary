@@ -31,7 +31,6 @@ import {
   FacebookLoginSchema,
 } from "../api/dtos/requests/auth.schema";
 import { mapUserToResponse } from "../mappers/auth.mapper";
-import { REFRESH_TOKEN_EXPIRY_DAYS } from "../configs/constants.config";
 
 // Helper function to create standardized user payload for JWT
 const createUserPayload = async (
@@ -94,12 +93,11 @@ export const signupUser = async (
   const accessToken = generateAccessToken(userPayload);
   const refreshToken = generateRefreshToken(userPayload);
 
-  // Store refresh token in database
-  await tokenRepo.createRefreshToken(
-    mappedUser.id,
-    refreshToken,
-    new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000)
-  );
+  // Store hashed refresh token in database
+  const tokenHash = hashToken(refreshToken);
+  const expiresAt = getRefreshTokenExpiry();
+
+  await tokenRepo.createRefreshToken(mappedUser.id, tokenHash, expiresAt);
 
   return {
     user: {

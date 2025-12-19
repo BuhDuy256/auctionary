@@ -42,12 +42,16 @@ test.describe("User Signup - Valid Credentials", () => {
     // Wait for navigation to OTP verification page
     await waitForNavigation(page, /verify-otp/);
 
-    // Verify OTP page displays correct email
-    await expect(page.locator(`text=${testUser.email}`)).toBeVisible();
+    // Verify user is auto-logged in after signup (token stored)
+    const token = await page.evaluate(() => localStorage.getItem("token"));
+    expect(token).toBeTruthy();
 
-    // Verify success message or instruction
+    // Verify OTP page displays correct email
+    await expect(page.getByText(testUser.email)).toBeVisible();
+
+    // Verify OTP verification page loaded
     await expect(
-      page.locator(`text=/verification code|verify/i`)
+      page.getByRole("heading", { name: "Verify Your Account" })
     ).toBeVisible();
   });
 

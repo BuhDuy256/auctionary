@@ -85,49 +85,71 @@ export async function waitForNavigation(
 }
 
 /**
- * Get OTP from database or email service
- * This is a placeholder - implement based on your setup
+ * Get OTP from database or test API endpoint
+ * IMPORTANT: Implement this function to fetch real OTP for actual E2E tests
+ *
+ * Backend stores OTPs in 'user_otps' table with columns:
+ * - user_id, otp_code, purpose ('signup' | 'reset_password'), expires_at, consumed_at
  */
 export async function getOTPForUser(email: string): Promise<string> {
-  // OPTION 1: Query database directly
-  // const result = await pool.query(
-  //   'SELECT code FROM otps WHERE email = $1 ORDER BY created_at DESC LIMIT 1',
-  //   [email]
-  // );
-  // return result.rows[0]?.code;
+  // OPTION 1: Query database directly (requires database connection in tests)
+  // import db from '../path-to-db-config';
+  // const user = await db('users').where({ email }).first();
+  // if (!user) throw new Error('User not found');
+  // const otp = await db('user_otps')
+  //   .where({ user_id: user.id, purpose: 'signup', consumed_at: null })
+  //   .orderBy('created_at', 'desc')
+  //   .first();
+  // return otp?.otp_code;
 
-  // OPTION 2: Call test API endpoint
-  // const response = await fetch(`${process.env.BACKEND_URL}/test/get-otp/${email}`);
+  // OPTION 2: Call test API endpoint (recommended - create this endpoint for testing)
+  // const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+  // const response = await fetch(`${BACKEND_URL}/api/test/get-otp`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ email, purpose: 'signup' })
+  // });
   // const data = await response.json();
-  // return data.otp;
+  // return data.otpCode;
 
-  // OPTION 3: For now, return a mock OTP for demonstration
-  // In real tests, you need to implement one of the above options
+  // OPTION 3: For development/demo - return mock OTP
+  // WARNING: This will fail with real backend unless OTP happens to be '123456'
   console.warn("⚠️ Using mock OTP - implement getOTPForUser() for real tests");
-  return "123456"; // Mock OTP
+  return "123456"; // Mock OTP - replace with real implementation
 }
 
 /**
  * Fill OTP input (handles individual digit inputs)
  */
 export async function fillOTPInput(page: Page, otp: string) {
-  // Check if OTP is implemented as single input or multiple inputs
-  const singleInput = page.locator('input[type="text"][maxlength="6"]');
-  const multipleInputs = page.locator('input[maxlength="1"]');
+  // Wait for OTP inputs to be visible and ready
+  // OTP inputs have inputMode="numeric" and maxLength="1"
+  const multipleInputs = page.locator(
+    'input[inputMode="numeric"][maxLength="1"]'
+  );
 
-  const singleInputCount = await singleInput.count();
-  const multipleInputsCount = await multipleInputs.count();
+  // Wait for first input to be visible
+  await multipleInputs.first().waitFor({ state: "visible", timeout: 5000 });
 
-  if (singleInputCount > 0) {
-    // Single input field
-    await singleInput.fill(otp);
-  } else if (multipleInputsCount === 6) {
-    // Multiple input fields (one per digit)
+  const inputCount = await multipleInputs.count();
+
+  if (inputCount === 6) {
+    // Multiple input fields (one per digit) - fill each digit
     for (let i = 0; i < 6; i++) {
       await multipleInputs.nth(i).fill(otp[i]);
     }
   } else {
-    throw new Error("OTP input fields not found");
+    // Fallback: try single input field
+    const singleInput = page.locator('input[type="text"][maxlength="6"]');
+    const singleInputCount = await singleInput.count();
+
+    if (singleInputCount > 0) {
+      await singleInput.fill(otp);
+    } else {
+      throw new Error(
+        `OTP input fields not found. Expected 6 inputs, found ${inputCount}`
+      );
+    }
   }
 }
 
