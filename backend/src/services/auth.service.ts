@@ -131,10 +131,25 @@ export const loginUser = async (
 
   const mappedUser = mapUserToResponse(user)!;
 
-  const isPasswordValid = await comparePassword(
-    password,
-    mappedUser.password as string
-  );
+  if (!user.password) {
+    const socialAccounts = await socialRepo.getSocialAccountsByUserId(user.id);
+
+    if (socialAccounts && socialAccounts.length > 0) {
+      const providers = socialAccounts.map((acc) => {
+        return acc.provider.charAt(0).toUpperCase() + acc.provider.slice(1);
+      });
+
+      throw new UnauthorizedError(
+        `This account was created using ${providers.join(
+          " or "
+        )} login. Please continue with ${providers.join(" or ")}.`
+      );
+    }
+
+    throw new UnauthorizedError("Invalid email or password");
+  }
+
+  const isPasswordValid = await comparePassword(password, user.password);
   if (!isPasswordValid) {
     throw new UnauthorizedError("Invalid email or password");
   }

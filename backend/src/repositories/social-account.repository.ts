@@ -22,6 +22,12 @@ export const findSocialAccount = async (
   };
 };
 
+export const getSocialAccountsByUserId = async (userId: number) => {
+  return await db("social_accounts")
+    .where({ user_id: userId })
+    .select("provider", "provider_id");
+};
+
 export const createSocialAccount = async (data: {
   userId: number;
   provider: string;
