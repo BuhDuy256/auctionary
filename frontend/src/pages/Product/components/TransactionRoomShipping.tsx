@@ -118,7 +118,7 @@ export function TransactionRoomShipping({
           </CardContent>
         </Card>
 
-        {/* Tracking Number Input */}
+        {/* Tracking Number Input
         <Card className="border-border">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
@@ -149,7 +149,7 @@ export function TransactionRoomShipping({
               </p>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Upload Shipping Proof */}
         <Card className="border-border">

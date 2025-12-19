@@ -278,11 +278,11 @@ export default function TransactionRoomPage() {
   // const [currentScreen] = useState<Screen>("transaction-room-payment");
   // const [currentScreen] = useState<Screen>("transaction-room-shipping");
   // const [currentScreen] = useState<Screen>("transaction-room-delivery");
-  const [currentScreen] = useState<Screen>("transaction-room-complete");
+  const [currentScreen] = useState<Screen>("transaction-room-delivery");
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
   
   // Mock state to control UI - change this to test different views
-  const [isSeller] = useState(true); // true = Seller view, false = Buyer view
+  const [isSeller] = useState(false); // true = Seller view, false = Buyer view
 
   // const handleSubmitAddress = () => {
   //   toast.success("Address Confirmed!", {
@@ -392,7 +392,7 @@ export default function TransactionRoomPage() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Stage-specific content */}
             {currentScreen === "transaction-room-payment" && (
-              <TransactionRoom onPaymentProof={handlePaymentProof} />
+              <TransactionRoom onPaymentProof={handlePaymentProof} isSeller={isSeller} />
             )}
             {currentScreen === "transaction-room-shipping" && (
               <TransactionRoomShipping 

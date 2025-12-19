@@ -77,6 +77,7 @@ const AppRouter = () => {
       >
         <Route path="/my-auctions" element={<UnderDevelopmentPage />} />
         <Route path="/auctions/new" element={<UnderDevelopmentPage />} />
+        <Route path="/transactions/:id" element={<TransactionRoomPage />} />
       </Route>
 
       <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>

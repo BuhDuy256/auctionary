@@ -22,10 +22,13 @@ import {
   Building2,
   Copy,
   MapPin,
+  Clock,
+  Loader2,
 } from "lucide-react";
 
 interface TransactionRoomProps {
   onPaymentProof: (file: File) => void;
+  isSeller: boolean;
 }
 
 // Mock bank info - in real app this would come from API
@@ -37,7 +40,7 @@ const sellerBankInfo = {
   transactionCode: "TXN-89234",
 };
 
-export function TransactionRoom({ onPaymentProof }: TransactionRoomProps) {
+export function TransactionRoom({ onPaymentProof, isSeller }: TransactionRoomProps) {
   const [paymentProof, setPaymentProof] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -100,6 +103,119 @@ export function TransactionRoom({ onPaymentProof }: TransactionRoomProps) {
     }
   };
 
+  // SELLER VIEW - Waiting for buyer payment
+  if (isSeller) {
+    return (
+      <div className="lg:col-span-2 space-y-6">
+        {/* Waiting Alert */}
+        <Alert className="border-accent/30 bg-accent/5">
+          <Clock className="h-4 w-4 text-accent" />
+          <AlertDescription className="text-sm text-accent/90">
+            <strong>Awaiting Payment:</strong> Waiting for the buyer to complete the payment transfer.
+          </AlertDescription>
+        </Alert>
+
+        {/* Waiting State Card */}
+        <Card className="border-border">
+          <CardContent className="p-12">
+            <div className="flex flex-col items-center text-center space-y-6">
+              {/* Animated Icon */}
+              <div className="relative">
+                <div className="w-32 h-32 rounded-full bg-accent/10 border-2 border-accent/30 flex items-center justify-center">
+                  <CreditCard className="h-16 w-16 text-accent" />
+                </div>
+                <div className="absolute -top-2 -right-2">
+                  <div className="w-12 h-12 rounded-full bg-secondary border-2 border-border flex items-center justify-center">
+                    <Loader2 className="h-6 w-6 text-accent animate-spin" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Waiting Message */}
+              <div className="space-y-3">
+                <h2 className="text-2xl">Waiting for Buyer Payment</h2>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  The buyer is processing the payment transfer. You'll be notified once the payment proof is submitted.
+                </p>
+              </div>
+
+              {/* Status Badge */}
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                <Badge className="bg-yellow-500/20 text-yellow-500 border-yellow-500/50">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Awaiting Payment Proof
+                </Badge>
+              </div>
+
+              {/* Information */}
+              <Alert className="border-border bg-secondary/30 max-w-md">
+                <Info className="h-4 w-4" />
+                <AlertDescription className="text-xs">
+                  The buyer has up to 72 hours to complete the payment. 
+                  You can chat with the buyer if needed.
+                </AlertDescription>
+              </Alert>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Timeline Preview */}
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Clock className="h-5 w-5 text-accent" />
+              Transaction Timeline
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
+                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-muted-foreground">Buyer Completes Payment</div>
+                  <div className="text-xs text-muted-foreground">Pending...</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
+                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
+                  <Shield className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-muted-foreground">Payment Verification</div>
+                  <div className="text-xs text-muted-foreground">Pending...</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
+                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
+                  <Upload className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-muted-foreground">Ship Item</div>
+                  <div className="text-xs text-muted-foreground">Pending...</div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50 border border-border opacity-60">
+                <div className="w-8 h-8 rounded-full bg-secondary border-2 border-border flex items-center justify-center flex-shrink-0">
+                  <Check className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-sm text-muted-foreground">Transaction Complete</div>
+                  <div className="text-xs text-muted-foreground">Pending...</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // BUYER VIEW - Payment form
   return (
     <div className="lg:col-span-2 space-y-6">
       {/* Payment Alert */}
@@ -329,87 +445,36 @@ export function TransactionRoom({ onPaymentProof }: TransactionRoomProps) {
         </CardContent>
       </Card>
 
-      {/* Shipping Address Form */}
-      <Card className="border-border">
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-accent" />
-            Delivery Address
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert className="border-border bg-secondary/30">
-            <Info className="h-4 w-4" />
-            <AlertDescription className="text-xs">
-              Please provide your delivery address. This will be shared with the seller for shipping.
-            </AlertDescription>
-          </Alert>
+      {/* Shipping Address Form - Only for Buyers */}
+      {!isSeller && (
+        <Card className="border-border">
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-accent" />
+              Delivery Address
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert className="border-border bg-secondary/30">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                Please provide your delivery address. This will be shared with the seller for shipping.
+              </AlertDescription>
+            </Alert>
 
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="fullName">
-                Full Name <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="fullName"
-                placeholder="John Doe"
-                value={shippingAddress.fullName}
-                onChange={(e) =>
-                  setShippingAddress({
-                    ...shippingAddress,
-                    fullName: e.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="addressLine1">
-                Address Line 1 <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="addressLine1"
-                placeholder="123 Main Street"
-                value={shippingAddress.addressLine1}
-                onChange={(e) =>
-                  setShippingAddress({
-                    ...shippingAddress,
-                    addressLine1: e.target.value,
-                  })
-                }
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="addressLine2">Address Line 2 (Optional)</Label>
-              <Input
-                id="addressLine2"
-                placeholder="Apartment, suite, etc."
-                value={shippingAddress.addressLine2}
-                onChange={(e) =>
-                  setShippingAddress({
-                    ...shippingAddress,
-                    addressLine2: e.target.value,
-                  })
-                }
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="city">
-                  City <span className="text-destructive">*</span>
+                <Label htmlFor="fullName">
+                  Full Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  id="city"
-                  placeholder="New York"
-                  value={shippingAddress.city}
+                  id="fullName"
+                  placeholder="John Doe"
+                  value={shippingAddress.fullName}
                   onChange={(e) =>
                     setShippingAddress({
                       ...shippingAddress,
-                      city: e.target.value,
+                      fullName: e.target.value,
                     })
                   }
                   required
@@ -417,37 +482,17 @@ export function TransactionRoom({ onPaymentProof }: TransactionRoomProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="state">
-                  State <span className="text-destructive">*</span>
+                <Label htmlFor="addressLine1">
+                  Address Line 1 <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  id="state"
-                  placeholder="NY"
-                  value={shippingAddress.state}
+                  id="addressLine1"
+                  placeholder="123 Main Street"
+                  value={shippingAddress.addressLine1}
                   onChange={(e) =>
                     setShippingAddress({
                       ...shippingAddress,
-                      state: e.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="zipCode">
-                  ZIP Code <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="zipCode"
-                  placeholder="10001"
-                  value={shippingAddress.zipCode}
-                  onChange={(e) =>
-                    setShippingAddress({
-                      ...shippingAddress,
-                      zipCode: e.target.value,
+                      addressLine1: e.target.value,
                     })
                   }
                   required
@@ -455,27 +500,100 @@ export function TransactionRoom({ onPaymentProof }: TransactionRoomProps) {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">
-                  Phone <span className="text-destructive">*</span>
-                </Label>
+                <Label htmlFor="addressLine2">Address Line 2 (Optional)</Label>
                 <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="(555) 123-4567"
-                  value={shippingAddress.phone}
+                  id="addressLine2"
+                  placeholder="Apartment, suite, etc."
+                  value={shippingAddress.addressLine2}
                   onChange={(e) =>
                     setShippingAddress({
                       ...shippingAddress,
-                      phone: e.target.value,
+                      addressLine2: e.target.value,
                     })
                   }
-                  required
                 />
               </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">
+                    City <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="city"
+                    placeholder="New York"
+                    value={shippingAddress.city}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        city: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="state">
+                    State <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="state"
+                    placeholder="NY"
+                    value={shippingAddress.state}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        state: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="zipCode">
+                    ZIP Code <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="zipCode"
+                    placeholder="10001"
+                    value={shippingAddress.zipCode}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        zipCode: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone">
+                    Phone <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    value={shippingAddress.phone}
+                    onChange={(e) =>
+                      setShippingAddress({
+                        ...shippingAddress,
+                        phone: e.target.value,
+                      })
+                    }
+                    required
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Confirm Payment Button */}
       <Button
