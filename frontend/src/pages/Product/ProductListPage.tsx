@@ -118,6 +118,9 @@ export default function ProductListPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="endTime:desc">
+                        Time: Latest Ending
+                      </SelectItem>
                       <SelectItem value="endTime:asc">
                         Time: Ending Soon
                       </SelectItem>

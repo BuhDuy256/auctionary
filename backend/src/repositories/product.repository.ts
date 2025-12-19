@@ -24,8 +24,7 @@ export const searchProducts = async (
   const offset = (page - 1) * limit;
 
   let query = db("products")
-    .where("products.status", "active")
-    .where("products.end_time", ">", new Date());
+    .whereIn("products.status", ["active", "sold", "expired"]);
 
   if (q) {
     const safeQ = escapeQuery(q);
@@ -65,6 +64,17 @@ export const searchProducts = async (
     .count("products.id as total")
     .first();
 
+  // Order by status priority first: active > sold > expired
+  query = query.orderByRaw(
+    `CASE 
+      WHEN products.status = 'active' THEN 1 
+      WHEN products.status = 'sold' THEN 2 
+      WHEN products.status = 'expired' THEN 3 
+      ELSE 4 
+    END`
+  );
+
+  // Then apply user's custom sort or default sort
   if (sort && Array.isArray(sort) && sort.length > 0) {
     sort.forEach((item) => {
       const dbField =
