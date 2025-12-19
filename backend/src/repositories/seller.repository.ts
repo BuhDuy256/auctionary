@@ -18,9 +18,10 @@ export const getSellerStats = async (sellerId: number) => {
     .first();
 
   // Total revenue from sold products
-  const totalRevenueResult = await db("orders")
+  // Only count transactions where payment has been made (shipping_pending, delivered, completed)
+  const totalRevenueResult = await db("transactions")
     .where({ seller_id: sellerId })
-    .whereIn("status", ["completed", "pending", "shipped"])
+    .whereIn("status", ["shipping_pending", "delivered", "completed"])
     .sum("final_price as total")
     .first();
 

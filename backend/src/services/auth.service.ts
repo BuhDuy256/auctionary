@@ -253,7 +253,7 @@ export const resetPasswordWithOTP = async (
   const hashedPassword = await hashPassword(newPassword);
   await userRepo.updatePassword(user.id, hashedPassword);
 
-  await otpRepo.markOTPAsUsed(validToken.otp_id);
+  await otpRepo.markOTPAsUsed(validToken.id);
 
   return { message: "Password has been reset successfully" };
 };
@@ -270,7 +270,7 @@ export const refreshAccessToken = async (
     throw new UnauthorizedError("Invalid refresh token");
   }
 
-  await tokenRepo.updateLastUsed(storedToken.token_id);
+  await tokenRepo.updateLastUsed(storedToken.id);
 
   // Fetch fresh roles and permissions from database
   const userPayload = await createUserPayload(

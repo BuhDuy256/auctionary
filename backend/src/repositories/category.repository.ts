@@ -7,7 +7,7 @@ import { NotFoundError } from "../errors";
 export const getCategoryBySlug = async (slug: string) => {
   const category = await db("categories")
     .where({ slug })
-    .select("id as category_id", "parent_id")
+    .select("id", "parent_id")
     .first();
 
   if (!category) {
@@ -23,7 +23,7 @@ export const getCategoryBySlug = async (slug: string) => {
 export const getChildCategories = async (parentId: number) => {
   return await db("categories")
     .where({ parent_id: parentId })
-    .select("id as category_id");
+    .select("id");
 };
 
 /**
@@ -39,7 +39,7 @@ export const getCategoryIds = async (slug: string): Promise<number[]> => {
 
   if (category.parent_id === null) {
     const children = await db("categories")
-      .where({ parent_id: category.category_id })
+      .where({ parent_id: category.id })
       .select("id");
 
     return [category.id, ...children.map((c) => c.id)];
@@ -74,7 +74,7 @@ export const getCategorySlugs = async (categoryId: number) => {
  */
 export const getAllCategoriesForAdmin = async () => {
   return await db("categories")
-    .select("id as category_id", "name", "slug", "parent_id")
+    .select("id", "name", "slug", "parent_id")
     .orderBy("id", "asc");
 };
 
@@ -108,7 +108,7 @@ export const getCategoryStats = async () => {
 export const findCategoryById = async (categoryId: number) => {
   return await db("categories")
     .where({ id: categoryId })
-    .select("id as category_id", "name", "slug", "parent_id")
+    .select("id", "name", "slug", "parent_id")
     .first();
 };
 
