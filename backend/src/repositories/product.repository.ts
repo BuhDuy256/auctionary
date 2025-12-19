@@ -217,7 +217,7 @@ export const findCommentsById = async (
       "product_comments.product_id": productId,
       "product_comments.parent_id": null,
     })
-    .select("product_comments.*", "users.id as user_id", "users.full_name")
+    .select("product_comments.*", "users.full_name")
     .orderBy("product_comments.created_at", "desc")
     .limit(limit)
     .offset(offset);
@@ -237,7 +237,7 @@ export const findCommentsById = async (
   const replies = await db("product_comments")
     .join("users", "product_comments.user_id", "users.id")
     .whereIn("product_comments.parent_id", commentIds)
-    .select("product_comments.*", "users.id as user_id", "users.full_name")
+    .select("product_comments.*", "users.full_name")
     .orderBy("product_comments.created_at", "asc");
 
   const repliesMap = new Map<number, any[]>();
@@ -250,7 +250,7 @@ export const findCommentsById = async (
 
   const data = parentComments.map((comment) => ({
     ...comment,
-    replies: repliesMap.get(comment.comment_id) || [],
+    replies: repliesMap.get(comment.id) || [],
   }));
 
   return {

@@ -36,8 +36,7 @@ export const getAllUpgradeRequests = async () => {
       "upgrade_requests.created_at",
       "upgrade_requests.approved_at",
       "upgrade_requests.expires_at",
-      // User fields
-      "users.id as user_id",
+      // User fields (prefixed to avoid collision)
       "users.full_name as user_full_name",
       "users.email as user_email",
       "users.positive_reviews as user_positive_reviews",
