@@ -55,11 +55,9 @@ export function ProductListCard({
   // Determine the URL based on product status and transaction access
   const productUrl = 
     status === 'sold' && transaction?.canAccess 
-      ? `/transaction-room` 
-      : slug 
-        ? `/products/${slug}-${id}` 
-        : `/products/${id}`;
-        
+      ? `/transactions/${transaction.id}`
+      : `/products/${id}`;
+
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
 
   const productIdNumber = id;

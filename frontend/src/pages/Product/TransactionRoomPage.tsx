@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { TransactionRoom } from "./components/TransactionRoomPayment";
 import { TransactionRoomShipping } from "./components/TransactionRoomShipping";
@@ -18,6 +19,7 @@ import {
 import { toast } from "sonner";
 import MainLayout from "../../layouts/MainLayout";
 import { Clock, CreditCard, Package, Truck, CheckCircle2 } from "lucide-react";
+import { useTransaction } from "../../hooks/useTransaction";
 
 type Screen =
   | "transaction-room-payment"
@@ -275,6 +277,13 @@ const getChatFooterText = (screen: Screen) => {
 };
 
 export default function TransactionRoomPage() {
+  // Get transaction ID from URL
+  const { id } = useParams<{ id: string }>();
+  const transactionId = Number(id);
+
+  // Fetch transaction data
+  const { transaction, isLoading, error } = useTransaction(transactionId);
+
   // const [currentScreen] = useState<Screen>("transaction-room-payment");
   // const [currentScreen] = useState<Screen>("transaction-room-shipping");
   // const [currentScreen] = useState<Screen>("transaction-room-delivery");
@@ -283,6 +292,30 @@ export default function TransactionRoomPage() {
   
   // Mock state to control UI - change this to test different views
   const [isSeller] = useState(false); // true = Seller view, false = Buyer view
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center">Loading transaction...</div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state
+  if (error || !transaction) {
+    return (
+      <MainLayout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center text-red-500">
+            {error || "Transaction not found"}
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   // const handleSubmitAddress = () => {
   //   toast.success("Address Confirmed!", {
