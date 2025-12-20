@@ -561,9 +561,12 @@ export default function TransactionRoomPage() {
               <span className="text-foreground">TXN-{transaction.id}</span>
             </div>
 
-            <Button variant="outline" size="sm" onClick={handleOpenFeedback}>
-              Rate Transaction
-            </Button>
+            {/* Only show Rate Transaction button if transaction is completed */}
+            {transaction.completedAt && (
+              <Button variant="outline" size="sm" onClick={handleOpenFeedback}>
+                Rate Transaction
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -756,7 +759,11 @@ export default function TransactionRoomPage() {
                     />
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
-                    <TransactionRoomComplete isSeller={isSeller} />
+                    <TransactionRoomComplete 
+                      transaction={transaction}
+                      isSeller={isSeller}
+                      onOpenFeedback={handleOpenFeedback}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import {
   Card,
@@ -8,7 +7,6 @@ import {
 } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Separator } from "../../../components/ui/separator";
-import { Textarea } from "../../../components/ui/textarea";
 import { Label } from "../../../components/ui/label";
 import {
   Download,
@@ -19,54 +17,28 @@ import {
   ThumbsDown,
 } from "lucide-react";
 import { toast } from "sonner";
+import type { TransactionDetailResponse } from "../../../types/transaction";
+import { formatTime } from "../../../utils/dateUtils";
 
 interface TransactionRoomCompleteProps {
+  transaction: TransactionDetailResponse;
   isSeller: boolean;
+  onOpenFeedback: () => void;
 }
 
-export function TransactionRoomComplete({ isSeller }: TransactionRoomCompleteProps) {
-  const [liked, setLiked] = useState<boolean | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [reviewComment, setReviewComment] = useState("");
-
+export function TransactionRoomComplete({ transaction, isSeller, onOpenFeedback }: TransactionRoomCompleteProps) {
   // Dynamic text based on role
   const partnerType = isSeller ? "buyer" : "seller";
-  const partnerName = isSeller ? "Jane Doe" : "John Smith";
-  const itemName = "Vintage Leica M6 Camera with 50mm Lens";
+  const partnerName = isSeller ? transaction.buyer.fullName : transaction.seller.fullName;
+
+  // Get existing rating based on user role
+  const existingRating = isSeller ? transaction.ratings.seller : transaction.ratings.buyer;
+  const hasRated = existingRating.rate !== null;
 
   const handleDownloadInvoice = () => {
     toast.success("Invoice Downloaded", {
       description: "Transaction invoice saved to your downloads.",
     });
-  };
-
-  const handleLike = (isLike: boolean) => {
-    setLiked(isLike);
-    setIsAnimating(true);
-    setTimeout(() => setIsAnimating(false), 300);
-  };
-
-  const handleSubmitFeedback = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (liked === null) {
-      toast.error("Rating Required", {
-        description: "Please select like or dislike before submitting.",
-      });
-      return;
-    }
-
-    console.log("Feedback submitted:", {
-      liked,
-      comment: reviewComment,
-    });
-
-    toast.success("Feedback Submitted!", {
-      description: `Thank you for rating your experience with ${partnerName}.`,
-    });
-
-    // Reset form
-    setLiked(null);
-    setReviewComment("");
   };
 
   return (
@@ -90,7 +62,7 @@ export function TransactionRoomComplete({ isSeller }: TransactionRoomCompletePro
               <p className="text-lg text-muted-foreground mb-4">
                 {isSeller
                   ? `The transaction is closed. Funds have been released to your account.`
-                  : `The transaction is closed. Enjoy your ${itemName}!`}
+                  : `The transaction is closed. Enjoy your ${transaction.product.name}!`}
               </p>
               <div className="flex items-center gap-2">
                 <Badge className="bg-green-500/20 text-green-500 border-green-500/50">
@@ -116,7 +88,7 @@ export function TransactionRoomComplete({ isSeller }: TransactionRoomCompletePro
                   {isSeller ? "Total Received" : "Total Paid"}
                 </div>
                 <div className="text-2xl text-accent">
-                  $1,400.00
+                  ${transaction.finalPrice.toFixed(2)}
                 </div>
               </div>
               <Separator orientation="vertical" className="h-12" />
@@ -126,7 +98,7 @@ export function TransactionRoomComplete({ isSeller }: TransactionRoomCompletePro
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>Nov 30, 2025</span>
+                  <span>{transaction.completedAt && formatTime(transaction.completedAt)}</span>
                 </div>
               </div>
             </div>
@@ -143,94 +115,64 @@ export function TransactionRoomComplete({ isSeller }: TransactionRoomCompletePro
       <Card className="border-border">
         <CardHeader>
           <CardTitle className="text-lg">
-            Rate your experience with {partnerName}
+            {hasRated ? `Your Rating for ${partnerName}` : `Rate your experience with ${partnerName}`}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Your feedback helps {isSeller ? "buyers make informed decisions" : "maintain trust in the Auctionary community"}
+            {hasRated 
+              ? "Thank you for your feedback!" 
+              : `Your feedback helps ${isSeller ? "buyers make informed decisions" : "maintain trust in the Auctionary community"}`
+            }
           </p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmitFeedback} className="space-y-6">
-            {/* Like/Dislike Buttons */}
-            <div className="space-y-3">
-              <Label>How was your experience?</Label>
-              <div className="flex items-center justify-center gap-8">
-                <button
-                  type="button"
-                  onClick={() => handleLike(true)}
-                  className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
-                    liked === true
-                      ? "bg-green-500/10 border-green-500 scale-110"
-                      : "border-border hover:border-green-500/50 hover:bg-green-500/5"
-                  } ${isAnimating && liked === true ? "animate-bounce" : ""}`}
-                >
-                  <ThumbsUp
-                    className={`h-16 w-16 transition-all ${
-                      liked === true
-                        ? "fill-green-500 text-green-500"
-                        : "text-muted-foreground group-hover:text-green-500"
-                    }`}
-                  />
-                  <span
-                    className={`text-sm font-medium ${
-                      liked === true ? "text-green-500" : "text-muted-foreground"
-                    }`}
-                  >
-                    Good Experience
-                  </span>
-                </button>
+          {hasRated ? (
+            // Show existing rating (Read-only)
+            <div className="space-y-4">
+              <div className="flex items-center justify-center p-8 rounded-2xl border-2 bg-secondary/30">
+                {existingRating.rate === 1 ? (
+                  <div className="flex flex-col items-center gap-3">
+                    <ThumbsUp className="h-16 w-16 fill-green-500 text-green-500" />
+                    <span className="text-lg font-medium text-green-500">Good Experience</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <ThumbsDown className="h-16 w-16 fill-red-500 text-red-500" />
+                    <span className="text-lg font-medium text-red-500">Bad Experience</span>
+                  </div>
+                )}
+              </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleLike(false)}
-                  className={`group flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all ${
-                    liked === false
-                      ? "bg-red-500/10 border-red-500 scale-110"
-                      : "border-border hover:border-red-500/50 hover:bg-red-500/5"
-                  } ${isAnimating && liked === false ? "animate-bounce" : ""}`}
-                >
-                  <ThumbsDown
-                    className={`h-16 w-16 transition-all ${
-                      liked === false
-                        ? "fill-red-500 text-red-500"
-                        : "text-muted-foreground group-hover:text-red-500"
-                    }`}
-                  />
-                  <span
-                    className={`text-sm font-medium ${
-                      liked === false ? "text-red-500" : "text-muted-foreground"
-                    }`}
-                  >
-                    Bad Experience
-                  </span>
-                </button>
+              {existingRating.comment && (
+                <>
+                  <Separator />
+                  <div className="space-y-2">
+                    <Label>Your Review</Label>
+                    <div className="p-4 rounded-lg bg-secondary/50 border border-border">
+                      <p className="text-sm">{existingRating.comment}</p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>Feedback submitted successfully</span>
               </div>
             </div>
-
-            <Separator />
-
-            {/* Comment */}
-            <div className="space-y-3">
-              <Label htmlFor="review">Write a review (Optional)</Label>
-              <Textarea
-                id="review"
-                placeholder={`Share your experience with this ${partnerType}...`}
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                rows={4}
-                className="resize-none"
-              />
-              <p className="text-xs text-muted-foreground">
-                Your review will be visible to other {isSeller ? "sellers" : "buyers"}
-              </p>
+          ) : (
+            // Show rating form
+            <div className="space-y-4">
+              <div className="p-6 rounded-lg bg-accent/5 border border-accent/30 text-center">
+                <p className="text-sm text-muted-foreground mb-4">
+                  Share your experience to help the community make better decisions
+                </p>
+                <Button onClick={onOpenFeedback} size="lg" className="w-full max-w-md">
+                  <ThumbsUp className="mr-2 h-5 w-5" />
+                  Rate {partnerType === "buyer" ? "Buyer" : "Seller"} Now
+                </Button>
+              </div>
             </div>
-
-            {/* Submit Button */}
-            <Button type="submit" className="w-full" size="lg">
-              <CheckCircle2 className="mr-2 h-5 w-5" />
-              Submit Feedback
-            </Button>
-          </form>
+          )}
         </CardContent>
       </Card>
     </div>
