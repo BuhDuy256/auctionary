@@ -58,7 +58,6 @@ const Header: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
   };
 
   const [searchQuery, setSearchQuery] = React.useState("");

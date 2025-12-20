@@ -5,8 +5,12 @@ import * as emailService from "../../services/email.service";
 
 const router = Router();
 
-router.post("/otp", (req, res) => {
-  emailService.sendOTPEmail(req.body.email, req.body.otp, req.body.userName);
+router.post("/otp", async (req, res) => {
+  await emailService.sendOTPEmail(
+    req.body.email,
+    req.body.otp,
+    req.body.userName
+  );
   res.status(200).json({ message: "OTP email sent successfully" });
 });
 

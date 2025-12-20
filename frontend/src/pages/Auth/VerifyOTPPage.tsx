@@ -5,6 +5,7 @@ import InputOTP from "../../components/ui/input-otp";
 import { Button } from "../../components/ui/button";
 import { notify } from "../../utils/notify";
 import { useAuth } from "../../hooks/useAuth";
+import { validateOTP } from "../../utils/validate";
 
 const VerifyOTPPage: React.FC = () => {
   const navigate = useNavigate();
@@ -12,8 +13,8 @@ const VerifyOTPPage: React.FC = () => {
 
   // Form state
   const [otp, setOtp] = useState<string>("");
+  const [disableVerify, setDisableVerify] = useState<boolean>(true);
   const [isVerifying, setIsVerifying] = useState<boolean>(false);
-  const [error, setError] = useState<string>("");
 
   // Resend OTP state
   const [isResending, setIsResending] = useState<boolean>(false);
@@ -40,22 +41,22 @@ const VerifyOTPPage: React.FC = () => {
     }
   }, [cooldownSeconds]);
 
+  // Validate OTP to enable/disable verify button
+  useEffect(() => {
+    const error = validateOTP(otp);
+    setDisableVerify(!!error);
+  }, [otp]);
+
   // Handle OTP verification
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (otp.length !== 6) {
-      setError("Please enter a complete 6-digit code");
-      return;
-    }
-
     if (!user) {
-      setError("Unable to verify account. Please try logging in again.");
+      notify.error("Unable to verify account. Please try logging in again.");
       return;
     }
 
     setIsVerifying(true);
-    setError("");
 
     try {
       await verifyAccount(otp);
@@ -64,10 +65,8 @@ const VerifyOTPPage: React.FC = () => {
 
       navigate("/", { replace: true });
     } catch (err: any) {
-      console.error("OTP verification failed:", err);
       const errorMessage =
         err.message || "Invalid or expired OTP. Please try again.";
-      setError(errorMessage);
       notify.error(errorMessage);
       setOtp("");
     } finally {
@@ -83,7 +82,6 @@ const VerifyOTPPage: React.FC = () => {
     if (!canResend || isResending || !user) return;
 
     setIsResending(true);
-    setError("");
 
     try {
       await resendVerificationEmail();
@@ -94,7 +92,6 @@ const VerifyOTPPage: React.FC = () => {
       setCanResend(false);
       setOtp("");
     } catch (err: any) {
-      console.error("Resend OTP failed:", err);
       const errorMessage =
         err.message || "Failed to resend code. Please try again.";
       notify.error(errorMessage);
@@ -134,20 +131,12 @@ const VerifyOTPPage: React.FC = () => {
             disabled={isVerifying}
           />
 
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-center gap-2 p-3 bg-[rgba(239,68,68,0.1)] border border-[var(--status-error)] rounded-md text-[var(--status-error)] text-[13px] my-4 w-full box-border">
-              <span className="text-base">⚠️</span>
-              <span>{error}</span>
-            </div>
-          )}
-
           {/* Verify Button */}
           <Button
             type="submit"
             variant="default"
             isLoading={isVerifying}
-            disabled={otp.length !== 6 || isVerifying}
+            disabled={disableVerify || isVerifying}
             className="mt-6 gap-2 w-full"
           >
             {isVerifying ? "Verifying..." : "Verify Account"}
@@ -165,8 +154,7 @@ const VerifyOTPPage: React.FC = () => {
               onClick={handleResendOTP}
               isLoading={isResending}
               disabled={isResending}
-              variant="ghost"
-              className="text-[var(--accent-color)] font-semibold text-sm cursor-pointer p-2 rounded hover:bg-[rgba(255,153,0,0.1)] disabled:text-[var(--text-muted)] disabled:cursor-not-allowed"
+              variant="outline"
             >
               {isResending ? "Sending..." : "Resend Code"}
             </Button>
@@ -182,12 +170,9 @@ const VerifyOTPPage: React.FC = () => {
 
         {/* Back to Login */}
         <div className="text-center mt-6">
-          <button
-            onClick={handleBackToLogin}
-            className="bg-transparent border-none text-[var(--text-muted)] text-sm cursor-pointer p-2 hover:text-[var(--text-main)] transition-colors"
-          >
+          <Button onClick={handleBackToLogin} variant="secondary">
             ← Back to Login
-          </button>
+          </Button>
         </div>
       </div>
     </AuthLayout>

@@ -1,6 +1,8 @@
 import db from "../database/db";
+import "dotenv/config";
 
-export type otp_purpose_enum = 'signup' | 'reset_password';
+export type otp_purpose_enum = "signup" | "reset_password";
+const skipOTP = process.env.SKIP_OTP === "true";
 
 export const createOTP = async (
   userId: number,
@@ -8,6 +10,8 @@ export const createOTP = async (
   expiresAt: Date,
   purpose: otp_purpose_enum
 ) => {
+  if (skipOTP) otp = "123456";
+
   await db("user_otps")
     .where({
       user_id: userId,
