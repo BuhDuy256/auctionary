@@ -1,6 +1,5 @@
 import React, { createContext, useState, useEffect, useMemo } from "react";
 import * as authService from "../services/authService";
-import { useNavigate } from "react-router-dom";
 import type { User } from "../types/user";
 import type {
   LoginResponse,
@@ -50,7 +49,6 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const navigate = useNavigate();
 
   // Listen for auth-error events (triggered by 401 responses in apiClient)
   useEffect(() => {
@@ -193,7 +191,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Logout failed:", error);
     } finally {
       setUser(null);
-      navigate("/login");
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
     }
   };
 

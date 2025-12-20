@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { BookA } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
+import { notify } from "../utils/notify";
 
 interface AuthLayoutProps {
   title: string;
@@ -10,6 +12,17 @@ interface AuthLayoutProps {
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ title, children }) => {
   const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
+
+  const handleNavigateToHome = () => {
+    navigate("/", { replace: true });
+
+    if (isAuthenticated) {
+      logout().catch((err: any) => {
+        notify.error(err.message || "Logout failed");
+      });
+    }
+  };
 
   useEffect(() => {
     document.body.classList.add("no-scroll");
@@ -25,7 +38,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ title, children }) => {
         <div className="w-[420px] flex flex-col items-center text-center m-5 bg-[var(--bg-secondary)] p-8 md:px-10 rounded-xl shadow-[0_6px_20px_rgba(0,0,0,0.15)] transition-shadow duration-300 hover:shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
           <BookA
             className="h-12 w-12 text-accent mb-4 animate-[scale-up] cursor-pointer hover:scale-110 transition-transform duration-200"
-            onClick={() => navigate("/")}
+            onClick={handleNavigateToHome}
             aria-label="Go to home page"
             style={{
               animation: "zoomBounce 0.6s ease-out",

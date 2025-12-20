@@ -27,10 +27,12 @@ const envSchema = z.object({
 
   // OTP
   OTP_EXPIRY_MINUTES: z.string().default("10").transform(Number),
+  SKIP_OTP: z.string().default("false").transform(Boolean),
 
   // RECAPTCHA
   RECAPTCHA_SECRET_KEY: z.string().min(1, "RECAPTCHA_SECRET_KEY is required"),
   RECAPTCHA_SITE_KEY: z.string().min(1, "RECAPTCHA_SITE_KEY is required"),
+  SKIP_RECAPTCHA: z.string().default("false").transform(Boolean),
 
   // GOOGLE
   GOOGLE_CLIENT_ID: z.string().min(1, "GOOGLE_CLIENT_ID is required"),
@@ -42,7 +44,9 @@ const parsedEnv = envSchema.safeParse(process.env);
 if (!parsedEnv.success) {
   console.error(
     "Invalid environment variables:",
-    parsedEnv.error.issues.map((issue) => `${issue.path.join(".")} - ${issue.message}`).join("\n")
+    parsedEnv.error.issues
+      .map((issue) => `${issue.path.join(".")} - ${issue.message}`)
+      .join("\n")
   );
   process.exit(1);
 }
