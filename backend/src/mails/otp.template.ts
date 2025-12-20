@@ -1,3 +1,8 @@
+// src/mails/otp.template.ts
+
+// 1. Import themes từ file config
+import { themes } from "../configs/themes.config";
+
 interface OTPTemplateProps {
   userName: string;
   otp: string;
@@ -9,15 +14,16 @@ export const getOTPTemplate = ({
   otp,
   expiryMinutes,
 }: OTPTemplateProps): string => {
-  // Lấy mã màu từ theme Tactical của bạn
+  const theme = themes.light;
+
   const colors = {
-    bgPrimary: "#0b0c10", // --bg-primary
-    bgSecondary: "#15161b", // --bg-secondary
-    bgTertiary: "#1f2128", // --bg-tertiary
-    accent: "#ff9900", // --accent-color
-    textMain: "#d1d5db", // --text-main
-    textMuted: "#9ca3af", // --text-muted
-    border: "#333333", // --border-color
+    bgPrimary: theme["--bg-secondary"],
+    bgSecondary: theme["--bg-primary"],
+    bgTertiary: theme["--bg-tertiary"],
+    accent: theme["--accent-color"],
+    textMain: theme["--text-main"],
+    textMuted: theme["--text-muted"],
+    border: theme["--border-color"],
   };
 
   return `
@@ -53,7 +59,7 @@ export const getOTPTemplate = ({
               <h1 style="margin: 0; color: ${
                 colors.textMain
               }; font-size: 24px; letter-spacing: 1px; text-transform: uppercase;">
-                AUCTION<span style="color: ${colors.accent};">ARY</span>
+                <span style="color: ${colors.accent};">AUCTIONARY</span>
               </h1>
             </td>
           </tr>
