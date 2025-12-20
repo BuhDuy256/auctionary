@@ -35,3 +35,18 @@ export const TransactionShippingProofUploadSchema = z.object({
 });
 
 export type TransactionShippingProofUploadRequest = z.infer<typeof TransactionShippingProofUploadSchema>;
+
+export const TransactionDeliveryConfirmSchema = z.object({
+  received: z.boolean(),
+});
+
+export type TransactionDeliveryConfirmRequest = z.infer<typeof TransactionDeliveryConfirmSchema>;
+
+export const TransactionReviewSubmitSchema = z.object({
+  rating: z.number().refine((val) => val === 1 || val === -1, {
+    message: "Rating must be either 1 (positive) or -1 (negative)",
+  }),
+  comment: z.string().max(500).optional(),
+});
+
+export type TransactionReviewSubmitRequest = z.infer<typeof TransactionReviewSubmitSchema>;

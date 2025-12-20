@@ -40,24 +40,7 @@ interface FeedbackModalProps {
 export interface FeedbackData {
   rating: "positive" | "negative" | null;
   review: string;
-  tags: string[];
 }
-
-const positiveTagsSeller = [
-  "Fast Shipping",
-  "Great Communication",
-  "Item as Described",
-  "Excellent Packaging",
-  "Professional",
-];
-
-const negativeTagsSeller = [
-  "Slow Shipping",
-  "Poor Communication",
-  "Item Not as Described",
-  "Damaged Item",
-  "Unprofessional",
-];
 
 export function FeedbackModal({
   open,
@@ -69,17 +52,7 @@ export function FeedbackModal({
 }: FeedbackModalProps) {
   const [rating, setRating] = useState<"positive" | "negative" | null>(null);
   const [review, setReview] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
-
-  const availableTags =
-    rating === "positive" ? positiveTagsSeller : negativeTagsSeller;
-
-  const handleTagToggle = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
-    );
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +62,6 @@ export function FeedbackModal({
     onSubmit({
       rating,
       review,
-      tags: selectedTags,
     });
 
     setSubmitted(true);
@@ -98,7 +70,6 @@ export function FeedbackModal({
     setTimeout(() => {
       setRating(null);
       setReview("");
-      setSelectedTags([]);
       setSubmitted(false);
       onOpenChange(false);
     }, 2000);
@@ -215,7 +186,6 @@ export function FeedbackModal({
                 type="button"
                 onClick={() => {
                   setRating("positive");
-                  setSelectedTags([]);
                 }}
                 className={`p-6 rounded-lg border-2 transition-all text-center ${
                   rating === "positive"
@@ -253,7 +223,6 @@ export function FeedbackModal({
                 type="button"
                 onClick={() => {
                   setRating("negative");
-                  setSelectedTags([]);
                 }}
                 className={`p-6 rounded-lg border-2 transition-all text-center ${
                   rating === "negative"
@@ -287,34 +256,6 @@ export function FeedbackModal({
               </button>
             </div>
           </div>
-
-          {/* Quick Tags */}
-          {rating && (
-            <div className="space-y-3 animate-in fade-in duration-300">
-              <div className="text-sm">Quick tags (Optional)</div>
-              <div className="flex flex-wrap gap-2">
-                {availableTags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="outline"
-                    className={`cursor-pointer transition-all ${
-                      selectedTags.includes(tag)
-                        ? rating === "positive"
-                          ? "bg-green-500/20 border-green-500 text-green-500"
-                          : "bg-red-500/20 border-red-500 text-red-500"
-                        : "hover:border-amber/50"
-                    }`}
-                    onClick={() => handleTagToggle(tag)}
-                  >
-                    {selectedTags.includes(tag) && (
-                      <CheckCircle2 className="h-3 w-3 mr-1" />
-                    )}
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Written Review */}
           <div className="space-y-3">

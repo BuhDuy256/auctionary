@@ -1,11 +1,14 @@
 import * as TransactionRepository from '../repositories/transaction.repository';
+import * as UserRepository from '../repositories/user.repository';
 import * as storageService from './storage.service';
 import { ForbiddenError, NotFoundError } from '../errors';
 import { TransactionDetailResponse, TransactionMessage } from '../api/dtos/responses/transaction.type';
 import { mapTransactionDetailToResponse } from '../mappers/transaction.mapper';
 import {
   TransactionPaymentProofUploadRequest,
-  TransactionShippingProofUploadRequest
+  TransactionShippingProofUploadRequest,
+  TransactionDeliveryConfirmRequest,
+  TransactionReviewSubmitRequest
 } from '../api/dtos/requests/transaction.schema';
 
 export const verifyUserOwnership = async (userId: number, transactionId: number): Promise<void> => {
@@ -106,4 +109,68 @@ export const uploadShippingProof = async (
     payment_confirmed_at: now,
     shipping_proof_uploaded_at: now,
   });
+};
+
+/**
+ * Confirm delivery - buyer received the item
+ * @param transactionId - Transaction ID
+ * @param data - Delivery confirmation (validated by Zod)
+ * @returns Promise<void>
+ */
+export const confirmDelivery = async (
+  transactionId: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _data: TransactionDeliveryConfirmRequest
+): Promise<void> => {
+  const transaction = await TransactionRepository.findTransactionById(transactionId);
+
+  if (!transaction) {
+    throw new NotFoundError('Transaction not found');
+  }
+
+  await TransactionRepository.updateTransactionDeliveryConfirmed(transactionId);
+};
+
+/**
+ * Submit review for transaction partner (buyer rates seller or vice versa)
+ * @param transactionId - Transaction ID
+ * @param userId - Current user ID (reviewer)
+ * @param data - Review data (rating and optional comment)
+ * @returns Promise<void>
+ */
+export const submitReview = async (
+  transactionId: number,
+  userId: number | string,
+  data: TransactionReviewSubmitRequest
+): Promise<void> => {
+  // Verify transaction exists and get details
+  const transaction = await TransactionRepository.findTransactionById(transactionId);
+
+  if (!transaction) {
+    throw new NotFoundError('Transaction not found');
+  }
+
+  // Verify user is part of this transaction
+  const isSeller = transaction.seller_id === userId;
+  const isBuyer = transaction.buyer_id === userId;
+
+  if (!isSeller && !isBuyer) {
+    throw new ForbiddenError('User does not own this transaction');
+  }
+
+  // Update transaction with review
+  await TransactionRepository.updateTransactionReview(
+    transactionId,
+    {
+      rating: data.rating,
+      comment: data.comment,
+    },
+    isSeller
+  );
+
+  // Update the reviewee's score
+  const revieweeId = isSeller ? transaction.buyer_id : transaction.seller_id;
+  if (revieweeId) {
+    await UserRepository.updateUserReviewScore(revieweeId, data.rating === 1);
+  }
 };

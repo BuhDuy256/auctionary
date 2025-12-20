@@ -2,8 +2,18 @@ import * as TransactionService from '../../services/transaction.service';
 import { Request, Response, NextFunction } from 'express';
 import {
   TransactionPaymentProofUploadRequest,
-  TransactionShippingProofUploadRequest
+  TransactionShippingProofUploadRequest,
+  TransactionDeliveryConfirmRequest,
+  TransactionReviewSubmitRequest
 } from '../dtos/requests/transaction.schema';
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number | string;
+    roles?: string[];
+    permissions?: string[];
+  };
+}
 
 export const getTransactionDetail = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
   try {
@@ -59,6 +69,48 @@ export const uploadShippingProof = async (request: Request, response: Response, 
       .json({
         success: true,
         message: 'Shipping proof uploaded successfully',
+      });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const confirmDelivery = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+  try {
+    const transactionId = Number(request.params.id);
+    const data = request.body as TransactionDeliveryConfirmRequest;
+
+    await TransactionService.confirmDelivery(transactionId, data);
+
+    response
+      .status(200)
+      .json({
+        success: true,
+        message: 'Delivery confirmed successfully',
+      });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const submitReview = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+  try {
+    const transactionId = Number(request.params.id);
+    const userId = (request as AuthenticatedRequest).user?.id;
+
+    if (!userId) {
+      return next(new Error('User not authenticated'));
+    }
+
+    const data = request.body as TransactionReviewSubmitRequest;
+
+    await TransactionService.submitReview(transactionId, userId, data);
+
+    response
+      .status(200)
+      .json({
+        success: true,
+        message: 'Review submitted successfully',
       });
   } catch (error) {
     next(error);

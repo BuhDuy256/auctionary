@@ -4,8 +4,11 @@ import { verifyTransactionOwnership } from "../middlewares/transaction.middlewar
 import { validate } from "../middlewares/validate.middleware";
 import {
   TransactionPaymentProofUploadSchema,
-  TransactionShippingProofUploadSchema
+  TransactionShippingProofUploadSchema,
+  TransactionDeliveryConfirmSchema,
+  TransactionReviewSubmitSchema
 } from "../dtos/requests/transaction.schema";
+
 import * as TransactionController from "../controllers/transaction.controller";
 import multer from "multer";
 
@@ -38,6 +41,22 @@ router.post(
   verifyTransactionOwnership,
   validate(TransactionShippingProofUploadSchema, "body"),
   TransactionController.uploadShippingProof
+);
+
+router.post(
+  "/:id/delivery",
+  requireAuth,
+  verifyTransactionOwnership,
+  validate(TransactionDeliveryConfirmSchema, "body"),
+  TransactionController.confirmDelivery
+);
+
+router.post(
+  "/:id/review",
+  requireAuth,
+  verifyTransactionOwnership,
+  validate(TransactionReviewSubmitSchema, "body"),
+  TransactionController.submitReview
 );
 
 export default router;

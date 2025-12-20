@@ -6,7 +6,7 @@ import { TransactionRoom } from "./components/TransactionRoomPayment";
 import { TransactionRoomShipping } from "./components/TransactionRoomShipping";
 import { TransactionRoomDelivery } from "./components/TransactionRoomDelivery";
 import { TransactionRoomComplete } from "./components/TransactionRoomComplete";
-import { FeedbackModal, type FeedbackData } from "./components/FeedbackModal";
+import { FeedbackModal } from "./components/FeedbackModal";
 import { TransactionRoomHeader } from "./components/TransactionRoomHeader";
 import { TransactionProductSummary } from "./components/TransactionProductSummary";
 import {
@@ -258,6 +258,7 @@ const getStepStates = (
   if (transaction.completedAt) {
     states.complete = "completed";
   } else if (transaction.fulfillment.buyerReceivedAt) {
+    // After buyer confirms delivery, show rating step for BOTH users
     states.complete = "active-actor";
   } else {
     states.complete = "locked";
@@ -346,6 +347,8 @@ export default function TransactionRoomPage() {
   const { 
     handleSubmitPayment, 
     handleConfirmAndShip,
+    handleConfirmDelivery,
+    handleSubmitReview,
     isUpdating 
   } = useTransactionActions();
   const { user } = useAuth();
@@ -372,9 +375,14 @@ export default function TransactionRoomPage() {
     if (stepStates.payment === "active-actor" || stepStates.payment === "active-observer") active.push("payment");
     if (stepStates.shipping === "active-actor" || stepStates.shipping === "active-observer") active.push("shipping");
     if (stepStates.delivery === "active-actor" || stepStates.delivery === "active-observer") active.push("delivery");
-    if (stepStates.complete === "completed") active.push("complete");
+    
+    // Auto-expand complete step when status is completed OR when buyerReceivedAt exists
+    if (transaction.status === "completed" || transaction.fulfillment.buyerReceivedAt) {
+      active.push("complete");
+    }
+    
     setExpandedItems(active);
-  }, [transaction?.status, isSeller]);
+  }, [transaction?.status, transaction?.fulfillment?.buyerReceivedAt, isSeller]);
 
   if (isLoading) {
     return (
@@ -462,18 +470,50 @@ export default function TransactionRoomPage() {
     setFeedbackModalOpen(true);
   };
 
-  const handleSubmitFeedback = (feedback: FeedbackData) => {
-    console.log("Feedback submitted:", feedback);
-    toast.success("Feedback Submitted!", {
-      description: `You gave a ${feedback.rating} rating with ${feedback.tags.length} tags.`,
-    });
+  const handleSubmitFeedback = async (rating: "positive" | "negative", review: string) => {
+    if (!transaction) return;
+
+    try {
+      // Convert rating string to number: positive = 1, negative = -1
+      const ratingValue = rating === "positive" ? 1 : -1;
+      
+      await handleSubmitReview(transaction.id, {
+        rating: ratingValue,
+        comment: review,
+      });
+      
+      await refetch();
+      
+      toast.success("Feedback Submitted!", {
+        description: `You gave a ${rating} rating.`,
+      });
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : "Failed to submit feedback"
+      );
+      throw error;
+    }
   };
 
-  const handleConfirmReceipt = () => {
-    toast.success("Receipt Confirmed!", {
-      description:
-        "Funds have been released to the seller. Transaction complete.",
-    });
+  const handleConfirmReceipt = async () => {
+    if (!transaction) return;
+
+    try {
+      await handleConfirmDelivery(transaction.id, {
+        received: true,
+      });
+
+      await refetch();
+
+      toast.success("Receipt Confirmed!", {
+        description:
+          "Funds have been released to the seller. Transaction complete.",
+      });
+    } catch (error) {
+      notify.error(
+        error instanceof Error ? error.message : "Failed to confirm delivery"
+      );
+    }
   };
 
   const handleReportIssue = () => {
@@ -671,9 +711,11 @@ export default function TransactionRoomPage() {
                   className={`border rounded-lg ${
                     stepStates.complete === "completed"
                       ? "border-green-500/30"
+                      : stepStates.complete === "active-actor"
+                      ? "border-accent shadow-lg shadow-accent/20"
                       : "border-border opacity-60"
                   }`}
-                  disabled={stepStates.complete !== "completed"}
+                  disabled={stepStates.complete === "locked"}
                 >
                   <AccordionTrigger className="px-6 hover:no-underline">
                     <StepHeader
@@ -695,7 +737,7 @@ export default function TransactionRoomPage() {
                     <TransactionRoomComplete 
                       transaction={transaction}
                       isSeller={isSeller}
-                      onOpenFeedback={handleOpenFeedback}
+                      onSubmitFeedback={handleSubmitFeedback}
                     />
                   </AccordionContent>
                 </AccordionItem>
@@ -716,7 +758,11 @@ export default function TransactionRoomPage() {
       <FeedbackModal
         open={feedbackModalOpen}
         onOpenChange={setFeedbackModalOpen}
-        onSubmit={handleSubmitFeedback}
+        onSubmit={(feedback: { rating: "positive" | "negative" | null; review: string }) => {
+          if (feedback.rating) {
+            handleSubmitFeedback(feedback.rating, feedback.review);
+          }
+        }}
         partnerType={isSeller ? "buyer" : "seller"}
         partnerName={isSeller ? transaction.buyer.fullName : transaction.seller.fullName}
         transactionId={`TXN-${transaction.id}`}

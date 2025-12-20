@@ -208,6 +208,7 @@ export const updateTransactionPayment = async (
       updated_at: db.fn.now(),
     });
 };
+
 /**
  * Update transaction shipping proof and confirm payment
  * @param transactionId - Transaction ID
@@ -231,4 +232,53 @@ export const updateTransactionShipping = async (
       status: "delivered", // Chuyển status sang delivered khi seller upload shipping proof
       updated_at: db.fn.now(),
     });
+};
+
+/**
+ * Update transaction when buyer confirms delivery
+ * @param transactionId - Transaction ID
+ */
+export const updateTransactionDeliveryConfirmed = async (
+  transactionId: number
+): Promise<void> => {
+  const now = new Date();
+  await db("transactions")
+    .where({ id: transactionId })
+    .update({
+      buyer_received_at: now,
+      delivered_at: now,
+      status: "completed",
+      updated_at: db.fn.now(),
+    });
+};
+
+/**
+ * Update transaction with review rating and comment
+ * @param transactionId - Transaction ID
+ * @param data - Review data (buyer or seller rating)
+ * @param isSeller - Whether the reviewer is the seller (true) or buyer (false)
+ */
+export const updateTransactionReview = async (
+  transactionId: number,
+  data: {
+    rating: number;
+    comment?: string;
+  },
+  isSeller: boolean
+): Promise<void> => {
+  const updateData = isSeller
+    ? {
+      seller_rating: data.rating,
+      seller_comment: data.comment || null,
+      updated_at: db.fn.now(),
+    }
+    : {
+      buyer_rating: data.rating,
+      buyer_comment: data.comment || null,
+      updated_at: db.fn.now(),
+    };
+
+  await db("transactions")
+    .where({ id: transactionId })
+    .update(updateData);
 };

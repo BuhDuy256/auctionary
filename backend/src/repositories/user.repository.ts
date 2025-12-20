@@ -170,3 +170,19 @@ export const getWonAuctions = async (userId: number) => {
       "products.thumbnail_url"
     );
 };
+
+/**
+ * Update user's review score (positive or negative)
+ * @param userId - User ID to update
+ * @param isPositive - true for positive review, false for negative
+ */
+export const updateUserReviewScore = async (
+  userId: number,
+  isPositive: boolean
+): Promise<void> => {
+  const field = isPositive ? "positive_reviews" : "negative_reviews";
+
+  await db("users")
+    .where({ id: userId })
+    .increment(field, 1);
+};

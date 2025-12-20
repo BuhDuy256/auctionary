@@ -8,6 +8,8 @@ import {
 import { Badge } from "../../../components/ui/badge";
 import { Separator } from "../../../components/ui/separator";
 import { Label } from "../../../components/ui/label";
+import { Textarea } from "../../../components/ui/textarea";
+import { Alert, AlertDescription } from "../../../components/ui/alert";
 import {
   Download,
   Calendar,
@@ -15,25 +17,48 @@ import {
   PartyPopper,
   ThumbsUp,
   ThumbsDown,
+  AlertCircle,
+  MessageSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { TransactionDetailResponse } from "../../../types/transaction";
 import { formatTime } from "../../../utils/dateUtils";
+import { useState } from "react";
 
 interface TransactionRoomCompleteProps {
   transaction: TransactionDetailResponse;
   isSeller: boolean;
-  onOpenFeedback: () => void;
+  onSubmitFeedback: (rating: "positive" | "negative", review: string) => void;
 }
 
-export function TransactionRoomComplete({ transaction, isSeller, onOpenFeedback }: TransactionRoomCompleteProps) {
+export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedback }: TransactionRoomCompleteProps) {
   // Dynamic text based on role
   const partnerType = isSeller ? "buyer" : "seller";
   const partnerName = isSeller ? transaction.buyer.fullName : transaction.seller.fullName;
 
   // Get existing rating based on user role
+  // If user is seller → rating they gave to buyer (transaction.ratings.seller)
+  // If user is buyer → rating they gave to seller (transaction.ratings.buyer)
   const existingRating = isSeller ? transaction.ratings.seller : transaction.ratings.buyer;
-  const hasRated = existingRating.rate !== null;
+  const hasRated = existingRating?.rate !== null;
+
+  // Local state for rating form
+  const [rating, setRating] = useState<"positive" | "negative" | null>(null);
+  const [review, setReview] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!rating || isSubmitting) return;
+
+    setIsSubmitting(true);
+    try {
+      await onSubmitFeedback(rating, review);
+      // Form will be hidden after refetch shows hasRated = true
+    } catch (error) {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleDownloadInvoice = () => {
     toast.success("Invoice Downloaded", {
@@ -160,18 +185,126 @@ export function TransactionRoomComplete({ transaction, isSeller, onOpenFeedback 
               </div>
             </div>
           ) : (
-            // Show rating form
-            <div className="space-y-4">
-              <div className="p-6 rounded-lg bg-accent/5 border border-accent/30 text-center">
-                <p className="text-sm text-muted-foreground mb-4">
-                  Share your experience to help the community make better decisions
-                </p>
-                <Button onClick={onOpenFeedback} size="lg" className="w-full max-w-md">
-                  <ThumbsUp className="mr-2 h-5 w-5" />
-                  Rate {partnerType === "buyer" ? "Buyer" : "Seller"} Now
-                </Button>
+            // Show rating form inline
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Rating Selection */}
+              <div className="space-y-3">
+                <div className="text-sm mb-3">
+                  How was your experience? <span className="text-destructive">*</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Positive */}
+                  <button
+                    type="button"
+                    onClick={() => setRating("positive")}
+                    className={`p-6 rounded-lg border-2 transition-all text-center ${
+                      rating === "positive"
+                        ? "border-green-500 bg-green-500/10"
+                        : "border-border hover:border-green-500/50 hover:bg-green-500/5"
+                    }`}
+                  >
+                    <div className={`inline-flex p-4 rounded-full mb-3 ${
+                      rating === "positive" ? "bg-green-500/20" : "bg-secondary"
+                    }`}>
+                      <ThumbsUp className={`h-8 w-8 ${
+                        rating === "positive" ? "text-green-500" : "text-muted-foreground"
+                      }`} />
+                    </div>
+                    <div className={`text-lg mb-1 ${rating === "positive" ? "text-green-500" : ""}`}>
+                      Positive
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Great experience, would recommend
+                    </div>
+                  </button>
+
+                  {/* Negative */}
+                  <button
+                    type="button"
+                    onClick={() => setRating("negative")}
+                    className={`p-6 rounded-lg border-2 transition-all text-center ${
+                      rating === "negative"
+                        ? "border-red-500 bg-red-500/10"
+                        : "border-border hover:border-red-500/50 hover:bg-red-500/5"
+                    }`}
+                  >
+                    <div className={`inline-flex p-4 rounded-full mb-3 ${
+                      rating === "negative" ? "bg-red-500/20" : "bg-secondary"
+                    }`}>
+                      <ThumbsDown className={`h-8 w-8 ${
+                        rating === "negative" ? "text-red-500" : "text-muted-foreground"
+                      }`} />
+                    </div>
+                    <div className={`text-lg mb-1 ${rating === "negative" ? "text-red-500" : ""}`}>
+                      Negative
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Issues encountered, needs improvement
+                    </div>
+                  </button>
+                </div>
               </div>
-            </div>
+
+              {/* Written Review */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-4 w-4 text-amber" />
+                  <div className="text-sm">Write a review (Optional)</div>
+                </div>
+                <Textarea
+                  placeholder={`Share details about your experience with this ${partnerType}. Your review helps other users make informed decisions...`}
+                  value={review}
+                  onChange={(e) => setReview(e.target.value)}
+                  rows={4}
+                  className="resize-none"
+                  maxLength={500}
+                />
+                <div className="text-xs text-muted-foreground">
+                  {review.length}/500 characters
+                </div>
+              </div>
+
+              {/* Info Alert */}
+              {rating && (
+                <Alert className={`border-${rating === "positive" ? "green" : "red"}-500/30 bg-${rating === "positive" ? "green" : "red"}-500/5`}>
+                  <AlertCircle className={`h-4 w-4 text-${rating === "positive" ? "green" : "red"}-500`} />
+                  <AlertDescription className={`text-xs text-${rating === "positive" ? "green" : "red"}-500/90`}>
+                    {rating === "positive" ? (
+                      <>
+                        <strong>Positive feedback (+1)</strong> will increase the {partnerType}'s reputation score and help them build trust in the community.
+                      </>
+                    ) : (
+                      <>
+                        <strong>Negative feedback (-1)</strong> will decrease the {partnerType}'s reputation score. Please provide details to help them improve.
+                      </>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                className="w-full"
+                size="lg"
+                disabled={!rating || isSubmitting}
+              >
+                {rating === "positive" ? (
+                  <>
+                    <ThumbsUp className="mr-2 h-5 w-5" />
+                    Submit Positive Feedback (+1)
+                  </>
+                ) : rating === "negative" ? (
+                  <>
+                    <ThumbsDown className="mr-2 h-5 w-5" />
+                    Submit Negative Feedback (-1)
+                  </>
+                ) : (
+                  <>Submit Feedback</>
+                )}
+              </Button>
+            </form>
           )}
         </CardContent>
       </Card>
