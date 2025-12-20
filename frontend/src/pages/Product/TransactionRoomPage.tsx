@@ -231,23 +231,18 @@ const getStepStates = (
     complete: "locked" as StepState,
   };
 
-  if (transaction.payment.confirmedAt) {
+  // Payment step: completed when buyer uploads proof
+  if (transaction.payment.uploadedAt) {
     states.payment = "completed";
   } else {
     states.payment = isSeller ? "active-observer" : "active-actor";
   }
 
+  // Shipping step: starts when payment proof uploaded
   if (transaction.fulfillment.shippedConfirmedAt) {
     states.shipping = "completed";
-  } else if (transaction.payment.confirmedAt) {
-    const hasShippingAddress = transaction.shippingInfo.fullName && 
-                                transaction.shippingInfo.address;
-    
-    if (!hasShippingAddress) {
-      states.shipping = isSeller ? "active-observer" : "active-actor";
-    } else {
-      states.shipping = isSeller ? "active-actor" : "active-observer";
-    }
+  } else if (transaction.payment.uploadedAt) {
+    states.shipping = isSeller ? "active-actor" : "active-observer";
   } else {
     states.shipping = "locked";
   }
@@ -379,7 +374,7 @@ export default function TransactionRoomPage() {
     if (stepStates.delivery === "active-actor" || stepStates.delivery === "active-observer") active.push("delivery");
     if (stepStates.complete === "completed") active.push("complete");
     setExpandedItems(active);
-  }, [transaction, stepStates.payment, stepStates.shipping, stepStates.delivery, stepStates.complete]);
+  }, [transaction?.status, isSeller]);
 
   if (isLoading) {
     return (

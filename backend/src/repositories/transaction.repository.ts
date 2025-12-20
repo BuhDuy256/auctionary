@@ -204,6 +204,7 @@ export const updateTransactionPayment = async (
       shipping_city: data.shipping_city,
       shipping_phone_number: data.shipping_phone_number,
       payment_proof_uploaded_at: data.payment_proof_uploaded_at,
+      status: "shipping_pending", // Chuyển status sang shipping_pending khi buyer upload payment proof
       updated_at: db.fn.now(),
-  });
+    });
 };

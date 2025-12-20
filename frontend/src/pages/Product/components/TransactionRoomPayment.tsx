@@ -231,7 +231,7 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
             <Alert className="border-accent/30 bg-accent/5">
               <Shield className="h-4 w-4 text-accent" />
               <AlertDescription className="text-sm text-accent/90">
-                <strong>Payment Proof Received:</strong> The buyer has submitted payment proof. You'll confirm payment in the next step.
+                <strong>Payment Proof Received:</strong> The buyer has submitted payment proof and shipping address.
               </AlertDescription>
             </Alert>
 
@@ -266,10 +266,6 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                       alt="Payment receipt"
                       className="w-full h-auto max-h-96 object-contain bg-secondary"
                     />
-                    <Badge className="absolute bottom-2 left-2 bg-accent/90 backdrop-blur border-0">
-                      <AlertCircle className="h-3 w-3 mr-1" />
-                      Awaiting Your Confirmation (Next Step)
-                    </Badge>
                   </div>
                 </div>
 
@@ -287,14 +283,6 @@ export function TransactionRoom({ mode, transaction, onPaymentProof, isSeller, i
                     </div>
                   </div>
                 )}
-
-                {/* Info Alert - No action needed here */}
-                <Alert className="border-border bg-secondary/30">
-                  <Info className="h-4 w-4" />
-                  <AlertDescription className="text-xs">
-                    You will confirm payment receipt and upload shipping proof in the next step.
-                  </AlertDescription>
-                </Alert>
               </CardContent>
             </Card>
           </div>
