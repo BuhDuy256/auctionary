@@ -255,7 +255,14 @@ const getStepStates = (
     states.delivery = "locked";
   }
 
+  // Check if current user has already rated
+  const currentUserRating = isSeller ? transaction.ratings.seller : transaction.ratings.buyer;
+  const hasCurrentUserRated = currentUserRating?.rate !== null;
+
   if (transaction.completedAt) {
+    states.complete = "completed";
+  } else if (hasCurrentUserRated) {
+    // Current user has rated, mark as completed for them
     states.complete = "completed";
   } else if (transaction.fulfillment.buyerReceivedAt) {
     // After buyer confirms delivery, show rating step for BOTH users
