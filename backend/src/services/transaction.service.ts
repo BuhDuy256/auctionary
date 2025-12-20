@@ -3,7 +3,10 @@ import * as storageService from './storage.service';
 import { ForbiddenError, NotFoundError } from '../errors';
 import { TransactionDetailResponse, TransactionMessage } from '../api/dtos/responses/transaction.type';
 import { mapTransactionDetailToResponse } from '../mappers/transaction.mapper';
-import { TransactionPaymentProofUploadRequest } from '../api/dtos/requests/transaction.schema';
+import {
+  TransactionPaymentProofUploadRequest,
+  TransactionShippingProofUploadRequest
+} from '../api/dtos/requests/transaction.schema';
 
 export const verifyUserOwnership = async (userId: number, transactionId: number): Promise<void> => {
   const transaction = await TransactionRepository.findTransactionById(transactionId);
@@ -63,5 +66,44 @@ export const uploadPaymentProof = async (
     shipping_city: data.shippingCity,
     shipping_phone_number: data.shippingPhoneNumber,
     payment_proof_uploaded_at: new Date(),
+  });
+};
+
+/**
+ * Upload shipping proof and confirm payment received
+ * @param transactionId - Transaction ID
+ * @param data - Shipping proof data (paymentConfirmed validated by Zod)
+ * @param file - Uploaded shipping proof file
+ * @returns Promise<void>
+ */
+export const uploadShippingProof = async (
+  transactionId: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _data: TransactionShippingProofUploadRequest, // Validated by schema, not used in logic
+  file: Express.Multer.File
+): Promise<void> => {
+  // Verify transaction exists
+  const transaction = await TransactionRepository.findTransactionById(transactionId);
+
+  if (!transaction) {
+    throw new NotFoundError('Transaction not found');
+  }
+
+  // Upload file to Supabase
+  const timestamp = Date.now();
+  const storagePath = `transactions/${transactionId}/shipping/proof_${timestamp}.png`;
+
+  const proofUrl = await storageService.uploadFile(
+    "auctionary-transaction-proofs",
+    file,
+    storagePath
+  );
+
+  // Update transaction with shipping proof and payment confirmation
+  const now = new Date();
+  await TransactionRepository.updateTransactionShipping(transactionId, {
+    shipping_proof_url: proofUrl,
+    payment_confirmed_at: now,
+    shipping_proof_uploaded_at: now,
   });
 };

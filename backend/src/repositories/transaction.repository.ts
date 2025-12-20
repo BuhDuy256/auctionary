@@ -208,3 +208,27 @@ export const updateTransactionPayment = async (
       updated_at: db.fn.now(),
     });
 };
+/**
+ * Update transaction shipping proof and confirm payment
+ * @param transactionId - Transaction ID
+ * @param data - Shipping proof URL and payment confirmation (snake_case)
+ */
+export const updateTransactionShipping = async (
+  transactionId: number,
+  data: {
+    shipping_proof_url: string;
+    payment_confirmed_at: Date;
+    shipping_proof_uploaded_at: Date;
+  }
+): Promise<void> => {
+  await db("transactions")
+    .where({ id: transactionId })
+    .update({
+      shipping_proof_url: data.shipping_proof_url,
+      payment_confirmed_at: data.payment_confirmed_at,
+      shipping_proof_uploaded_at: data.shipping_proof_uploaded_at,
+      shipped_confirmed_at: data.payment_confirmed_at, // Same time as payment confirmation
+      status: "delivered", // Chuyển status sang delivered khi seller upload shipping proof
+      updated_at: db.fn.now(),
+    });
+};

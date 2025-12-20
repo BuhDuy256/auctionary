@@ -2,7 +2,10 @@ import { Router } from "express";
 import { requireAuth } from "../middlewares/require-auth.middleware";
 import { verifyTransactionOwnership } from "../middlewares/transaction.middleware";
 import { validate } from "../middlewares/validate.middleware";
-import { TransactionPaymentProofUploadSchema } from "../dtos/requests/transaction.schema";
+import {
+  TransactionPaymentProofUploadSchema,
+  TransactionShippingProofUploadSchema
+} from "../dtos/requests/transaction.schema";
 import * as TransactionController from "../controllers/transaction.controller";
 import multer from "multer";
 
@@ -26,6 +29,15 @@ router.post(
   verifyTransactionOwnership,
   validate(TransactionPaymentProofUploadSchema, "body"),
   TransactionController.uploadPaymentProof
+);
+
+router.post(
+  "/:id/shipping",
+  upload.single("shippingProof"),
+  requireAuth,
+  verifyTransactionOwnership,
+  validate(TransactionShippingProofUploadSchema, "body"),
+  TransactionController.uploadShippingProof
 );
 
 export default router;
