@@ -6,7 +6,7 @@ export const getWatchlist = async (): Promise<WatchlistResponse> => {
 };
 
 export const addProductToWatchlist = async (data: { productId: number }) => {
-  return apiClient.post(`/watchlist`, data, true);
+  return apiClient.post(`/watchlist/`, data, true);
 };
 
 export const removeProductFromWatchlist = async (

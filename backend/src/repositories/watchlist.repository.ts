@@ -15,6 +15,7 @@ export const addProductToWatchlist = async (
     .insert({
       user_id: userId,
       product_id: productId,
+      created_at: new Date(),
     })
     .returning("product_id");
 };
