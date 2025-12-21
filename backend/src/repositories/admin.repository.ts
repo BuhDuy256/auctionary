@@ -236,8 +236,8 @@ export const getOverviewStats = async () => {
     .count("* as total_auctions")
     .first();
 
-  // Get total revenue (completed orders only)
-  const revenueResult = await db("orders")
+  // Get total revenue (completed transactions only)
+  const revenueResult = await db("transactions")
     .sum("final_price as total_revenue")
     .where({ status: "completed" })
     .first();

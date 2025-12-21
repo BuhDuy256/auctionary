@@ -47,6 +47,7 @@ import {
   ArrowDown,
 } from "lucide-react";
 import type { ProductStatus } from "../../../types/seller";
+import { useNavigate } from "react-router-dom";
 
 interface SellerDashboardProps {
   onCreateAuction: () => void;
@@ -300,6 +301,8 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
     }
     return <ArrowDown className="ml-1 h-3 w-3" />;
   };
+
+  const navigate = useNavigate();
 
   if (loading) {
     return (
@@ -647,7 +650,9 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="max-w-48">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => navigate(`/products/${item.id}`)}
+                          >
                             <Eye className="mr-2 h-4 w-4 focus:text-accent-foreground" />
                             View Details
                           </DropdownMenuItem>

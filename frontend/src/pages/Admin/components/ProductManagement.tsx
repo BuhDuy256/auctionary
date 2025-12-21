@@ -55,6 +55,7 @@ import {
 import { useAdminProducts } from "../../../hooks/useAdminProducts";
 import { useCountdown } from "../../../hooks/useCountdown";
 import { Pagination } from "../../../components/common/Pagination";
+import { useNavigate } from "react-router-dom";
 
 // Helper: Get status badge className
 const getStatusBadgeClass = (status: string): string => {
@@ -102,6 +103,7 @@ interface ProductRowProps {
 const ProductRow = ({ product, onRemove }: ProductRowProps) => {
   // Use countdown hook for real-time updates (must be at component top level)
   const { timeLeft } = useCountdown(product.endTime);
+  const navigate = useNavigate();
 
   return (
     <TableRow key={product.id}>
@@ -166,8 +168,11 @@ const ProductRow = ({ product, onRemove }: ProductRowProps) => {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Eye className="h-4 w-4 mr-2" />
+            <DropdownMenuItem
+              className="group"
+              onClick={() => navigate(`/products/${product.id}`)}
+            >
+              <Eye className="h-4 w-4 mr-2 group-focus:text-accent-foreground" />
               View Details
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -177,9 +182,9 @@ const ProductRow = ({ product, onRemove }: ProductRowProps) => {
               <AlertDialogTrigger asChild>
                 <DropdownMenuItem
                   onSelect={(e) => e.preventDefault()}
-                  className="text-destructive"
+                  className="text-destructive group focus:bg-destructive/10 focus:text-destructive"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <Trash2 className="h-4 w-4 mr-2 group-focus:text-destructive" />
                   Remove Product
                 </DropdownMenuItem>
               </AlertDialogTrigger>

@@ -130,8 +130,8 @@ export const getUserRoles = async (userId: number): Promise<string[]> => {
 };
 
 export const countWonAuctions = async (userId: number): Promise<number> => {
-  const result = (await db("orders")
-    .where({ winner_id: userId })
+  const result = (await db("transactions")
+    .where({ buyer_id: userId })
     .count("id as count")
     .first()) as any;
   return Number(result?.count || 0);
@@ -161,11 +161,11 @@ export const getActiveBids = async (userId: number) => {
 };
 
 export const getWonAuctions = async (userId: number) => {
-  return await db("orders")
-    .join("products", "orders.product_id", "products.id")
-    .where("orders.winner_id", userId)
+  return await db("transactions")
+    .join("products", "transactions.product_id", "products.id")
+    .where("transactions.buyer_id", userId)
     .select(
-      "orders.*",
+      "transactions.*",
       "products.name as product_name",
       "products.thumbnail_url"
     );
@@ -182,7 +182,5 @@ export const updateUserReviewScore = async (
 ): Promise<void> => {
   const field = isPositive ? "positive_reviews" : "negative_reviews";
 
-  await db("users")
-    .where({ id: userId })
-    .increment(field, 1);
+  await db("users").where({ id: userId }).increment(field, 1);
 };
