@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -42,6 +42,13 @@ export function AuthModal({
   const [activeTab, setActiveTab] = useState(defaultTab);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Sync activeTab with defaultTab when modal opens
+  useEffect(() => {
+    if (open) {
+      setActiveTab(defaultTab);
+    }
+  }, [open, defaultTab]);
 
   // Login state
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -340,7 +347,6 @@ export function AuthModal({
                 onClick={() => handleGoogleLogin()}
                 disabled={isLoading}
                 className="flex-1"
-                isLoading={isLoading}
               >
                 <img
                   src="/assets/Google__G__logo.svg.webp"
@@ -363,7 +369,6 @@ export function AuthModal({
                     onClick={onClick}
                     disabled={isLoading}
                     className="flex-1"
-                    isLoading={isLoading}
                   >
                     <img
                       src="/assets/2023_Facebook_icon.svg.png"
@@ -458,6 +463,13 @@ export function AuthModal({
           <TabsContent value="forgot" className="space-y-4 mt-6">
             {forgotStep === "request_email" ? (
               <form onSubmit={handleRequestOTP} className="space-y-4">
+                <div className="text-center space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Enter your email address and we'll send you a verification
+                    code to reset your password.
+                  </p>
+                </div>
+
                 <Input
                   id="forgot-email"
                   type="email"
@@ -478,6 +490,27 @@ export function AuthModal({
 
                 <Button type="submit" className="w-full" isLoading={isLoading}>
                   {isLoading ? "Sending..." : "Send Reset OTP"}
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Remember your password?
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setActiveTab("login")}
+                  disabled={isLoading}
+                >
+                  Back to Login
                 </Button>
               </form>
             ) : (

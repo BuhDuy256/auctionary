@@ -12,7 +12,7 @@ import {
 import { Button } from "./ui/button";
 import { Alert, AlertDescription } from "./ui/alert";
 import InputOTP from "./ui/input-otp";
-import { AlertTriangle, LogOut, RefreshCw } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 interface VerifyOTPModalProps {
   open: boolean;
@@ -93,9 +93,6 @@ export function VerifyOTPModal({ open }: VerifyOTPModalProps) {
 
   const handleLogout = async () => {
     await logout();
-    notify.info(
-      "Logged out. Please verify your account to continue using the platform."
-    );
   };
 
   return (
@@ -104,6 +101,7 @@ export function VerifyOTPModal({ open }: VerifyOTPModalProps) {
         className="sm:max-w-[420px]"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
+        showClose={false}
       >
         <DialogHeader>
           <DialogTitle className="text-2xl text-center">
@@ -177,11 +175,6 @@ export function VerifyOTPModal({ open }: VerifyOTPModalProps) {
                 className="w-full"
                 isLoading={isResending}
               >
-                <RefreshCw
-                  className={`mr-2 h-4 w-4 ${
-                    isResending ? "animate-spin" : ""
-                  }`}
-                />
                 {isResending ? "Sending..." : "Resend Code"}
               </Button>
             ) : (
@@ -198,11 +191,6 @@ export function VerifyOTPModal({ open }: VerifyOTPModalProps) {
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or
-              </span>
-            </div>
           </div>
 
           <Button
@@ -210,9 +198,7 @@ export function VerifyOTPModal({ open }: VerifyOTPModalProps) {
             variant="destructive"
             onClick={handleLogout}
             className="w-full"
-            isLoading={isResending}
           >
-            <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
 
