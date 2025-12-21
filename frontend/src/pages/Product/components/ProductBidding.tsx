@@ -17,6 +17,16 @@ import {
   AlertTitle,
 } from "../../../components/ui/alert";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../../../components/ui/alert-dialog";
+import {
   Zap,
   Users,
   Info,
@@ -49,6 +59,7 @@ export function ProductBidding({
   const [bidAmount, setBidAmount] = useState("");
   const [bidPlaced, setBidPlaced] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const { user } = useAuth();
 
   const currentPrice = auction.currentPrice;
@@ -89,7 +100,7 @@ export function ProductBidding({
 
   const eligibility = checkBidderEligibility();
 
-  const handlePlaceBid = async () => {
+  const handleOpenConfirmDialog = () => {
     // Client-side check for authentication
     const token = localStorage.getItem("token");
     if (!token) {
@@ -99,31 +110,37 @@ export function ProductBidding({
 
     const amount = parseFloat(bidAmount);
     if (amount >= minBid) {
-      try {
-        setLoading(true);
-        await onPlaceBid(amount);
-        setBidPlaced(true);
-        setBidAmount(""); // Reset input
-        setTimeout(() => setBidPlaced(false), 5000);
-      } catch (err: any) {
-        console.error(err);
-        // Handle various error formats
-        let message = "Failed to place bid";
-        if (err.response?.data?.message) {
-          message = err.response.data.message;
-        } else if (err.message) {
-          message = err.message;
-        }
+      setShowConfirmDialog(true);
+    }
+  };
 
-        if (message === "API request failed" || message.includes("401")) {
-          message = "You need to login to use this feature";
-        }
-
-        // Display error to user
-        notify.error(message);
-      } finally {
-        setLoading(false);
+  const handleConfirmBid = async () => {
+    const amount = parseFloat(bidAmount);
+    try {
+      setLoading(true);
+      setShowConfirmDialog(false);
+      await onPlaceBid(amount);
+      setBidPlaced(true);
+      setBidAmount(""); // Reset input
+      setTimeout(() => setBidPlaced(false), 5000);
+    } catch (err: any) {
+      console.error(err);
+      // Handle various error formats
+      let message = "Failed to place bid";
+      if (err.response?.data?.message) {
+        message = err.response.data.message;
+      } else if (err.message) {
+        message = err.message;
       }
+
+      if (message === "API request failed" || message.includes("401")) {
+        message = "You need to login to use this feature";
+      }
+
+      // Display error to user
+      notify.error(message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -223,8 +240,10 @@ export function ProductBidding({
                   />
                 </div>
                 <Button
-                  onClick={handlePlaceBid}
-                  disabled={!bidAmount || parseFloat(bidAmount) < minBid}
+                  onClick={handleOpenConfirmDialog}
+                  disabled={
+                    !bidAmount || parseFloat(bidAmount) < minBid || loading
+                  }
                   className="px-8"
                 >
                   <Zap className="mr-2 h-4 w-4" />
@@ -298,6 +317,55 @@ export function ProductBidding({
           Trending Auction
         </Badge>
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Your Bid</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3">
+              <p>Please review your bid details before confirming:</p>
+              <div className="bg-accent/5 border border-accent/20 rounded-lg p-4 space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">
+                    Your Maximum Bid:
+                  </span>
+                  <span className="font-semibold text-accent text-lg">
+                    ${parseFloat(bidAmount || "0").toLocaleString()}
+                  </span>
+                </div>
+                <Separator />
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Current Price:</span>
+                  <span>${currentPrice.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Minimum Bid:</span>
+                  <span>${minBid.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                <Info className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <p>
+                  With proxy bidding, we'll automatically bid for you up to your
+                  maximum amount. You'll only pay slightly more than the next
+                  highest bid.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmBid}
+              disabled={loading}
+              className="bg-accent hover:bg-accent/90"
+            >
+              {loading ? "Placing Bid..." : "Confirm Bid"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
