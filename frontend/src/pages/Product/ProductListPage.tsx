@@ -14,8 +14,6 @@ import { ProductGrid } from "./components/ProductGrid";
 import { Pagination } from "../../components/common/Pagination";
 import { useProducts } from "../../hooks/useProducts";
 import { useCategories } from "../../hooks/useCategories";
-import { PlaceBidModal } from "./components/PlaceBidModal";
-import { useBidding } from "../../hooks/useBidding";
 
 export default function ProductListPage() {
   const {
@@ -40,20 +38,6 @@ export default function ProductListPage() {
     loading: categoriesLoading,
     selectedCategoriesWithNames,
   } = useCategories(categorySlugs);
-
-  const {
-    selectedProduct,
-    isModalOpen,
-    isSubmitting,
-    openBidModal,
-    closeBidModal,
-    submitBid,
-  } = useBidding();
-
-  // TODO: Add a refresh handler to update product list after successful bid
-  // Option 1: Add a callback to useBidding hook
-  // Option 2: Use WebSocket/polling to auto-refresh
-  // Option 3: Add a refetch function from useProducts and pass to submitBid
 
   const handleResetFilters = () => {
     handleClearAllFilters();
@@ -161,11 +145,7 @@ export default function ProductListPage() {
             </div>
 
             {/* Product Grid */}
-            <ProductGrid
-              products={products}
-              loading={productsLoading}
-              handleOpenBidModal={openBidModal}
-            />
+            <ProductGrid products={products} loading={productsLoading} />
 
             {/* Pagination */}
             {!productsLoading && pagination.total > 0 && (
@@ -183,20 +163,6 @@ export default function ProductListPage() {
           </main>
         </div>
       </div>
-
-      {selectedProduct && (
-        <PlaceBidModal
-          open={isModalOpen}
-          onOpenChange={closeBidModal}
-          productId={selectedProduct.id}
-          productTitle={selectedProduct.title}
-          topBidder={selectedProduct.topBidder}
-          currentBid={selectedProduct.currentBid}
-          minimumBid={selectedProduct.minimumBid}
-          onSubmitBid={submitBid}
-          isSubmitting={isSubmitting}
-        />
-      )}
     </MainLayout>
   );
 }
