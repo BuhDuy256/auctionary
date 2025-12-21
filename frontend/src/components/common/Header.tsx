@@ -32,6 +32,7 @@ import {
 } from "../ui/dropdown-menu";
 import { UpgradeRequestModal } from "../modals/UpgradeRequestModal";
 import { RequestStatusModal } from "../modals/RequestStatusModal";
+import { AuthModal } from "../AuthModal";
 
 const Header: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -48,6 +49,10 @@ const Header: React.FC = () => {
 
   const [showUpgradeModal, setShowUpgradeModal] = React.useState(false);
   const [showStatusModal, setShowStatusModal] = React.useState(false);
+  const [showAuthModal, setShowAuthModal] = React.useState(false);
+  const [authModalTab, setAuthModalTab] = React.useState<
+    "login" | "signup" | "forgot"
+  >("login");
 
   // Fetch upgrade request status on component mount if authenticated
   useEffect(() => {
@@ -211,7 +216,10 @@ const Header: React.FC = () => {
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => navigate("/signup")}
+                  onClick={() => {
+                    setAuthModalTab("signup");
+                    setShowAuthModal(true);
+                  }}
                 >
                   <User className="mr-2 h-5 w-5" />
                   <span className="font-bold">Sign Up</span>
@@ -219,7 +227,10 @@ const Header: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => navigate("/login")}
+                  onClick={() => {
+                    setAuthModalTab("login");
+                    setShowAuthModal(true);
+                  }}
                 >
                   <LogIn className="mr-2 h-5 w-5" />
                   <span className="font-bold">Login</span>
@@ -244,6 +255,13 @@ const Header: React.FC = () => {
         request={requestStatus}
         onCancel={cancelRequest}
         isCancelling={isUpgradeLoading}
+      />
+
+      {/* Auth Modal */}
+      <AuthModal
+        open={showAuthModal}
+        onOpenChange={setShowAuthModal}
+        defaultTab={authModalTab}
       />
     </header>
   );
