@@ -219,9 +219,9 @@ export const requestPasswordReset = async (
   const { email } = data;
   const user = await userRepo.findByEmail(email);
 
-  if (!user || !user.is_verified) {
+  if (!user) {
     return {
-      message: "If an account with that email exists, an OTP has been sent.",
+      message: "Email not exists",
     };
   }
 

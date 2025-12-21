@@ -3,16 +3,14 @@ import { useNavigate } from "react-router-dom";
 import AuthLayout from "../../layouts/AuthLayout";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
-import InputOTP from "../../components/ui/input-otp"; // 1. Import OTPInput
+import InputOTP from "../../components/ui/input-otp";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
-  // 2. Lấy cả hai hàm từ context
   const { forgotPassword, resetPassword } = useAuth();
 
-  // 3. Thêm 'step' để chuyển UI
   const [step, setStep] = useState<"request_email" | "submit_otp">(
     "request_email"
   );
@@ -29,12 +27,10 @@ export default function ForgotPasswordPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 4. Hàm này (dùng cho OTPInput) cần tên khác
   const handleOtpChange = (otpValue: string) => {
     setFormData({ ...formData, otp: otpValue });
   };
 
-  // === Bước 1: Xử lý Yêu cầu OTP ===
   const handleRequestOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -43,7 +39,7 @@ export default function ForgotPasswordPage() {
     try {
       await forgotPassword(formData.email);
       toast.success("An OTP has been sent to your email.");
-      setStep("submit_otp"); // 5. Chuyển sang bước 2
+      setStep("submit_otp");
     } catch (error: any) {
       setError(error.message || "An error occurred");
       toast.error(error.message || "An error occurred");
@@ -52,7 +48,6 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  // === Bước 2: Xử lý Gửi OTP + Mật khẩu mới ===
   const handleSubmitNewPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.newPassword !== formData.confirmPassword) {
@@ -70,7 +65,7 @@ export default function ForgotPasswordPage() {
     try {
       await resetPassword(formData.email, formData.otp, formData.newPassword);
       toast.success("Password reset successfully! Please log in.");
-      navigate("/login"); // Xong! Về trang đăng nhập
+      navigate("/login");
     } catch (err: any) {
       toast.error(err.message || "Invalid OTP or failed to reset.");
       setError(err.message);
@@ -81,10 +76,12 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout title="Forgot Password">
-      {/* --- GIAI ĐOẠN 1: YÊU CẦU EMAIL (Bước 1) --- */}
       {step === "request_email" && (
-        <form className="auth-form" onSubmit={handleRequestOTP}>
-          <p className="text-sm text-center mb-4 text-[var(--text-muted)]">
+        <form
+          className="flex w-full flex-col gap-3"
+          onSubmit={handleRequestOTP}
+        >
+          <p className="text-sm text-center text-[var(--text-muted)]">
             Enter your email to receive a 6-digit code.
           </p>
           <Input
@@ -96,53 +93,62 @@ export default function ForgotPasswordPage() {
             disabled={isLoading}
             required
           />
-          {error && <p className="auth-error">{error}</p>}
-          <div className="button-group">
-            <Button type="submit" variant="default" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Sending...
-                </>
-              ) : (
-                "Send Reset OTP"
-              )}
+          {error && (
+            <p className="animate-shake text-center text-[13px] text-destructive">
+              {error}
+            </p>
+          )}
+          <div className="mt-3 flex w-full gap-2.5">
+            <Button
+              type="submit"
+              variant="default"
+              size="lg"
+              isLoading={isLoading}
+              className="w-full"
+            >
+              {isLoading ? "Sending..." : "Send Reset OTP"}
             </Button>
           </div>
         </form>
       )}
-      {/* --- GIAI ĐOẠN 2: NHẬP OTP VÀ PASS MỚI (Bước 2) --- */}
       {step === "submit_otp" && (
-        <form className="auth-form" onSubmit={handleSubmitNewPassword}>
-          <p className="text-sm text-center mb-4 text-[var(--text-muted)]">
+        <form
+          className="flex w-full flex-col gap-3"
+          onSubmit={handleSubmitNewPassword}
+        >
+          <p className="text-sm text-center text-[var(--text-muted)]">
             An OTP was sent to <strong>{formData.email}</strong>.
           </p>
 
-          <label className="text-sm font-semibold mb-4 block">
-            Enter 6-Digit OTP
-          </label>
-          <InputOTP
-            length={6}
-            value={formData.otp}
-            onChange={handleOtpChange}
-            disabled={isLoading}
-          />
+          <div className="flex flex-col items-center mt-2">
+            <p className="text-sm font-semibold mb-3 text-[var(--text-main)]">
+              Enter 6-Digit OTP
+            </p>
+            <InputOTP
+              length={6}
+              value={formData.otp}
+              onChange={handleOtpChange}
+              disabled={isLoading}
+            />
+          </div>
 
-          <label className="text-sm font-semibold mb-4 block">
-            Enter New Password
-          </label>
+          <div className="mt-2">
+            <p className="text-sm font-semibold mb-2 text-[var(--text-main)]">
+              Enter New Password
+            </p>
+            <Input
+              type="password"
+              name="newPassword"
+              placeholder="New Password (min 8 characters)"
+              value={formData.newPassword}
+              onChange={handleChange}
+              disabled={isLoading}
+              required
+            />
+          </div>
           <Input
             type="password"
-            name="newPassword"
-            placeholder="New Password (min 8 characters)"
-            value={formData.newPassword}
-            onChange={handleChange}
-            disabled={isLoading}
-            required
-          />
-          <Input
-            type="password"
-            name="confirmPassword" // Sửa name
+            name="confirmPassword"
             placeholder="Confirm New Password"
             value={formData.confirmPassword}
             onChange={handleChange}
@@ -150,9 +156,19 @@ export default function ForgotPasswordPage() {
             required
           />
 
-          {error && <p className="auth-error">{error}</p>}
-          <div className="button-group">
-            <Button type="submit" variant="default" isLoading={isLoading}>
+          {error && (
+            <p className="animate-shake text-center text-[13px] text-destructive">
+              {error}
+            </p>
+          )}
+          <div className="mt-3 flex w-full gap-2.5">
+            <Button
+              type="submit"
+              variant="default"
+              size="lg"
+              isLoading={isLoading}
+              className="w-full"
+            >
               {isLoading ? "Resetting..." : "Reset Password"}
             </Button>
           </div>
@@ -160,10 +176,10 @@ export default function ForgotPasswordPage() {
       )}
       <Button
         variant="secondary"
+        size="lg"
         onClick={() => {
-          if (step === "submit_otp")
-            setStep("request_email"); // Quay lại bước 1
-          else navigate("/login"); // Quay lại trang Login
+          if (step === "submit_otp") setStep("request_email");
+          else navigate("/login");
         }}
         disabled={isLoading}
         className="w-full mt-2.5 font-semibold"
