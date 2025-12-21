@@ -36,6 +36,7 @@ import {
   TrendingUp,
   Heart,
   XCircle,
+  ShoppingCart,
 } from "lucide-react";
 import type { AuctionInfo, UserProductStatus } from "../../../types/product";
 import { notify } from "../../../utils/notify";
@@ -198,16 +199,14 @@ export function ProductBidding({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Proxy Bidding Info */}
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-accent/5 border border-accent/20">
-            <Info className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="text-sm mb-1">Proxy Bidding Active</div>
-              <p className="text-xs text-muted-foreground">
-                We will automatically bid for you up to your maximum amount.
-                You'll only pay slightly more than the next highest bid.
-              </p>
-            </div>
-          </div>
+          <Alert variant="warning">
+            <Info className="h-5 w-5" />
+            <AlertTitle>Proxy Bidding Active</AlertTitle>
+            <AlertDescription className="text-xs mt-1">
+              We will automatically bid for you up to your maximum amount.
+              You'll only pay slightly more than the next highest bid.
+            </AlertDescription>
+          </Alert>
 
           {/* Bid Form or Ineligibility Warning */}
           {!eligibility.canBid ? (
@@ -254,6 +253,46 @@ export function ProductBidding({
                 Minimum bid: ${minBid.toLocaleString()}
               </p>
             </div>
+          )}
+
+          {/* Buy Now Section */}
+          {auction.buyNowPrice && auction.buyNowPrice > currentPrice && (
+            <>
+              <div className="flex items-center gap-3 my-4">
+                <Separator className="flex-1" />
+                <span className="text-xs text-muted-foreground font-medium">
+                  OR BUY IMMEDIATELY
+                </span>
+                <Separator className="flex-1" />
+              </div>
+
+              <div className="space-y-3 p-4 rounded-lg border-2 border-success/30 bg-success/5">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-xs text-success/80 mb-1">
+                      Buy Now Price
+                    </div>
+                    <div className="text-3xl font-bold text-success">
+                      ${auction.buyNowPrice.toLocaleString()}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="border-success/50 text-success hover:bg-success/10"
+                    onClick={() => {
+                      notify.error("Buy Now feature is not available yet!");
+                    }}
+                  >
+                    <ShoppingCart className="mr-2 h-5 w-5" />
+                    Buy Now
+                  </Button>
+                </div>
+                <p className="text-xs text-success/70">
+                  Skip the bidding and purchase this item instantly at the Buy
+                  Now price.
+                </p>
+              </div>
+            </>
           )}
 
           <Separator />
