@@ -96,6 +96,8 @@ export interface UserProductStatus {
   isOutbid: boolean;
   isTopBidder: boolean;
   currentUserMaxBid?: number;
+  isRejected?: boolean;
+  rejectionReason?: string;
 }
 
 // Bid History (Lazy Load)
@@ -111,6 +113,7 @@ export interface BidHistoryResponse {
 
 export interface BidHistoryItem {
   bidId: number;
+  bidderId: number;
   amount: number;
   bidder: string;
   bidTime: string;
@@ -146,4 +149,9 @@ export interface CreateProductResponse {
   productId: number;
   name: string;
   status: string;
+}
+
+export interface RejectBidderResponse {
+  newWinnerId: number | null;
+  newCurrentPrice: number;
 }

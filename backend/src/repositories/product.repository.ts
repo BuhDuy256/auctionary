@@ -528,6 +528,22 @@ export const getUserBidStatus = async (userId: number, productId: number) => {
   };
 };
 
+export const getUserRejectionStatus = async (
+  userId: number,
+  productId: number
+) => {
+  const rejection = await db("product_rejections")
+    .where({ bidder_id: userId, product_id: productId })
+    .select("reason", "created_at")
+    .orderBy("created_at", "desc")
+    .first();
+
+  return {
+    isRejected: !!rejection,
+    rejectionReason: rejection?.reason || undefined,
+  };
+};
+
 export const getProductQuestions = async (
   productId: number,
   page: number = 1,

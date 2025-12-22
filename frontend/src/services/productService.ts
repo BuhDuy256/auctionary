@@ -8,6 +8,8 @@ import type {
   QuestionsResponse,
   PlaceBidResponse,
   CreateProductPayload,
+  RejectBidderRequest,
+  RejectBidderResponse,
 } from "../types/product";
 
 export const searchProducts = async (
@@ -113,6 +115,13 @@ export const updateProductConfig = async (
   allowNewBidder: boolean
 ): Promise<void> => {
   return apiClient.patch(`/products/${id}/configs`, { allowNewBidder }, true);
+};
+
+export const rejectBidder = async (
+  id: string,
+  data: RejectBidderRequest
+): Promise<RejectBidderResponse> => {
+  return apiClient.post(`/products/${id}/reject-bidder`, data, true);
 };
 
 export const createProduct = async (data: CreateProductPayload) => {

@@ -172,5 +172,33 @@ export const useProductDetail = () => {
         };
       });
     },
+    rejectBidder: async (bidderId: number, reason: string) => {
+      if (!productId) return;
+      const result = await productService.rejectBidder(productId, {
+        bidderId,
+        reason,
+      });
+
+      // Update local state with recalculated auction state
+      setProductData((prev) => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          auction: {
+            ...prev.auction,
+            currentPrice: result.newCurrentPrice,
+            bidCount: prev.auction.bidCount - 1, // Approximate, will be refreshed
+          },
+        };
+      });
+
+      // Refresh bids history and product details
+      const [bids, productDetails] = await Promise.all([
+        productService.getProductBids(productId),
+        productService.getProductDetail(productId),
+      ]);
+      setBidsData(bids);
+      setProductData(productDetails);
+    },
   };
 };

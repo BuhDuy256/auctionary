@@ -149,6 +149,26 @@ export function ProductBidding({
 
   return (
     <div className="space-y-6">
+      {/* Rejection Alert */}
+      {userStatus?.isRejected && (
+        <Alert
+          variant="destructive"
+          className="border-destructive bg-destructive/10"
+        >
+          <XCircle className="h-4 w-4" />
+          <AlertTitle>You Cannot Bid on This Auction</AlertTitle>
+          <AlertDescription>
+            You have been rejected from bidding on this auction by the seller.
+            {userStatus.rejectionReason && (
+              <>
+                <br />
+                <strong>Reason:</strong> {userStatus.rejectionReason}
+              </>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Outbid Alert */}
       {isOutbid && (
         <Alert
@@ -209,7 +229,7 @@ export function ProductBidding({
           </Alert>
 
           {/* Bid Form or Ineligibility Warning */}
-          {!eligibility.canBid ? (
+          {!eligibility.canBid || userStatus?.isRejected ? (
             <Alert
               variant="destructive"
               className="border-destructive bg-destructive/10"
@@ -217,7 +237,13 @@ export function ProductBidding({
               <XCircle className="h-4 w-4" />
               <AlertTitle>Unable to Bid</AlertTitle>
               <AlertDescription className="text-sm">
-                {eligibility.reason}
+                {userStatus?.isRejected
+                  ? `You have been rejected from bidding on this auction by the seller.${
+                      userStatus.rejectionReason
+                        ? ` Reason: ${userStatus.rejectionReason}`
+                        : ""
+                    }`
+                  : eligibility.reason}
               </AlertDescription>
             </Alert>
           ) : (

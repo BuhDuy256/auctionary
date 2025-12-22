@@ -235,9 +235,10 @@ export const getProductDetail = async (
   // User-specific data
   let userProductStatus = undefined;
   if (userId) {
-    const [isWatchlisted, bidStatus] = await Promise.all([
+    const [isWatchlisted, bidStatus, rejectionStatus] = await Promise.all([
       productRepository.isUserWatchlisted(userId, productId),
       productRepository.getUserBidStatus(userId, productId),
+      productRepository.getUserRejectionStatus(userId, productId),
     ]);
 
     const isTopBidder = product.highest_bidder_id === userId;
@@ -248,6 +249,8 @@ export const getProductDetail = async (
       isOutbid,
       isTopBidder,
       currentUserMaxBid: bidStatus.currentUserMaxBid,
+      isRejected: rejectionStatus.isRejected,
+      rejectionReason: rejectionStatus.rejectionReason,
     };
   }
 
@@ -341,6 +344,7 @@ export const getProductBidHistory = async (
   return {
     bids: bids.map((bid: any) => ({
       bidId: bid.id,
+      bidderId: bid.bidder_id,
       amount: toNum(bid.amount),
       bidder: maskBidderName(bid.bidder_name),
       bidTime: bid.created_at,
@@ -396,7 +400,3 @@ export const updateProductConfig = async (
 ) => {
   await productRepository.updateProductConfig(productId, body);
 };
-
-export function rejectBidder(sellerId: any, productId: number, bidderId: any, reason: any) {
-    throw new Error("Function not implemented.");
-}

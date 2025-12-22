@@ -33,6 +33,7 @@ export default function ProductDetailPage() {
     appendQuestion,
     appendAnswer,
     toggleAllowNewBidder,
+    rejectBidder,
   } = useProductDetail();
 
   const { addToWatchlist, removeFromWatchlist, isWatched } = useWatchlist();
@@ -224,6 +225,7 @@ export default function ProductDetailPage() {
           onAppendDescription={appendDescription}
           onAppendQuestion={appendQuestion}
           onAppendAnswer={appendAnswer}
+          onRejectBidder={rejectBidder}
         />
 
         {/* Related Products */}
