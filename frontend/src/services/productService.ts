@@ -53,7 +53,8 @@ export const searchProducts = async (
 export const getProductDetail = async (
   id: string
 ): Promise<ProductDetailResponse> => {
-  return apiClient.get(`/products/${id}`);
+  // Send auth token if user is logged in so backend can return user-specific status
+  return apiClient.get(`/products/${id}`, true);
 };
 
 export const getProductBids = async (

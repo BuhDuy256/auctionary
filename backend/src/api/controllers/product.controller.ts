@@ -81,8 +81,9 @@ export const getProductDetail = async (
 ) => {
   try {
     const productId = Number(request.params.id);
-    const userId = request.query.userId
-      ? Number(request.query.userId)
+    // Get userId from authenticated user if available
+    const userId = (request as AuthenticatedRequest).user?.id
+      ? Number((request as AuthenticatedRequest).user?.id)
       : undefined;
 
     const result = await productService.getProductDetail(productId, userId);

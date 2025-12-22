@@ -35,7 +35,7 @@ router.post(
   productController.createProduct
 );
 
-router.get("/:id", productController.getProductDetail);
+router.get("/:id", userIdentifier, productController.getProductDetail);
 
 router.get("/:id/bids", productController.getProductBidHistory);
 
@@ -84,7 +84,6 @@ router.patch(
 router.post(
   "/:id/reject-bidder",
   requireAuth,
-  authorize("auctions.reject-bidder"),
   validate(rejectBidderSchema, "body"),
   productController.rejectBidder
 );

@@ -96,6 +96,16 @@ export function ProductBidding({
       }
     }
 
+    if (userStatus?.isRejected) {
+      return {
+        canBid: false,
+        reason:
+          "You have been rejected from bidding on this auction.\nReason: " +
+          "\n" +
+          userStatus.rejectionReason,
+      };
+    }
+
     return { canBid: true };
   };
 
@@ -149,26 +159,6 @@ export function ProductBidding({
 
   return (
     <div className="space-y-6">
-      {/* Rejection Alert */}
-      {userStatus?.isRejected && (
-        <Alert
-          variant="destructive"
-          className="border-destructive bg-destructive/10"
-        >
-          <XCircle className="h-4 w-4" />
-          <AlertTitle>You Cannot Bid on This Auction</AlertTitle>
-          <AlertDescription>
-            You have been rejected from bidding on this auction by the seller.
-            {userStatus.rejectionReason && (
-              <>
-                <br />
-                <strong>Reason:</strong> {userStatus.rejectionReason}
-              </>
-            )}
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Outbid Alert */}
       {isOutbid && (
         <Alert
@@ -229,7 +219,7 @@ export function ProductBidding({
           </Alert>
 
           {/* Bid Form or Ineligibility Warning */}
-          {!eligibility.canBid || userStatus?.isRejected ? (
+          {!eligibility.canBid ? (
             <Alert
               variant="destructive"
               className="border-destructive bg-destructive/10"
@@ -237,13 +227,7 @@ export function ProductBidding({
               <XCircle className="h-4 w-4" />
               <AlertTitle>Unable to Bid</AlertTitle>
               <AlertDescription className="text-sm">
-                {userStatus?.isRejected
-                  ? `You have been rejected from bidding on this auction by the seller.${
-                      userStatus.rejectionReason
-                        ? ` Reason: ${userStatus.rejectionReason}`
-                        : ""
-                    }`
-                  : eligibility.reason}
+                {eligibility.reason}
               </AlertDescription>
             </Alert>
           ) : (
@@ -269,6 +253,7 @@ export function ProductBidding({
                   disabled={
                     !bidAmount || parseFloat(bidAmount) < minBid || loading
                   }
+                  isLoading={loading}
                   className="px-8"
                 >
                   <Zap className="mr-2 h-4 w-4" />
