@@ -30,8 +30,14 @@ import { useTransaction } from "../../hooks/useTransaction";
 import { useTransactionActions } from "../../hooks/useTransactionActions";
 import { useAuth } from "../../hooks/useAuth";
 import { formatTime } from "../../utils/dateUtils";
-import type { TransactionDetailResponse, TransactionStatus } from "../../types/transaction";
-import type { PaymentSubmitData, ShippingSubmitData } from "../../types/transactionActions";
+import type {
+  TransactionDetailResponse,
+  TransactionStatus,
+} from "../../types/transaction";
+import type {
+  PaymentSubmitData,
+  ShippingSubmitData,
+} from "../../types/transactionActions";
 import { notify } from "../../utils/notify";
 
 type StepState = "completed" | "active-actor" | "active-observer" | "locked";
@@ -256,7 +262,9 @@ const getStepStates = (
   }
 
   // Check if current user has already rated
-  const currentUserRating = isSeller ? transaction.ratings.seller : transaction.ratings.buyer;
+  const currentUserRating = isSeller
+    ? transaction.ratings.seller
+    : transaction.ratings.buyer;
   const hasCurrentUserRated = currentUserRating?.rate !== null;
 
   if (transaction.completedAt) {
@@ -350,13 +358,14 @@ export default function TransactionRoomPage() {
   const { id } = useParams<{ id: string }>();
   const transactionId = Number(id);
 
-  const { transaction, isLoading, error, refetch } = useTransaction(transactionId);
-  const { 
-    handleSubmitPayment, 
+  const { transaction, isLoading, error, refetch } =
+    useTransaction(transactionId);
+  const {
+    handleSubmitPayment,
     handleConfirmAndShip,
     handleConfirmDelivery,
     handleSubmitReview,
-    isUpdating 
+    isUpdating,
   } = useTransactionActions();
   const { user } = useAuth();
 
@@ -377,19 +386,38 @@ export default function TransactionRoomPage() {
 
   React.useEffect(() => {
     if (!transaction) return;
-    
+
     const active: string[] = [];
-    if (stepStates.payment === "active-actor" || stepStates.payment === "active-observer") active.push("payment");
-    if (stepStates.shipping === "active-actor" || stepStates.shipping === "active-observer") active.push("shipping");
-    if (stepStates.delivery === "active-actor" || stepStates.delivery === "active-observer") active.push("delivery");
-    
+    if (
+      stepStates.payment === "active-actor" ||
+      stepStates.payment === "active-observer"
+    )
+      active.push("payment");
+    if (
+      stepStates.shipping === "active-actor" ||
+      stepStates.shipping === "active-observer"
+    )
+      active.push("shipping");
+    if (
+      stepStates.delivery === "active-actor" ||
+      stepStates.delivery === "active-observer"
+    )
+      active.push("delivery");
+
     // Auto-expand complete step when status is completed OR when buyerReceivedAt exists
-    if (transaction.status === "completed" || transaction.fulfillment.buyerReceivedAt) {
+    if (
+      transaction.status === "completed" ||
+      transaction.fulfillment.buyerReceivedAt
+    ) {
       active.push("complete");
     }
-    
+
     setExpandedItems(active);
-  }, [transaction?.status, transaction?.fulfillment?.buyerReceivedAt, isSeller]);
+  }, [
+    transaction?.status,
+    transaction?.fulfillment?.buyerReceivedAt,
+    isSeller,
+  ]);
 
   if (isLoading) {
     return (
@@ -434,13 +462,16 @@ export default function TransactionRoomPage() {
       };
 
       await handleSubmitPayment(transaction.id, data);
-      
+
       // Refetch transaction to get updated data
       await refetch();
-      
+
       notify.success("Payment proof submitted successfully!");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to submit payment proof";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to submit payment proof";
       notify.error(message);
     }
   };
@@ -455,13 +486,16 @@ export default function TransactionRoomPage() {
       };
 
       await handleConfirmAndShip(transaction.id, data);
-      
+
       // Refetch transaction to get updated data
       await refetch();
-      
+
       notify.success("Shipping proof submitted successfully!");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to submit shipping proof";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to submit shipping proof";
       notify.error(message);
     }
   };
@@ -469,7 +503,8 @@ export default function TransactionRoomPage() {
   const handleCancelTransaction = () => {
     console.log("Transaction cancelled");
     toast.error("Transaction Cancelled", {
-      description: "The transaction has been cancelled and buyer rating will be decreased.",
+      description:
+        "The transaction has been cancelled and buyer rating will be decreased.",
     });
   };
 
@@ -477,20 +512,23 @@ export default function TransactionRoomPage() {
     setFeedbackModalOpen(true);
   };
 
-  const handleSubmitFeedback = async (rating: "positive" | "negative", review: string) => {
+  const handleSubmitFeedback = async (
+    rating: "positive" | "negative",
+    review: string
+  ) => {
     if (!transaction) return;
 
     try {
       // Convert rating string to number: positive = 1, negative = -1
       const ratingValue = rating === "positive" ? 1 : -1;
-      
+
       await handleSubmitReview(transaction.id, {
         rating: ratingValue,
         comment: review,
       });
-      
+
       await refetch();
-      
+
       toast.success("Feedback Submitted!", {
         description: `You gave a ${rating} rating.`,
       });
@@ -539,11 +577,11 @@ export default function TransactionRoomPage() {
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <button className="text-muted-foreground hover:text-amber transition-colors">
+              <button className="text-muted-foreground hover:text-accent transition-colors">
                 My Purchases
               </button>
               <span className="text-muted-foreground">/</span>
-              <button className="text-muted-foreground hover:text-amber transition-colors">
+              <button className="text-muted-foreground hover:text-accent transition-colors">
                 Active Transactions
               </button>
               <span className="text-muted-foreground">/</span>
@@ -655,7 +693,9 @@ export default function TransactionRoomPage() {
                         stepStates.shipping === "completed"
                           ? `Shipped ${
                               transaction.fulfillment.shippedConfirmedAt
-                                ? formatTime(transaction.fulfillment.shippedConfirmedAt)
+                                ? formatTime(
+                                    transaction.fulfillment.shippedConfirmedAt
+                                  )
                                 : ""
                             }`
                           : undefined
@@ -695,7 +735,9 @@ export default function TransactionRoomPage() {
                         stepStates.delivery === "completed"
                           ? `Delivered ${
                               transaction.fulfillment.deliveredAt
-                                ? formatTime(transaction.fulfillment.deliveredAt)
+                                ? formatTime(
+                                    transaction.fulfillment.deliveredAt
+                                  )
                                 : ""
                             }`
                           : undefined
@@ -741,7 +783,7 @@ export default function TransactionRoomPage() {
                     />
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
-                    <TransactionRoomComplete 
+                    <TransactionRoomComplete
                       transaction={transaction}
                       isSeller={isSeller}
                       onSubmitFeedback={handleSubmitFeedback}
@@ -765,13 +807,18 @@ export default function TransactionRoomPage() {
       <FeedbackModal
         open={feedbackModalOpen}
         onOpenChange={setFeedbackModalOpen}
-        onSubmit={(feedback: { rating: "positive" | "negative" | null; review: string }) => {
+        onSubmit={(feedback: {
+          rating: "positive" | "negative" | null;
+          review: string;
+        }) => {
           if (feedback.rating) {
             handleSubmitFeedback(feedback.rating, feedback.review);
           }
         }}
         partnerType={isSeller ? "buyer" : "seller"}
-        partnerName={isSeller ? transaction.buyer.fullName : transaction.seller.fullName}
+        partnerName={
+          isSeller ? transaction.buyer.fullName : transaction.seller.fullName
+        }
         transactionId={`TXN-${transaction.id}`}
       />
     </MainLayout>

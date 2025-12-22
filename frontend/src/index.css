@@ -273,7 +273,7 @@ button {
   color: var(--status-info);
 }
 
-/* Glow Effects for Tactical Amber */
+/* Glow Effects for Tactical accent */
 .glow-accent {
   box-shadow: 0 0 15px var(--accent-glow);
 }

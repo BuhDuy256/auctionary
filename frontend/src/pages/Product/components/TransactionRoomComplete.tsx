@@ -31,15 +31,23 @@ interface TransactionRoomCompleteProps {
   onSubmitFeedback: (rating: "positive" | "negative", review: string) => void;
 }
 
-export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedback }: TransactionRoomCompleteProps) {
+export function TransactionRoomComplete({
+  transaction,
+  isSeller,
+  onSubmitFeedback,
+}: TransactionRoomCompleteProps) {
   // Dynamic text based on role
   const partnerType = isSeller ? "buyer" : "seller";
-  const partnerName = isSeller ? transaction.buyer.fullName : transaction.seller.fullName;
+  const partnerName = isSeller
+    ? transaction.buyer.fullName
+    : transaction.seller.fullName;
 
   // Get existing rating based on user role
   // If user is seller → rating they gave to buyer (transaction.ratings.seller)
   // If user is buyer → rating they gave to seller (transaction.ratings.buyer)
-  const existingRating = isSeller ? transaction.ratings.seller : transaction.ratings.buyer;
+  const existingRating = isSeller
+    ? transaction.ratings.seller
+    : transaction.ratings.buyer;
   const hasRated = existingRating?.rate !== null;
 
   // Local state for rating form
@@ -123,7 +131,10 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>{transaction.completedAt && formatTime(transaction.completedAt)}</span>
+                  <span>
+                    {transaction.completedAt &&
+                      formatTime(transaction.completedAt)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -140,13 +151,18 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
       <Card className="border-border">
         <CardHeader>
           <CardTitle className="text-lg">
-            {hasRated ? `Your Rating for ${partnerName}` : `Rate your experience with ${partnerName}`}
+            {hasRated
+              ? `Your Rating for ${partnerName}`
+              : `Rate your experience with ${partnerName}`}
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            {hasRated 
-              ? "Thank you for your feedback!" 
-              : `Your feedback helps ${isSeller ? "buyers make informed decisions" : "maintain trust in the Auctionary community"}`
-            }
+            {hasRated
+              ? "Thank you for your feedback!"
+              : `Your feedback helps ${
+                  isSeller
+                    ? "buyers make informed decisions"
+                    : "maintain trust in the Auctionary community"
+                }`}
           </p>
         </CardHeader>
         <CardContent>
@@ -157,12 +173,16 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
                 {existingRating.rate === 1 ? (
                   <div className="flex flex-col items-center gap-3">
                     <ThumbsUp className="h-16 w-16 fill-green-500 text-green-500" />
-                    <span className="text-lg font-medium text-green-500">Good Experience</span>
+                    <span className="text-lg font-medium text-green-500">
+                      Good Experience
+                    </span>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3">
                     <ThumbsDown className="h-16 w-16 fill-red-500 text-red-500" />
-                    <span className="text-lg font-medium text-red-500">Bad Experience</span>
+                    <span className="text-lg font-medium text-red-500">
+                      Bad Experience
+                    </span>
                   </div>
                 )}
               </div>
@@ -190,7 +210,8 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
               {/* Rating Selection */}
               <div className="space-y-3">
                 <div className="text-sm mb-3">
-                  How was your experience? <span className="text-destructive">*</span>
+                  How was your experience?{" "}
+                  <span className="text-destructive">*</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -204,14 +225,26 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
                         : "border-border hover:border-green-500/50 hover:bg-green-500/5"
                     }`}
                   >
-                    <div className={`inline-flex p-4 rounded-full mb-3 ${
-                      rating === "positive" ? "bg-green-500/20" : "bg-secondary"
-                    }`}>
-                      <ThumbsUp className={`h-8 w-8 ${
-                        rating === "positive" ? "text-green-500" : "text-muted-foreground"
-                      }`} />
+                    <div
+                      className={`inline-flex p-4 rounded-full mb-3 ${
+                        rating === "positive"
+                          ? "bg-green-500/20"
+                          : "bg-secondary"
+                      }`}
+                    >
+                      <ThumbsUp
+                        className={`h-8 w-8 ${
+                          rating === "positive"
+                            ? "text-green-500"
+                            : "text-muted-foreground"
+                        }`}
+                      />
                     </div>
-                    <div className={`text-lg mb-1 ${rating === "positive" ? "text-green-500" : ""}`}>
+                    <div
+                      className={`text-lg mb-1 ${
+                        rating === "positive" ? "text-green-500" : ""
+                      }`}
+                    >
                       Positive
                     </div>
                     <div className="text-xs text-muted-foreground">
@@ -229,14 +262,24 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
                         : "border-border hover:border-red-500/50 hover:bg-red-500/5"
                     }`}
                   >
-                    <div className={`inline-flex p-4 rounded-full mb-3 ${
-                      rating === "negative" ? "bg-red-500/20" : "bg-secondary"
-                    }`}>
-                      <ThumbsDown className={`h-8 w-8 ${
-                        rating === "negative" ? "text-red-500" : "text-muted-foreground"
-                      }`} />
+                    <div
+                      className={`inline-flex p-4 rounded-full mb-3 ${
+                        rating === "negative" ? "bg-red-500/20" : "bg-secondary"
+                      }`}
+                    >
+                      <ThumbsDown
+                        className={`h-8 w-8 ${
+                          rating === "negative"
+                            ? "text-red-500"
+                            : "text-muted-foreground"
+                        }`}
+                      />
                     </div>
-                    <div className={`text-lg mb-1 ${rating === "negative" ? "text-red-500" : ""}`}>
+                    <div
+                      className={`text-lg mb-1 ${
+                        rating === "negative" ? "text-red-500" : ""
+                      }`}
+                    >
                       Negative
                     </div>
                     <div className="text-xs text-muted-foreground">
@@ -249,7 +292,7 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
               {/* Written Review */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4 text-amber" />
+                  <MessageSquare className="h-4 w-4 text-accent" />
                   <div className="text-sm">Write a review (Optional)</div>
                 </div>
                 <Textarea
@@ -267,16 +310,32 @@ export function TransactionRoomComplete({ transaction, isSeller, onSubmitFeedbac
 
               {/* Info Alert */}
               {rating && (
-                <Alert className={`border-${rating === "positive" ? "green" : "red"}-500/30 bg-${rating === "positive" ? "green" : "red"}-500/5`}>
-                  <AlertCircle className={`h-4 w-4 text-${rating === "positive" ? "green" : "red"}-500`} />
-                  <AlertDescription className={`text-xs text-${rating === "positive" ? "green" : "red"}-500/90`}>
+                <Alert
+                  className={`border-${
+                    rating === "positive" ? "green" : "red"
+                  }-500/30 bg-${rating === "positive" ? "green" : "red"}-500/5`}
+                >
+                  <AlertCircle
+                    className={`h-4 w-4 text-${
+                      rating === "positive" ? "green" : "red"
+                    }-500`}
+                  />
+                  <AlertDescription
+                    className={`text-xs text-${
+                      rating === "positive" ? "green" : "red"
+                    }-500/90`}
+                  >
                     {rating === "positive" ? (
                       <>
-                        <strong>Positive feedback (+1)</strong> will increase the {partnerType}'s reputation score and help them build trust in the community.
+                        <strong>Positive feedback (+1)</strong> will increase
+                        the {partnerType}'s reputation score and help them build
+                        trust in the community.
                       </>
                     ) : (
                       <>
-                        <strong>Negative feedback (-1)</strong> will decrease the {partnerType}'s reputation score. Please provide details to help them improve.
+                        <strong>Negative feedback (-1)</strong> will decrease
+                        the {partnerType}'s reputation score. Please provide
+                        details to help them improve.
                       </>
                     )}
                   </AlertDescription>

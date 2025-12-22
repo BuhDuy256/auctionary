@@ -1,3 +1,4 @@
+import { useState } from "react";
 import MainLayout from "../../layouts/MainLayout";
 import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
@@ -6,6 +7,7 @@ import {
   DollarSign,
   Gavel,
   LogIn,
+  ShieldAlert,
   Sparkles,
   TrendingUp,
   User,
@@ -17,6 +19,7 @@ import { ProductListCard } from "../Product/components/ProductListCard";
 import { AuctionCardSkeleton } from "./components/AuctionCardSkeleton";
 import { EmptyState } from "./components/EmptyState";
 import { ErrorState } from "./components/ErrorState";
+import { DisclaimerModal } from "./components/DisclaimerModal";
 import { useAuth } from "../../hooks/useAuth";
 import { usePermission } from "../../hooks/usePermission";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +30,7 @@ export default function HomePage() {
   const { hasRole } = usePermission();
   const navigate = useNavigate();
   const { sections, isLoading, error, refetch } = useHomeSections();
+  const [isDisclaimerOpen, setIsDisclaimerOpen] = useState(false);
 
   return (
     <MainLayout>
@@ -55,11 +59,20 @@ export default function HomePage() {
               for.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button size="lg" className="text-base">
-                <Sparkles className="mr-2 h-5 w-5" />
-                Post Your Auction
+              <Button
+                size="lg"
+                className="text-base"
+                onClick={() => setIsDisclaimerOpen(true)}
+              >
+                <ShieldAlert className="mr-2 h-5 w-5" />
+                Important Notice
               </Button>
-              <Button size="lg" variant="outline" className="text-base">
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-base"
+                onClick={() => navigate("/products")}
+              >
                 Browse Categories
                 <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
@@ -292,6 +305,12 @@ export default function HomePage() {
           )}
         </section>
       </main>
+
+      {/* Disclaimer Modal */}
+      <DisclaimerModal
+        open={isDisclaimerOpen}
+        onOpenChange={setIsDisclaimerOpen}
+      />
     </MainLayout>
   );
 }

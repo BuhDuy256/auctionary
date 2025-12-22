@@ -24,6 +24,7 @@ import SellerDashboardPage from "../pages/Seller/SellerDashboardPage";
 import CreateAuctionPage from "../pages/Seller/CreateAuctionPage";
 import TransactionRoomPage from "../pages/Product/TransactionRoomPage";
 import AdminDashboardPage from "../pages/Admin/AdminDashboardPage";
+import MemberIntroductionPage from "../pages/Dev/MemberIntroductionPage";
 
 const AppRouter = () => {
   return (
@@ -40,6 +41,7 @@ const AppRouter = () => {
       {/* TUYẾN ĐƯỜNG CÔNG KHAI (DEV) */}
       {/* ============================================== */}
       <Route path="/dev/ui-kit" element={<UIKitPage />} />
+      <Route path="/dev/members" element={<MemberIntroductionPage />} />
       <Route path="/products" element={<ProductListPage />} />
       {/* Support both /product/:id and /product/:slug-id formats */}
       <Route path="/products/:id" element={<ProductDetailPage />} />

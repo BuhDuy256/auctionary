@@ -107,11 +107,11 @@ export function FeedbackModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl bg-card border-amber/30">
+      <DialogContent className="sm:max-w-2xl bg-card border-accent/30">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-lg bg-amber/10 border border-amber/30">
-              <Star className="h-5 w-5 text-amber" />
+            <div className="p-2 rounded-lg bg-accent/10 border border-accent/30">
+              <Star className="h-5 w-5 text-accent" />
             </div>
             <DialogTitle className="text-2xl">Rate Your Experience</DialogTitle>
           </div>
@@ -126,7 +126,7 @@ export function FeedbackModal({
           <div className="p-4 rounded-lg bg-secondary/50 border border-border">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 border-2 border-amber/30">
+                <Avatar className="h-12 w-12 border-2 border-accent/30">
                   <AvatarImage src="https://api.dicebear.com/7.x/avataaars/svg?seed=Seller" />
                   <AvatarFallback>{partnerName.charAt(0)}</AvatarFallback>
                 </Avatar>
@@ -138,7 +138,7 @@ export function FeedbackModal({
                     <span className="text-sm">{partnerName}</span>
                     <Badge
                       variant="outline"
-                      className="border-amber/50 text-amber text-xs"
+                      className="border-accent/50 text-accent text-xs"
                     >
                       Verified
                     </Badge>
@@ -260,7 +260,7 @@ export function FeedbackModal({
           {/* Written Review */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-amber" />
+              <MessageSquare className="h-4 w-4 text-accent" />
               <div className="text-sm">Write a review (Optional)</div>
             </div>
             <Textarea
