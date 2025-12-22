@@ -6,6 +6,7 @@ import {
   appendProductQuestionSchema,
   appendProductAnswerSchema,
   updateProductConfigSchema,
+  rejectBidderSchema,
 } from "../dtos/requests/product.schema";
 import { placeBidSchema } from "../dtos/requests/place-bid.schema";
 import { authorize } from "../middlewares/authorize.middleware";
@@ -78,6 +79,14 @@ router.patch(
   authorize("products.update"),
   validate(updateProductConfigSchema, "body"),
   productController.updateProductConfig
+);
+
+router.post(
+  "/:id/reject-bidder",
+  requireAuth,
+  authorize("auctions.reject-bidder"),
+  validate(rejectBidderSchema, "body"),
+  productController.rejectBidder
 );
 
 export default router;

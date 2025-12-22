@@ -248,3 +248,34 @@ export const updateProductConfig = async (
     next(error);
   }
 };
+
+export const rejectBidder = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const sellerId = Number((req as any).user?.id);
+    const productId = Number(req.params.id);
+    const { bidderId, reason } = req.body;
+
+    if (!bidderId) {
+      throw new Error("Bidder ID is required");
+    }
+
+    const result = await bidService.rejectBidder(
+      sellerId,
+      productId,
+      bidderId,
+      reason
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Bidder has been rejected and auction recalculated.",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

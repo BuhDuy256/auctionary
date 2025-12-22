@@ -53,5 +53,48 @@ export const getHighestBid = async (
     .where({ product_id: productId })
     .orderBy("amount", "desc")
     .orderBy("created_at", "asc")
-  .first();
+    .first();
+};
+
+export const addRejection = async (
+  productId: number,
+  bidderId: number,
+  reason: string,
+  trx?: Knex.Transaction
+) => {
+  const query = db("product_rejections").insert({
+    product_id: productId,
+    bidder_id: bidderId,
+    reason: reason || "Seller rejected bid",
+    created_at: new Date(), // db.sql của bạn có cột này
+  });
+
+  if (trx) query.transacting(trx);
+  await query;
+};
+
+export const deleteUserAutoBids = async (
+  productId: number,
+  bidderId: number,
+  trx?: Knex.Transaction
+) => {
+  const query = db("auto_bids")
+    .where({ product_id: productId, bidder_id: bidderId })
+    .del();
+
+  if (trx) query.transacting(trx);
+  await query;
+};
+
+export const deleteUserBids = async (
+  productId: number,
+  bidderId: number,
+  trx?: Knex.Transaction
+) => {
+  const query = db("bids")
+    .where({ product_id: productId, bidder_id: bidderId })
+    .del();
+
+  if (trx) query.transacting(trx);
+  await query;
 };

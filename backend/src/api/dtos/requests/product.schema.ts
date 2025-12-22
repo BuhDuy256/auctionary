@@ -70,6 +70,11 @@ export const updateProductConfigSchema = z.object({
   allowNewBidder: z.boolean().default(true),
 });
 
+export const rejectBidderSchema = z.object({
+  bidderId: z.number().int().positive(),
+  reason: z.string().min(1),
+});
+
 export type ProductsSearchQuery = z.infer<typeof searchProductsSchema>;
 export type SortOption = z.infer<typeof sortOptionSchema>;
 export type CreateProduct = z.infer<typeof createProductSchema>;
@@ -79,3 +84,4 @@ export type AppendProductDescription = z.infer<
 export type AppendProductQuestion = z.infer<typeof appendProductQuestionSchema>;
 export type AppendProductAnswer = z.infer<typeof appendProductAnswerSchema>;
 export type UpdateProductConfig = z.infer<typeof updateProductConfigSchema>;
+export type RejectBidder = z.infer<typeof rejectBidderSchema>;

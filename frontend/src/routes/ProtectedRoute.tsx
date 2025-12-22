@@ -13,7 +13,7 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   if (isLoading) return <div>Loading...</div>;
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   if (user?.status === "pending_verification") {

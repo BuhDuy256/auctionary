@@ -396,3 +396,7 @@ export const updateProductConfig = async (
 ) => {
   await productRepository.updateProductConfig(productId, body);
 };
+
+export function rejectBidder(sellerId: any, productId: number, bidderId: any, reason: any) {
+    throw new Error("Function not implemented.");
+}
