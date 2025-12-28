@@ -31,7 +31,12 @@ const PORT: number = envConfig.PORT;
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "https://auctionary.io.vn",
+      "https://www.auctionary.io.vn",
+      //   "https://auctionary.vercel.app",
+    ],
     credentials: true,
   })
 );
