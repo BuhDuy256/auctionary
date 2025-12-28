@@ -55,6 +55,11 @@ app.use("/home", homeRouter);
 app.use("/transactions", transactionRouter);
 app.use("/mail", mailRouter);
 
+// Health Check
+app.get("/healthz", (_req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
+
 // Error Handling
 app.use(notFoundHandler);
 app.use(errorHandler);
