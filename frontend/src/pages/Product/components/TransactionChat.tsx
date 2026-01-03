@@ -33,6 +33,7 @@ interface TransactionChatProps {
   footerText: string;
   isCancelled?: boolean;
   isLoading?: boolean;
+  currentUserRole: "buyer" | "seller"; // Role of the currently logged-in user
 }
 
 const MAX_MESSAGE_LENGTH = 300;
@@ -43,6 +44,7 @@ export function TransactionChat({
   footerText,
   isCancelled = false,
   isLoading = false,
+  currentUserRole,
 }: TransactionChatProps) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +106,8 @@ export function TransactionChat({
                 </div>
               ) : (
                 messages.map((msg, index) => {
-                  const isBuyer = msg.sender === "buyer";
+                  // Check if this message was sent by the current user
+                  const isCurrentUser = msg.sender === currentUserRole;
                   const isSystem = msg.sender === "system";
 
                   const prevMsg = messages[index - 1];
@@ -125,7 +128,7 @@ export function TransactionChat({
 
                   let borderRadiusClass = "rounded-2xl";
                   if (!isSystem) {
-                    if (isBuyer) {
+                    if (isCurrentUser) {
                       if (isMiddleInGroup) borderRadiusClass += " rounded-r-sm";
                       else if (isFirstInGroup && !isLastInGroup)
                         borderRadiusClass += " rounded-br-sm";
@@ -146,7 +149,7 @@ export function TransactionChat({
                     <div
                       key={msg.id}
                       className={`flex gap-2 items-end ${
-                        isBuyer ? "flex-row-reverse" : ""
+                        isCurrentUser ? "flex-row-reverse" : ""
                       } ${
                         isSystem ? "justify-center mt-4 mb-4" : marginTopClass
                       }`}
@@ -174,12 +177,12 @@ export function TransactionChat({
                       <div
                         className={`flex flex-col max-w-[75%] ${
                           isSystem ? "max-w-full" : ""
-                        } ${isBuyer ? "items-end" : "items-start"}`}
+                        } ${isCurrentUser ? "items-end" : "items-start"}`}
                       >
                         {!isSystem && showHeader && (
                           <div
                             className={`text-xs text-muted-foreground mb-1 ml-1 ${
-                              isBuyer ? "text-right mr-1" : ""
+                              isCurrentUser ? "text-right mr-1" : ""
                             }`}
                           >
                             {msg.name}
@@ -190,7 +193,7 @@ export function TransactionChat({
                           <TooltipTrigger asChild>
                             <div
                               className={`px-4 py-2 text-sm shadow-sm transition-all ${borderRadiusClass} ${
-                                isBuyer
+                                isCurrentUser
                                   ? "bg-primary text-primary-foreground"
                                   : isSystem
                                   ? "bg-muted/50 text-muted-foreground text-center text-xs rounded-full px-3 py-1 shadow-none"

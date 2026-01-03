@@ -12,6 +12,7 @@ import { Button } from "../../../components/ui/button";
 import { CheckCircle2, Clock, Package, XCircle } from "lucide-react";
 import { useMyWonAuctions } from "../../../hooks/useMyWonAuctions";
 import { useNavigate } from "react-router-dom";
+import { ImageWithFallback } from "../../../components/ImageWithFallback";
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -80,7 +81,16 @@ export const WonAuctionsTab = () => {
               {wonAuctions.map((auction) => (
                 <TableRow key={auction.id}>
                   <TableCell>
-                    <div className="text-sm">{auction.product_name}</div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-secondary flex-shrink-0">
+                        <ImageWithFallback
+                          src={auction.thumbnail_url || ""}
+                          alt={auction.product_name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="text-sm">{auction.product_name}</div>
+                    </div>
                   </TableCell>
                   <TableCell className="text-right">
                     <span className="text-accent">

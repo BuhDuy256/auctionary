@@ -811,6 +811,7 @@ export default function TransactionRoomPage() {
                 footerText={getChatFooterText(transaction.status)}
                 isCancelled={transaction.status === "cancelled"}
                 isLoading={isUpdating}
+                currentUserRole={isSeller ? "seller" : "buyer"}
               />
             </div>
           </div>
