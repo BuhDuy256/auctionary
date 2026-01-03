@@ -6,7 +6,8 @@ import {
   TransactionPaymentProofUploadSchema,
   TransactionShippingProofUploadSchema,
   TransactionDeliveryConfirmSchema,
-  TransactionReviewSubmitSchema
+  TransactionReviewSubmitSchema,
+  SendTransactionMessageSchema,
 } from "../dtos/requests/transaction.schema";
 
 import * as TransactionController from "../controllers/transaction.controller";
@@ -57,6 +58,18 @@ router.post(
   verifyTransactionOwnership,
   validate(TransactionReviewSubmitSchema, "body"),
   TransactionController.submitReview
+);
+
+/**
+ * Send a message in transaction chat
+ * POST /transactions/:id/messages
+ */
+router.post(
+  "/:id/messages",
+  requireAuth,
+  verifyTransactionOwnership,
+  validate(SendTransactionMessageSchema, "body"),
+  TransactionController.sendMessage
 );
 
 export default router;

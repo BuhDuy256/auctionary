@@ -6,23 +6,22 @@ export const TransactionPaymentProofUploadSchema = z.object({
     .min(1, "Full name is required")
     .max(255, "Full name is too long"),
 
-  shippingAddress: z
-    .string()
-    .min(1, "Address is required"),
+  shippingAddress: z.string().min(1, "Address is required"),
 
-  shippingCity: z
-    .string()
-    .min(1, "City is required"),
+  shippingCity: z.string().min(1, "City is required"),
 
   shippingPhoneNumber: z
     .string()
     .regex(/^(0|\+84)(\d{9,10})$/, "Invalid Vietnamese phone number"),
 
-  paymentProof: z.any()
+  paymentProof: z
+    .any()
     .refine((file) => file !== null, "Payment proof file is required"),
 });
 
-export type TransactionPaymentProofUploadRequest = z.infer<typeof TransactionPaymentProofUploadSchema>;
+export type TransactionPaymentProofUploadRequest = z.infer<
+  typeof TransactionPaymentProofUploadSchema
+>;
 
 export const TransactionShippingProofUploadSchema = z.object({
   paymentConfirmed: z
@@ -30,17 +29,22 @@ export const TransactionShippingProofUploadSchema = z.object({
     .transform((val) => val === "true" || val === "1")
     .refine((val) => val === true, "Payment confirmation is required"),
 
-  shippingProof: z.any()
+  shippingProof: z
+    .any()
     .refine((file) => file !== null, "Shipping proof file is required"),
 });
 
-export type TransactionShippingProofUploadRequest = z.infer<typeof TransactionShippingProofUploadSchema>;
+export type TransactionShippingProofUploadRequest = z.infer<
+  typeof TransactionShippingProofUploadSchema
+>;
 
 export const TransactionDeliveryConfirmSchema = z.object({
   received: z.boolean(),
 });
 
-export type TransactionDeliveryConfirmRequest = z.infer<typeof TransactionDeliveryConfirmSchema>;
+export type TransactionDeliveryConfirmRequest = z.infer<
+  typeof TransactionDeliveryConfirmSchema
+>;
 
 export const TransactionReviewSubmitSchema = z.object({
   rating: z.number().refine((val) => val === 1 || val === -1, {
@@ -49,4 +53,21 @@ export const TransactionReviewSubmitSchema = z.object({
   comment: z.string().max(500).optional(),
 });
 
-export type TransactionReviewSubmitRequest = z.infer<typeof TransactionReviewSubmitSchema>;
+export type TransactionReviewSubmitRequest = z.infer<
+  typeof TransactionReviewSubmitSchema
+>;
+
+/**
+ * Schema for sending a message in a transaction chat
+ * Character limit: 300 (to prevent spam and maintain readability)
+ */
+export const SendTransactionMessageSchema = z.object({
+  content: z
+    .string()
+    .min(1, "Message cannot be empty")
+    .max(300, "Message cannot exceed 300 characters"),
+});
+
+export type SendTransactionMessageRequest = z.infer<
+  typeof SendTransactionMessageSchema
+>;

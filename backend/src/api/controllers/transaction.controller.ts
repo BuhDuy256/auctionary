@@ -1,11 +1,12 @@
-import * as TransactionService from '../../services/transaction.service';
-import { Request, Response, NextFunction } from 'express';
+import * as TransactionService from "../../services/transaction.service";
+import { Request, Response, NextFunction } from "express";
 import {
   TransactionPaymentProofUploadRequest,
   TransactionShippingProofUploadRequest,
   TransactionDeliveryConfirmRequest,
-  TransactionReviewSubmitRequest
-} from '../dtos/requests/transaction.schema';
+  TransactionReviewSubmitRequest,
+  SendTransactionMessageRequest,
+} from "../dtos/requests/transaction.schema";
 
 interface AuthenticatedRequest extends Request {
   user?: {
@@ -15,23 +16,33 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-export const getTransactionDetail = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+export const getTransactionDetail = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const transactionId = Number(request.params.id);
-    const transaction = await TransactionService.getTransactionDetail(transactionId);
+    const transaction = await TransactionService.getTransactionDetail(
+      transactionId
+    );
     response.status(200).json(transaction);
   } catch (error) {
     next(error);
   }
-}
+};
 
-export const uploadPaymentProof = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+export const uploadPaymentProof = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const transactionId = Number(request.params.id);
     const file = request.file;
 
     if (!file) {
-      return next(new Error('Payment proof file is required'));
+      return next(new Error("Payment proof file is required"));
     }
 
     // Cast request body to DTO type
@@ -39,24 +50,26 @@ export const uploadPaymentProof = async (request: Request, response: Response, n
 
     await TransactionService.uploadPaymentProof(transactionId, data, file);
 
-    response
-      .status(200)
-      .json({
-        success: true,
-        message: 'Payment proof uploaded successfully',
-      });
+    response.status(200).json({
+      success: true,
+      message: "Payment proof uploaded successfully",
+    });
   } catch (error) {
     next(error);
   }
 };
 
-export const uploadShippingProof = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+export const uploadShippingProof = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const transactionId = Number(request.params.id);
     const file = request.file;
 
     if (!file) {
-      return next(new Error('Shipping proof file is required'));
+      return next(new Error("Shipping proof file is required"));
     }
 
     // Cast request body to DTO type
@@ -64,54 +77,92 @@ export const uploadShippingProof = async (request: Request, response: Response, 
 
     await TransactionService.uploadShippingProof(transactionId, data, file);
 
-    response
-      .status(200)
-      .json({
-        success: true,
-        message: 'Shipping proof uploaded successfully',
-      });
+    response.status(200).json({
+      success: true,
+      message: "Shipping proof uploaded successfully",
+    });
   } catch (error) {
     next(error);
   }
 };
 
-export const confirmDelivery = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+export const confirmDelivery = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const transactionId = Number(request.params.id);
     const data = request.body as TransactionDeliveryConfirmRequest;
 
     await TransactionService.confirmDelivery(transactionId, data);
 
-    response
-      .status(200)
-      .json({
-        success: true,
-        message: 'Delivery confirmed successfully',
-      });
+    response.status(200).json({
+      success: true,
+      message: "Delivery confirmed successfully",
+    });
   } catch (error) {
     next(error);
   }
 };
 
-export const submitReview = async (request: Request, response: Response, next: NextFunction): Promise<void> => {
+export const submitReview = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
     const transactionId = Number(request.params.id);
     const userId = (request as AuthenticatedRequest).user?.id;
 
     if (!userId) {
-      return next(new Error('User not authenticated'));
+      return next(new Error("User not authenticated"));
     }
 
     const data = request.body as TransactionReviewSubmitRequest;
 
     await TransactionService.submitReview(transactionId, userId, data);
 
-    response
-      .status(200)
-      .json({
-        success: true,
-        message: 'Review submitted successfully',
-      });
+    response.status(200).json({
+      success: true,
+      message: "Review submitted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Send a message in transaction chat
+ * POST /transactions/:id/messages
+ */
+export const sendMessage = async (
+  request: Request,
+  response: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const transactionId = Number(request.params.id);
+    const userId = (request as AuthenticatedRequest).user?.id;
+
+    if (!userId) {
+      return next(new Error("User not authenticated"));
+    }
+
+    // Cast request body to DTO type
+    const data = request.body as SendTransactionMessageRequest;
+
+    const message = await TransactionService.sendTransactionMessage(
+      transactionId,
+      userId,
+      data
+    );
+
+    response.status(201).json({
+      success: true,
+      data: message,
+      message: "Message sent successfully",
+    });
   } catch (error) {
     next(error);
   }

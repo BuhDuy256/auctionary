@@ -1,5 +1,8 @@
 import apiClient from "./apiClient";
-import type { TransactionDetailResponse } from "../types/transaction";
+import type {
+  TransactionDetailResponse,
+  TransactionMessage,
+} from "../types/transaction";
 import type {
   PaymentSubmitData,
   ShippingSubmitData,
@@ -71,6 +74,24 @@ export const submitReview = async (
   const response = await apiClient.post<TransactionDetailResponse>(
     `/transactions/${transactionId}/review`,
     data,
+    true
+  );
+  return response;
+};
+
+/**
+ * Send a message in transaction chat
+ * @param transactionId - Transaction ID
+ * @param content - Message content (max 300 characters, validated by backend)
+ * @returns Promise<TransactionMessage> - Created message with senderRole
+ */
+export const sendTransactionMessage = async (
+  transactionId: number,
+  content: string
+): Promise<TransactionMessage> => {
+  const response = await apiClient.post<TransactionMessage>(
+    `/transactions/${transactionId}/messages`,
+    { content },
     true
   );
   return response;

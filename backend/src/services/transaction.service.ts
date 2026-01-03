@@ -1,56 +1,78 @@
-import * as TransactionRepository from '../repositories/transaction.repository';
-import * as UserRepository from '../repositories/user.repository';
-import * as storageService from './storage.service';
-import { ForbiddenError, NotFoundError } from '../errors';
-import { TransactionDetailResponse, TransactionMessage } from '../api/dtos/responses/transaction.type';
-import { mapTransactionDetailToResponse } from '../mappers/transaction.mapper';
+import * as TransactionRepository from "../repositories/transaction.repository";
+import * as UserRepository from "../repositories/user.repository";
+import * as storageService from "./storage.service";
+import { ForbiddenError, NotFoundError } from "../errors";
+import {
+  TransactionDetailResponse,
+  TransactionMessageResponse,
+} from "../api/dtos/responses/transaction.type";
+import {
+  mapTransactionDetailToResponse,
+  mapTransactionMessageToResponse,
+} from "../mappers/transaction.mapper";
 import {
   TransactionPaymentProofUploadRequest,
   TransactionShippingProofUploadRequest,
   TransactionDeliveryConfirmRequest,
-  TransactionReviewSubmitRequest
-} from '../api/dtos/requests/transaction.schema';
+  TransactionReviewSubmitRequest,
+  SendTransactionMessageRequest,
+} from "../api/dtos/requests/transaction.schema";
 
-export const verifyUserOwnership = async (userId: number, transactionId: number): Promise<void> => {
-  const transaction = await TransactionRepository.findTransactionById(transactionId);
+export const verifyUserOwnership = async (
+  userId: number,
+  transactionId: number
+): Promise<void> => {
+  const transaction = await TransactionRepository.findTransactionById(
+    transactionId
+  );
 
   if (!transaction) {
-    throw new NotFoundError('Transaction not found');
+    throw new NotFoundError("Transaction not found");
   }
 
   if (transaction.buyer_id !== userId && transaction.seller_id !== userId) {
-    throw new ForbiddenError('User does not own this transaction');
+    throw new ForbiddenError("User does not own this transaction");
   }
-}
+};
 
-export const getTransactionDetail = async (transactionId: number): Promise<TransactionDetailResponse> => {
-  const transactionRaw = await TransactionRepository.findTransactionDetailById(transactionId);
+export const getTransactionDetail = async (
+  transactionId: number
+): Promise<TransactionDetailResponse> => {
+  const transactionRaw = await TransactionRepository.findTransactionDetailById(
+    transactionId
+  );
 
   if (!transactionRaw) {
-    throw new NotFoundError('Transaction not found');
+    throw new NotFoundError("Transaction not found");
   }
 
-  const messagesRaw = await TransactionRepository.findTransactionMessages(transactionId);
+  const messagesRaw = await TransactionRepository.findTransactionMessages(
+    transactionId
+  );
 
-  const messages: TransactionMessage[] = messagesRaw.map(msg => ({
-    id: msg.id,
-    senderId: msg.sender_id,
-    content: msg.content,
-    createdAt: msg.created_at,
-  }));
+  // Use mapper to derive senderRole for each message
+  const messages = messagesRaw.map((msg) =>
+    mapTransactionMessageToResponse(
+      msg,
+      transactionRaw.buyer_id,
+      transactionRaw.seller_id
+    )
+  );
 
   return mapTransactionDetailToResponse(transactionRaw, messages);
-}
+};
 
 export const uploadPaymentProof = async (
   transactionId: number,
   data: TransactionPaymentProofUploadRequest,
   file: Express.Multer.File
 ): Promise<void> => {
-  const transaction = await TransactionRepository.findTransactionById(transactionId);
+  const transaction = await TransactionRepository.findTransactionById(
+    transactionId
+  );
 
   if (!transaction) {
-    throw new NotFoundError('Transaction not found');
+    throw new NotFoundError("Transaction not found");
   }
 
   const timestamp = Date.now();
@@ -86,10 +108,12 @@ export const uploadShippingProof = async (
   file: Express.Multer.File
 ): Promise<void> => {
   // Verify transaction exists
-  const transaction = await TransactionRepository.findTransactionById(transactionId);
+  const transaction = await TransactionRepository.findTransactionById(
+    transactionId
+  );
 
   if (!transaction) {
-    throw new NotFoundError('Transaction not found');
+    throw new NotFoundError("Transaction not found");
   }
 
   // Upload file to Supabase
@@ -122,10 +146,12 @@ export const confirmDelivery = async (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _data: TransactionDeliveryConfirmRequest
 ): Promise<void> => {
-  const transaction = await TransactionRepository.findTransactionById(transactionId);
+  const transaction = await TransactionRepository.findTransactionById(
+    transactionId
+  );
 
   if (!transaction) {
-    throw new NotFoundError('Transaction not found');
+    throw new NotFoundError("Transaction not found");
   }
 
   await TransactionRepository.updateTransactionDeliveryConfirmed(transactionId);
@@ -144,10 +170,12 @@ export const submitReview = async (
   data: TransactionReviewSubmitRequest
 ): Promise<void> => {
   // Verify transaction exists and get details
-  const transaction = await TransactionRepository.findTransactionById(transactionId);
+  const transaction = await TransactionRepository.findTransactionById(
+    transactionId
+  );
 
   if (!transaction) {
-    throw new NotFoundError('Transaction not found');
+    throw new NotFoundError("Transaction not found");
   }
 
   // Verify user is part of this transaction
@@ -155,7 +183,7 @@ export const submitReview = async (
   const isBuyer = transaction.buyer_id === userId;
 
   if (!isSeller && !isBuyer) {
-    throw new ForbiddenError('User does not own this transaction');
+    throw new ForbiddenError("User does not own this transaction");
   }
 
   // Update transaction with review
@@ -173,4 +201,48 @@ export const submitReview = async (
   if (revieweeId) {
     await UserRepository.updateUserReviewScore(revieweeId, data.rating === 1);
   }
+};
+
+/**
+ * Send a message in transaction chat
+ * @param transactionId - Transaction ID
+ * @param userId - Current user ID (sender)
+ * @param data - Message content (validated by Zod - max 300 characters)
+ * @returns Promise<TransactionMessageResponse> - Created message with senderRole
+ */
+export const sendTransactionMessage = async (
+  transactionId: number,
+  userId: number | string,
+  data: SendTransactionMessageRequest
+): Promise<TransactionMessageResponse> => {
+  // Verify transaction exists and user has access
+  const transaction = await TransactionRepository.findTransactionById(
+    transactionId
+  );
+
+  if (!transaction) {
+    throw new NotFoundError("Transaction not found");
+  }
+
+  // Verify user is part of this transaction
+  const isSeller = transaction.seller_id === userId;
+  const isBuyer = transaction.buyer_id === userId;
+
+  if (!isSeller && !isBuyer) {
+    throw new ForbiddenError("User does not own this transaction");
+  }
+
+  // Create message in database
+  const messageRaw = await TransactionRepository.createTransactionMessage(
+    transactionId,
+    Number(userId),
+    data.content
+  );
+
+  // Use mapper to transform and derive senderRole
+  return mapTransactionMessageToResponse(
+    messageRaw,
+    transaction.buyer_id!,
+    transaction.seller_id
+  );
 };

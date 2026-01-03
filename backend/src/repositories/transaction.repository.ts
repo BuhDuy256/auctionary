@@ -71,7 +71,7 @@ export const findTransactionById = async (
     .first();
 
   return transaction || null;
-}
+};
 
 /**
  * Get full transaction details with all related information
@@ -138,7 +138,7 @@ export const findTransactionDetailById = async (
     .first();
 
   return transaction || null;
-}
+};
 
 export const findTransactionByProductId = async (
   productId: number
@@ -170,18 +170,50 @@ export const findTransactionsByProductIds = async (
  */
 export const findTransactionMessages = async (
   transactionId: number
-): Promise<Array<{
-  id: number;
-  sender_id: number;
-  content: string;
-  created_at: string;
-}>> => {
+): Promise<
+  Array<{
+    id: number;
+    sender_id: number;
+    content: string;
+    created_at: string;
+  }>
+> => {
   const messages = await db("transaction_messages")
     .where({ transaction_id: transactionId })
     .select("id", "sender_id", "content", "created_at")
     .orderBy("created_at", "asc");
 
   return messages;
+};
+
+/**
+ * Create a new transaction message
+ * @param transactionId - Transaction ID
+ * @param senderId - User ID who is sending the message
+ * @param content - Message content
+ * @returns Newly created message raw data (snake_case)
+ */
+export const createTransactionMessage = async (
+  transactionId: number,
+  senderId: number,
+  content: string
+): Promise<{
+  id: number;
+  transaction_id: number;
+  sender_id: number;
+  content: string;
+  created_at: string;
+}> => {
+  const [message] = await db("transaction_messages")
+    .insert({
+      transaction_id: transactionId,
+      sender_id: senderId,
+      content,
+      created_at: db.fn.now(),
+    })
+    .returning(["id", "transaction_id", "sender_id", "content", "created_at"]);
+
+  return message;
 };
 
 export const updateTransactionPayment = async (
@@ -195,18 +227,16 @@ export const updateTransactionPayment = async (
     payment_proof_uploaded_at: Date;
   }
 ): Promise<void> => {
-  await db("transactions")
-    .where({ id: transactionId })
-    .update({
-      payment_proof_url: data.payment_proof_url,
-      shipping_full_name: data.shipping_full_name,
-      shipping_address: data.shipping_address,
-      shipping_city: data.shipping_city,
-      shipping_phone_number: data.shipping_phone_number,
-      payment_proof_uploaded_at: data.payment_proof_uploaded_at,
-      status: "shipping_pending", // Chuyển status sang shipping_pending khi buyer upload payment proof
-      updated_at: db.fn.now(),
-    });
+  await db("transactions").where({ id: transactionId }).update({
+    payment_proof_url: data.payment_proof_url,
+    shipping_full_name: data.shipping_full_name,
+    shipping_address: data.shipping_address,
+    shipping_city: data.shipping_city,
+    shipping_phone_number: data.shipping_phone_number,
+    payment_proof_uploaded_at: data.payment_proof_uploaded_at,
+    status: "shipping_pending", // Chuyển status sang shipping_pending khi buyer upload payment proof
+    updated_at: db.fn.now(),
+  });
 };
 
 /**
@@ -222,16 +252,14 @@ export const updateTransactionShipping = async (
     shipping_proof_uploaded_at: Date;
   }
 ): Promise<void> => {
-  await db("transactions")
-    .where({ id: transactionId })
-    .update({
-      shipping_proof_url: data.shipping_proof_url,
-      payment_confirmed_at: data.payment_confirmed_at,
-      shipping_proof_uploaded_at: data.shipping_proof_uploaded_at,
-      shipped_confirmed_at: data.payment_confirmed_at, // Same time as payment confirmation
-      status: "delivered", // Chuyển status sang delivered khi seller upload shipping proof
-      updated_at: db.fn.now(),
-    });
+  await db("transactions").where({ id: transactionId }).update({
+    shipping_proof_url: data.shipping_proof_url,
+    payment_confirmed_at: data.payment_confirmed_at,
+    shipping_proof_uploaded_at: data.shipping_proof_uploaded_at,
+    shipped_confirmed_at: data.payment_confirmed_at, // Same time as payment confirmation
+    status: "delivered", // Chuyển status sang delivered khi seller upload shipping proof
+    updated_at: db.fn.now(),
+  });
 };
 
 /**
@@ -242,14 +270,12 @@ export const updateTransactionDeliveryConfirmed = async (
   transactionId: number
 ): Promise<void> => {
   const now = new Date();
-  await db("transactions")
-    .where({ id: transactionId })
-    .update({
-      buyer_received_at: now,
-      delivered_at: now,
-      status: "completed",
-      updated_at: db.fn.now(),
-    });
+  await db("transactions").where({ id: transactionId }).update({
+    buyer_received_at: now,
+    delivered_at: now,
+    status: "completed",
+    updated_at: db.fn.now(),
+  });
 };
 
 /**
@@ -268,17 +294,15 @@ export const updateTransactionReview = async (
 ): Promise<void> => {
   const updateData = isSeller
     ? {
-      seller_rating: data.rating,
-      seller_comment: data.comment || null,
-      updated_at: db.fn.now(),
-    }
+        seller_rating: data.rating,
+        seller_comment: data.comment || null,
+        updated_at: db.fn.now(),
+      }
     : {
-      buyer_rating: data.rating,
-      buyer_comment: data.comment || null,
-      updated_at: db.fn.now(),
-    };
+        buyer_rating: data.rating,
+        buyer_comment: data.comment || null,
+        updated_at: db.fn.now(),
+      };
 
-  await db("transactions")
-    .where({ id: transactionId })
-    .update(updateData);
+  await db("transactions").where({ id: transactionId }).update(updateData);
 };

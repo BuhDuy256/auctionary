@@ -1,16 +1,19 @@
+export type SenderRole = "buyer" | "seller" | "system";
+
 export interface TransactionMessage {
   id: number;
   senderId: number;
+  senderRole: SenderRole; // Backend derives this: buyer/seller/system (senderId = 1 = system/admin)
   content: string;
   createdAt: string; // ISO Date String
 }
 
 export type TransactionStatus =
-  | 'payment_pending' // Chờ người mua upload bằng chứng thanh toán + địa chỉ giao hàng
-  | 'shipping_pending' // Chờ người bán xác nhận thanh toán và upload bằng chứng vận chuyển
-  | 'delivered' // Đã giao hàng, chờ người mua xác nhận đã nhận được hàng
-  | 'completed' // Giao dịch hoàn tất
-  | 'cancelled';
+  | "payment_pending" // Chờ người mua upload bằng chứng thanh toán + địa chỉ giao hàng
+  | "shipping_pending" // Chờ người bán xác nhận thanh toán và upload bằng chứng vận chuyển
+  | "delivered" // Đã giao hàng, chờ người mua xác nhận đã nhận được hàng
+  | "completed" // Giao dịch hoàn tất
+  | "cancelled";
 
 export interface UserSnippet {
   id: number;

@@ -39,6 +39,7 @@ import type {
   ShippingSubmitData,
 } from "../../types/transactionActions";
 import { notify } from "../../utils/notify";
+import { sendTransactionMessage } from "../../services/transactionService";
 
 type StepState = "completed" | "active-actor" | "active-observer" | "locked";
 
@@ -175,29 +176,27 @@ const getProgressPercentage = (status: TransactionStatus): number => {
   }
 };
 
+/**
+ * Map transaction messages from API response to ChatMessage format
+ * Backend now provides senderRole, so no need to derive it
+ */
 const mapTransactionMessagesToChat = (
   messages: TransactionDetailResponse["messages"],
-  buyerId: number,
-  sellerId: number,
   buyerName: string,
   sellerName: string
 ): ChatMessage[] => {
   return messages.map((msg) => {
-    let sender: "buyer" | "seller" | "system";
-    let name: string | undefined;
-    let avatar: string | undefined;
+    // Backend provides senderRole - use it directly!
+    const sender = msg.senderRole;
 
-    if (msg.senderId === buyerId) {
-      sender = "buyer";
+    // Determine name based on senderRole
+    let name: string | undefined;
+    if (sender === "buyer") {
       name = buyerName;
-      avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${buyerId}`;
-    } else if (msg.senderId === sellerId) {
-      sender = "seller";
+    } else if (sender === "seller") {
       name = sellerName;
-      avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${sellerId}`;
-    } else {
-      sender = "system";
     }
+    // System messages don't need a name
 
     return {
       id: msg.id,
@@ -205,7 +204,6 @@ const mapTransactionMessagesToChat = (
       name,
       message: msg.content,
       timestamp: formatTime(msg.createdAt),
-      avatar,
     };
   });
 };
@@ -447,8 +445,6 @@ export default function TransactionRoomPage() {
 
   const chatMessages = mapTransactionMessagesToChat(
     transaction.messages,
-    transaction.buyer.id,
-    transaction.seller.id,
     transaction.buyer.fullName,
     transaction.seller.fullName
   );
@@ -571,8 +567,19 @@ export default function TransactionRoomPage() {
     });
   };
 
-  const handleSendMessage = (message: string) => {
-    console.log("Send message:", message);
+  const handleSendMessage = async (message: string): Promise<void> => {
+    if (!transaction) return;
+
+    try {
+      // Call API to send message
+      await sendTransactionMessage(transaction.id, message);
+
+      // Refetch transaction to get updated messages
+      await refetch();
+    } catch (error) {
+      // Error is handled by TransactionChat component
+      throw error;
+    }
   };
 
   return (
@@ -802,6 +809,8 @@ export default function TransactionRoomPage() {
                 messages={chatMessages}
                 onSendMessage={handleSendMessage}
                 footerText={getChatFooterText(transaction.status)}
+                isCancelled={transaction.status === "cancelled"}
+                isLoading={isUpdating}
               />
             </div>
           </div>

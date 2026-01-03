@@ -1,5 +1,8 @@
 import { TransactionDetailRaw } from "../repositories/transaction.repository";
-import { TransactionDetailResponse, TransactionMessage } from "../api/dtos/responses/transaction.type";
+import {
+  TransactionDetailResponse,
+  TransactionMessage,
+} from "../api/dtos/responses/transaction.type";
 
 /**
  * Map raw transaction data from DB (snake_case) to API response format (camelCase)
@@ -13,7 +16,7 @@ export const mapTransactionDetailToResponse = (
 ): TransactionDetailResponse => {
   return {
     id: raw.id,
-    status: raw.status as TransactionDetailResponse['status'],
+    status: raw.status as TransactionDetailResponse["status"],
     finalPrice: Number(raw.final_price),
 
     product: {
@@ -71,5 +74,47 @@ export const mapTransactionDetailToResponse = (
     cancelledAt: raw.cancelled_at,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at,
+  };
+};
+
+/**
+ * Map raw transaction message to API response format
+ * Derives senderRole by comparing senderId with buyer/seller IDs
+ * @param raw - Raw message data from database
+ * @param buyerId - Buyer's user ID
+ * @param sellerId - Seller's user ID
+ * @returns TransactionMessage with senderRole
+ */
+export const mapTransactionMessageToResponse = (
+  raw: {
+    id: number;
+    sender_id: number;
+    content: string;
+    created_at: string;
+  },
+  buyerId: number,
+  sellerId: number
+): TransactionMessage => {
+  // Derive senderRole
+  let senderRole: TransactionMessage["senderRole"];
+
+  if (raw.sender_id === 1) {
+    // senderId = 1 represents system/admin messages
+    senderRole = "system";
+  } else if (raw.sender_id === buyerId) {
+    senderRole = "buyer";
+  } else if (raw.sender_id === sellerId) {
+    senderRole = "seller";
+  } else {
+    // Default fallback (shouldn't happen in normal flow)
+    senderRole = "system";
+  }
+
+  return {
+    id: raw.id,
+    senderId: raw.sender_id,
+    senderRole,
+    content: raw.content,
+    createdAt: raw.created_at,
   };
 };
