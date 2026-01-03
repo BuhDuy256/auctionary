@@ -39,7 +39,6 @@ import type {
   ShippingSubmitData,
 } from "../../types/transactionActions";
 import { notify } from "../../utils/notify";
-import { sendTransactionMessage } from "../../services/transactionService";
 
 type StepState = "completed" | "active-actor" | "active-observer" | "locked";
 
@@ -367,6 +366,7 @@ export default function TransactionRoomPage() {
     handleConfirmAndShip,
     handleConfirmDelivery,
     handleSubmitReview,
+    handleSendMessage,
     isUpdating,
   } = useTransactionActions();
   const { user } = useAuth();
@@ -567,12 +567,12 @@ export default function TransactionRoomPage() {
     });
   };
 
-  const handleSendMessage = async (message: string): Promise<void> => {
+  const onSendMessage = async (message: string): Promise<void> => {
     if (!transaction) return;
 
     try {
-      // Call API to send message
-      await sendTransactionMessage(transaction.id, message);
+      // Use hook instead of calling service directly
+      await handleSendMessage(transaction.id, message);
 
       // Refetch transaction to get updated messages
       await refetch();
@@ -807,7 +807,7 @@ export default function TransactionRoomPage() {
             <div className="lg:col-span-1">
               <TransactionChat
                 messages={chatMessages}
-                onSendMessage={handleSendMessage}
+                onSendMessage={onSendMessage}
                 footerText={getChatFooterText(transaction.status)}
                 isCancelled={transaction.status === "cancelled"}
                 isLoading={isUpdating}

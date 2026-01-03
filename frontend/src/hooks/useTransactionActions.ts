@@ -4,6 +4,7 @@ import {
   confirmAndShip,
   confirmDelivery,
   submitReview,
+  sendTransactionMessage,
 } from "../services/transactionService";
 import type {
   PaymentSubmitData,
@@ -26,7 +27,8 @@ export const useTransactionActions = () => {
       const response = await submitPayment(transactionId, data);
       return response;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to submit payment";
+      const msg =
+        err instanceof Error ? err.message : "Failed to submit payment";
       setError(msg);
       throw err;
     } finally {
@@ -44,7 +46,8 @@ export const useTransactionActions = () => {
       const response = await confirmAndShip(transactionId, data);
       return response;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to confirm and ship";
+      const msg =
+        err instanceof Error ? err.message : "Failed to confirm and ship";
       setError(msg);
       throw err;
     } finally {
@@ -62,7 +65,8 @@ export const useTransactionActions = () => {
       const response = await confirmDelivery(transactionId, data);
       return response;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to confirm delivery";
+      const msg =
+        err instanceof Error ? err.message : "Failed to confirm delivery";
       setError(msg);
       throw err;
     } finally {
@@ -80,7 +84,28 @@ export const useTransactionActions = () => {
       const response = await submitReview(transactionId, data);
       return response;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to submit review";
+      const msg =
+        err instanceof Error ? err.message : "Failed to submit review";
+      setError(msg);
+      throw err;
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  /**
+   * Send a message in transaction chat
+   * @param transactionId - Transaction ID
+   * @param message - Message content (max 300 characters)
+   */
+  const handleSendMessage = async (transactionId: number, message: string) => {
+    setIsUpdating(true);
+    setError(null);
+    try {
+      const response = await sendTransactionMessage(transactionId, message);
+      return response;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to send message";
       setError(msg);
       throw err;
     } finally {
@@ -93,6 +118,7 @@ export const useTransactionActions = () => {
     handleConfirmAndShip,
     handleConfirmDelivery,
     handleSubmitReview,
+    handleSendMessage,
     isUpdating,
     error,
   };

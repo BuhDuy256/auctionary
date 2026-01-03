@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -24,8 +24,8 @@ interface TransactionChatProps {
   messages: ChatMessage[];
   onSendMessage: (message: string) => Promise<void>;
   footerText: string;
-  isCancelled?: boolean; // Whether transaction is cancelled
-  isLoading?: boolean; // Loading state for sending messages
+  isCancelled?: boolean;
+  isLoading?: boolean;
 }
 
 const MAX_MESSAGE_LENGTH = 300;
@@ -39,13 +39,21 @@ export function TransactionChat({
 }: TransactionChatProps) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const viewport = scrollAreaRef.current?.querySelector(
+      '[data-slot="scroll-area-viewport"]'
+    );
+    if (viewport) {
+      viewport.scrollTop = viewport.scrollHeight;
+    }
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!message.trim() || isLoading) return;
 
-    // Client-side validation (backend also validates)
     if (message.length > MAX_MESSAGE_LENGTH) {
       setError(`Message cannot exceed ${MAX_MESSAGE_LENGTH} characters`);
       return;
@@ -54,9 +62,8 @@ export function TransactionChat({
     try {
       setError(null);
       await onSendMessage(message.trim());
-      setMessage(""); // Clear input only on success
+      setMessage("");
     } catch (err) {
-      // Keep message in input on error (UX requirement)
       setError(err instanceof Error ? err.message : "Failed to send message");
     }
   };
@@ -74,11 +81,14 @@ export function TransactionChat({
         </p>
       </CardHeader>
       <CardContent className="p-0">
-        {/* Chat Messages */}
-        <ScrollArea className="h-[calc(90vh-240px)] min-h-[250px] [&_[data-slot=scroll-area-thumb]:hover]:bg-accent/90 z-5">
-          <div className="space-y-4 p-4">
+        <ScrollArea
+          ref={scrollAreaRef}
+          className="h-[calc(90vh-240px)] min-h-[250px] [&_[data-slot=scroll-area-thumb]:hover]:bg-accent/90 z-5"
+        >
+          <div className="space-y-0 px-4 py-4">
+            {" "}
+            {/* Đổi space-y-4 thành space-y-0 để tự kiểm soát margin */}
             {messages.length === 0 ? (
-              /* Empty State */
               <div className="flex flex-col items-center justify-center h-[200px] text-center">
                 <MessageSquareDashed className="h-12 w-12 text-muted-foreground/50 mb-3" />
                 <p className="text-sm text-muted-foreground">
@@ -86,60 +96,125 @@ export function TransactionChat({
                 </p>
               </div>
             ) : (
-              messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex gap-3 ${
-                    msg.sender === "buyer" ? "flex-row-reverse" : ""
-                  } ${msg.sender === "system" ? "justify-center" : ""}`}
-                >
-                  {msg.sender !== "system" && (
-                    <Avatar className="h-8 w-8 flex-shrink-0 border border-border">
-                      <AvatarFallback className="bg-accent/10 text-accent font-semibold text-xs">
-                        {(msg.name || "?").substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
+              messages.map((msg, index) => {
+                const isBuyer = msg.sender === "buyer";
+                const isSystem = msg.sender === "system";
 
+                // Kiểm tra tin nhắn trước và sau
+                const prevMsg = messages[index - 1];
+                const nextMsg = messages[index + 1];
+
+                const isPrevSame =
+                  prevMsg && prevMsg.sender === msg.sender && !isSystem;
+                const isNextSame =
+                  nextMsg && nextMsg.sender === msg.sender && !isSystem;
+
+                const isFirstInGroup = !isPrevSame;
+                const isLastInGroup = !isNextSame;
+                const isMiddleInGroup = isPrevSame && isNextSame;
+
+                // THAY ĐỔI 1: Avatar chỉ hiện ở tin nhắn CUỐI CÙNG của nhóm
+                const showAvatar = isLastInGroup;
+
+                // Tên người gửi vẫn hiện ở tin nhắn ĐẦU TIÊN
+                const showHeader = isFirstInGroup;
+
+                // ... Logic bo góc (borderRadiusClass) giữ nguyên ...
+                let borderRadiusClass = "rounded-2xl";
+                if (!isSystem) {
+                  if (isBuyer) {
+                    if (isMiddleInGroup) borderRadiusClass += " rounded-r-sm";
+                    else if (isFirstInGroup && !isLastInGroup)
+                      borderRadiusClass += " rounded-br-sm";
+                    else if (!isFirstInGroup && isLastInGroup)
+                      borderRadiusClass += " rounded-tr-sm";
+                  } else {
+                    if (isMiddleInGroup) borderRadiusClass += " rounded-l-sm";
+                    else if (isFirstInGroup && !isLastInGroup)
+                      borderRadiusClass += " rounded-bl-sm";
+                    else if (!isFirstInGroup && isLastInGroup)
+                      borderRadiusClass += " rounded-tl-sm";
+                  }
+                }
+
+                const marginTopClass = isFirstInGroup ? "mt-4" : "mt-[2px]";
+
+                return (
                   <div
-                    className={`flex-1 max-w-[80%] ${
-                      msg.sender === "system" ? "max-w-full" : ""
+                    key={msg.id}
+                    className={`flex gap-2 items-end ${
+                      isBuyer ? "flex-row-reverse" : ""
+                    } ${
+                      isSystem ? "justify-center mt-4 mb-4" : marginTopClass
                     }`}
                   >
-                    {msg.sender !== "system" && (
+                    {!isSystem && (
+                      // SỬA Ở ĐÂY: Thêm logic margin-bottom
+                      // Nếu showAvatar (tức là tin nhắn cuối, có timestamp) -> thêm mb-5 để bù chiều cao timestamp
+                      // Nếu không -> giữ nguyên
                       <div
-                        className={`text-xs text-muted-foreground mb-1 ${
-                          msg.sender === "buyer" ? "text-right" : ""
+                        className={`flex-shrink-0 w-8 ${
+                          showAvatar ? "mb-5" : ""
                         }`}
                       >
-                        {msg.name} • {msg.timestamp}
+                        {showAvatar ? (
+                          <Avatar className="h-8 w-8 border border-border">
+                            <AvatarFallback className="bg-accent/10 text-accent font-semibold text-xs">
+                              {(msg.name || "?").substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        ) : (
+                          <div className="h-8 w-8" />
+                        )}
                       </div>
                     )}
 
                     <div
-                      className={`rounded-lg p-3 text-sm ${
-                        msg.sender === "buyer"
-                          ? "bg-accent/20 border border-accent/30 text-foreground"
-                          : msg.sender === "seller"
-                          ? "bg-secondary border border-border"
-                          : "bg-blue-500/10 border border-blue-500/30 text-center text-xs text-blue-400"
-                      }`}
+                      className={`flex flex-col max-w-[75%] ${
+                        isSystem ? "max-w-full" : ""
+                      } ${isBuyer ? "items-end" : "items-start"}`}
                     >
-                      {msg.message}
-                      {msg.sender === "system" && (
-                        <div className="text-xs text-muted-foreground mt-1">
+                      {/* Tên người gửi nằm trên cùng của nhóm tin nhắn */}
+                      {!isSystem && showHeader && (
+                        <div
+                          className={`text-xs text-muted-foreground mb-1 ml-1 ${
+                            isBuyer ? "text-right mr-1" : ""
+                          }`}
+                        >
+                          {msg.name}
+                        </div>
+                      )}
+
+                      <div
+                        className={`px-4 py-2 text-sm shadow-sm transition-all ${borderRadiusClass} ${
+                          isBuyer
+                            ? "bg-primary text-primary-foreground"
+                            : isSystem
+                            ? "bg-muted/50 text-muted-foreground text-center text-xs rounded-full px-3 py-1 shadow-none"
+                            : "bg-secondary border border-border/50 text-secondary-foreground"
+                        }`}
+                        title={msg.timestamp}
+                      >
+                        {msg.message}
+                      </div>
+
+                      {/* Timestamp (Optional) */}
+                      {isLastInGroup && !isSystem && (
+                        <div
+                          className={`text-[10px] text-muted-foreground/60 mt-1 mx-1`}
+                        >
                           {msg.timestamp}
                         </div>
                       )}
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </ScrollArea>
 
-        {/* Chat Input */}
+        {/* Chat Input section... (Giữ nguyên như cũ) */}
         <form onSubmit={handleSendMessage} className="p-4 border-t">
           {error && (
             <div className="text-xs text-red-500 mb-2 px-1">{error}</div>
@@ -155,10 +230,11 @@ export function TransactionChat({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 disabled={isCancelled || isLoading}
-                className={`pr-16 ${isOverLimit ? "border-red-500" : ""}`}
-                maxLength={MAX_MESSAGE_LENGTH + 50} // Allow typing past limit to show error
+                className={`pr-16 rounded-full ${
+                  isOverLimit ? "border-red-500" : ""
+                }`} // Messenger dùng input bo tròn
+                maxLength={MAX_MESSAGE_LENGTH + 50}
               />
-              {/* Character Counter */}
               {message.length > 0 && !isCancelled && (
                 <div
                   className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs ${
@@ -176,6 +252,7 @@ export function TransactionChat({
             <Button
               type="submit"
               size="icon"
+              className="rounded-full" // Nút gửi bo tròn
               disabled={
                 !message.trim() || isCancelled || isLoading || isOverLimit
               }
@@ -187,7 +264,7 @@ export function TransactionChat({
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2 -mb-4">
+          <p className="text-xs text-muted-foreground mt-2 -mb-4 pl-2">
             {footerText}
           </p>
         </form>
