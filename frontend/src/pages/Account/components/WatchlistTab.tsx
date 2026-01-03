@@ -1,7 +1,6 @@
-import { Button } from "../../../components/ui/button";
 import { WatchlistCard } from "./WatchlistCard";
 import { useWatchlist } from "../../../hooks/useWatchlist";
-import { Loader2, Trash2, HeartCrack } from "lucide-react";
+import { Loader2, HeartCrack } from "lucide-react";
 import type { WatchlistProduct } from "../../../types/watchlist";
 
 export const WatchlistTab = () => {
@@ -10,8 +9,6 @@ export const WatchlistTab = () => {
   const handleRemove = async (item: WatchlistProduct) => {
     await removeFromWatchlist(item);
   };
-
-  const handleClearAll = () => {};
 
   if (isLoading && watchlist.length === 0) {
     return (
@@ -30,14 +27,6 @@ export const WatchlistTab = () => {
             {watchlist.length} items you're watching
           </p>
         </div>
-        <Button
-          variant="outline"
-          onClick={handleClearAll}
-          disabled={watchlist.length === 0}
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Clear All
-        </Button>
       </div>
 
       {watchlist.length === 0 ? (

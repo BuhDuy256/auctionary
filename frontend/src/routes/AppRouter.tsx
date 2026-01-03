@@ -1,13 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 
-// 1. Import các "gác cổng"
+// 1. Import guards
 import ProtectedRoute from "./ProtectedRoute";
 import PublicOnlyRoute from "./PublicOnlyRoute";
 
-// 2. Import các vai trò (ROLES)
+// 2. Import roles
 import { ROLES } from "../constants/roles";
 
-// 3. Import các trang
+// 3. Import pages
 import UnderDevelopmentPage from "../pages/Error/UnderDevelopmentPage";
 import UnauthorizedPage from "../pages/Error/Forbidden";
 import NotFoundPage from "../pages/Error/NotFoundPage";
@@ -24,35 +24,33 @@ import SellerDashboardPage from "../pages/Seller/SellerDashboardPage";
 import CreateAuctionPage from "../pages/Seller/CreateAuctionPage";
 import TransactionRoomPage from "../pages/Product/TransactionRoomPage";
 import AdminDashboardPage from "../pages/Admin/AdminDashboardPage";
-import MemberIntroductionPage from "../pages/Dev/MemberIntroductionPage";
+import MemberIntroductionPage from "../pages/Infomation/MemberIntroductionPage";
+import BidderProtectionPage from "../pages/Infomation/BidderProtectionPage";
 
 const AppRouter = () => {
   return (
     <Routes>
       {/* ============================================== */}
-      {/* TUYẾN ĐƯỜNG CÔNG KHAI (Guest, Bidder, Seller, Admin) */}
+      {/* PUBLIC ROUTES (Accessible to everyone) */}
       {/* ============================================== */}
       <Route path="/" element={<HomePage />} />
-      <Route path="/auction/:id" element={<UnderDevelopmentPage />} />
-      <Route path="/unauthorized" element={<UnauthorizedPage />} />
-      <Route path="*" element={<NotFoundPage />} />
-
-      {/* ============================================== */}
-      {/* TUYẾN ĐƯỜNG CÔNG KHAI (DEV) */}
-      {/* ============================================== */}
-      <Route path="/dev/ui-kit" element={<UIKitPage />} />
-      <Route path="/dev/members" element={<MemberIntroductionPage />} />
       <Route path="/products" element={<ProductListPage />} />
-      {/* Support both /product/:id and /product/:slug-id formats */}
       <Route path="/products/:id" element={<ProductDetailPage />} />
-      <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
-      <Route path="/seller/auction/create" element={<CreateAuctionPage />} />
-      <Route path="/transaction-room" element={<TransactionRoomPage />} />
-      <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+      <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/under-development" element={<UnderDevelopmentPage />} />
 
+      {/* Information Routes */}
+      <Route path="/info/members" element={<MemberIntroductionPage />} />
+      <Route
+        path="/info/bidder-protection"
+        element={<BidderProtectionPage />}
+      />
+
+      {/* Dev Routes */}
+      <Route path="/dev/ui-kit" element={<UIKitPage />} />
+
       {/* ============================================== */}
-      {/* TUYẾN ĐƯỜNG CÔNG KHAI (CHỈ CHO KHÁCH) */}
+      {/* PUBLIC ONLY ROUTES (Guest users only) */}
       {/* ============================================== */}
       <Route element={<PublicOnlyRoute />}>
         <Route path="/login" element={<LoginPage />} />
@@ -61,7 +59,7 @@ const AppRouter = () => {
       </Route>
 
       {/* ============================================== */}
-      {/* TUYẾN ĐƯỜNG ĐƯỢC BẢO VỆ (RBAC) */}
+      {/* PROTECTED ROUTES - All Authenticated Users */}
       {/* ============================================== */}
       <Route
         element={
@@ -74,17 +72,28 @@ const AppRouter = () => {
         <Route path="/verify-otp" element={<VerifyOTPPage />} />
       </Route>
 
+      {/* ============================================== */}
+      {/* PROTECTED ROUTES - Seller & Admin */}
+      {/* ============================================== */}
       <Route
         element={<ProtectedRoute allowedRoles={[ROLES.SELLER, ROLES.ADMIN]} />}
       >
-        <Route path="/my-auctions" element={<UnderDevelopmentPage />} />
-        <Route path="/auctions/new" element={<UnderDevelopmentPage />} />
+        <Route path="/seller/dashboard" element={<SellerDashboardPage />} />
+        <Route path="/seller/auction/create" element={<CreateAuctionPage />} />
         <Route path="/transactions/:id" element={<TransactionRoomPage />} />
       </Route>
 
+      {/* ============================================== */}
+      {/* PROTECTED ROUTES - Admin Only */}
+      {/* ============================================== */}
       <Route element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]} />}>
-        {/* <Route path="/admin/dashboard" element={<UnderDevelopmentPage />} /> */}
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
       </Route>
+
+      {/* ============================================== */}
+      {/* CATCH ALL - 404 */}
+      {/* ============================================== */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

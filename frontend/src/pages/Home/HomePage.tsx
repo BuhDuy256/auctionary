@@ -8,7 +8,7 @@ import {
   Gavel,
   LogIn,
   ShieldAlert,
-  Sparkles,
+  ShieldCheck,
   TrendingUp,
   User,
   UserPlus,
@@ -277,29 +277,28 @@ export default function HomePage() {
               <Button
                 size="lg"
                 className="text-base"
-                onClick={() => navigate("/under-development")}
+                onClick={() => navigate("/seller/auction/create")}
               >
                 <Gavel className="mr-2 h-5 w-5" />
                 Create New Auction
               </Button>
             </div>
           ) : (
-            /* CASE 3: ĐÃ ĐĂNG NHẬP + CHỈ LÀ BIDDER (Mời nâng cấp) */
             <div className="relative z-10 text-center max-w-2xl mx-auto">
-              <Sparkles className="h-12 w-12 text-accent mx-auto mb-4" />
-              <h2 className="text-3xl mb-4">Ready to Start Selling?</h2>
+              <ShieldCheck className="h-12 w-12 text-accent mx-auto mb-4" />
+              <h2 className="text-3xl mb-4">Shop with Confidence</h2>
               <p className="text-muted-foreground mb-6">
-                Join thousands of sellers on Auctionary. List your items, reach
-                a global audience, and get paid securely through our escrow
-                system.
+                Every transaction on Auctionary is protected by our secure
+                Escrow system. We ensure authenticity and safe delivery for
+                every winning bid.
               </p>
               <Button
+                variant="outline"
                 size="lg"
                 className="text-base"
-                onClick={() => navigate("/under-development")}
+                onClick={() => navigate("/info/bidder-protection")}
               >
-                <Sparkles className="mr-2 h-5 w-5" />
-                Become a Seller Today
+                Learn about Bidder Protection
               </Button>
             </div>
           )}

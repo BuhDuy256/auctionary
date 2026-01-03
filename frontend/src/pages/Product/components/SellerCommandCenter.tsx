@@ -55,7 +55,8 @@ export function SellerCommandCenter({
 
   const isSold = auction.status === "sold";
   const isEnded = auction.endTime < new Date().toISOString();
-  const showTransaction = isSold || isEnded;
+  const isExpiredNoBids = isEnded && auction.bidCount === 0;
+  const showTransaction = (isSold || isEnded) && auction.bidCount > 0;
 
   return (
     <div className="space-y-6">
@@ -92,7 +93,26 @@ export function SellerCommandCenter({
 
           <Separator />
 
-          {/* Transaction Access for Ended/Sold Auctions */}
+          {/* Expired Auction Alert (No Bids) */}
+          {isExpiredNoBids && (
+            <>
+              <div className="space-y-4">
+                <Alert className="border-muted-foreground bg-muted/20">
+                  <Info className="h-5 w-5 text-muted-foreground" />
+                  <AlertTitle className="text-muted-foreground">
+                    Auction Expired
+                  </AlertTitle>
+                  <AlertDescription className="text-muted-foreground">
+                    This auction has ended with no bids. You can create a new
+                    auction or adjust your listing strategy.
+                  </AlertDescription>
+                </Alert>
+              </div>
+              <Separator />
+            </>
+          )}
+
+          {/* Transaction Access for Ended/Sold Auctions with Winner */}
           {showTransaction && (
             <>
               <div className="space-y-4">
