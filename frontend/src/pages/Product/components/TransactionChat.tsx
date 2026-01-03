@@ -5,12 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../components/ui/card";
-import { Separator } from "../../../components/ui/separator";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../../components/ui/avatar";
+import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 import { ScrollArea } from "../../../components/ui/scroll-area";
 import { Input } from "../../../components/ui/input";
 import { Button } from "../../../components/ui/button";
@@ -48,17 +43,16 @@ export function TransactionChat({
 
   return (
     <Card className="border-border sticky top-24">
-      <CardHeader className="p-3">
+      <CardHeader className="p-3 border-b -mb-6">
         <CardTitle className="text-lg">Transaction Chat</CardTitle>
         <p className="text-xs text-muted-foreground">
           Communicate securely with the seller
         </p>
       </CardHeader>
-      <Separator />
       <CardContent className="p-0">
         {/* Chat Messages */}
-        <ScrollArea className="h-[400px] p-4">
-          <div className="space-y-4">
+        <ScrollArea className="h-[calc(90vh-240px)] min-h-[250px] [&_[data-slot=scroll-area-thumb]:hover]:bg-accent/90 z-5">
+          <div className="space-y-4 p-4">
             {messages.map((msg) => (
               <div
                 key={msg.id}
@@ -67,10 +61,9 @@ export function TransactionChat({
                 } ${msg.sender === "system" ? "justify-center" : ""}`}
               >
                 {msg.sender !== "system" && (
-                  <Avatar className="h-8 w-8 flex-shrink-0">
-                    <AvatarImage src={msg.avatar} />
-                    <AvatarFallback>
-                      {msg.name?.charAt(0) || "?"}
+                  <Avatar className="h-8 w-8 flex-shrink-0 border border-border">
+                    <AvatarFallback className="bg-accent/10 text-accent font-semibold text-xs">
+                      {(msg.name || "?").substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 )}
@@ -112,10 +105,8 @@ export function TransactionChat({
           </div>
         </ScrollArea>
 
-        <Separator />
-
         {/* Chat Input */}
-        <form onSubmit={handleSendMessage} className="p-4">
+        <form onSubmit={handleSendMessage} className="p-4 border-t">
           <div className="flex gap-2">
             <Input
               placeholder="Type a message..."
