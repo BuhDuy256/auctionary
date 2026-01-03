@@ -202,7 +202,7 @@ const mapTransactionMessagesToChat = (
       sender,
       name,
       message: msg.content,
-      timestamp: formatTime(msg.createdAt),
+      timestamp: msg.createdAt, // Pass raw ISO string, TransactionChat will format it
     };
   });
 };
