@@ -3,6 +3,8 @@ import db from "../database/db";
 import * as bidRepository from "../repositories/bid.repository";
 import * as productRepository from "../repositories/product.repository";
 import * as bidMapper from "../mappers/bid.mapper";
+import * as EmailService from "./email.service";
+import { envConfig } from "../configs/env.config";
 import { PlaceBidResponse } from "../api/dtos/responses/place-bid.type";
 
 export const recalculateAuctionState = async (productId: number, trx: any) => {
@@ -90,6 +92,23 @@ export const rejectBidder = async (
     await bidRepository.addRejection(productId, bidderId, reason, trx);
     await bidRepository.deleteUserAutoBids(productId, bidderId, trx);
     await bidRepository.deleteUserBids(productId, bidderId, trx);
+
+    // Send rejection email
+    const [bidder, product] = await Promise.all([
+      trx("users").where("id", bidderId).first(),
+      trx("products").where("id", productId).first(),
+    ]);
+
+    if (bidder && product) {
+      const productUrl = `${envConfig.CLIENT_URL}/products/${product.id}`;
+      EmailService.sendBidderRejectedEmail(
+        bidder.email,
+        bidder.full_name,
+        product.name,
+        product.thumbnail,
+        productUrl
+      ).catch((err) => console.error("Failed to send rejection email:", err));
+    }
 
     const result = await recalculateAuctionState(productId, trx);
 
@@ -215,6 +234,71 @@ export const placeBid = async (
         newPrice,
         trx
       );
+
+      // Email notifications
+      // 1. Get detailed info for emails
+      const [bidder, seller] = await Promise.all([
+        trx("users").where("id", winner.bidder_id).first(),
+        trx("users").where("id", product.seller_id).first(),
+      ]);
+
+      const productUrl = `${envConfig.CLIENT_URL}/products/${product.id}`;
+
+      if (bidder) {
+        // Notify Bidder
+        EmailService.sendBidPlacedEmail(
+          bidder.email,
+          bidder.full_name,
+          product.name,
+          product.thumbnail,
+          newPrice,
+          true,
+          productUrl
+        ).catch((err) =>
+          console.error("Failed to send bid placed email to bidder:", err)
+        );
+      }
+
+      if (seller) {
+        // Notify Seller
+        EmailService.sendBidPlacedSellerEmail(
+          seller.email,
+          seller.full_name,
+          product.name,
+          product.thumbnail,
+          newPrice,
+          bidder?.full_name || "A bidder",
+          productUrl
+        ).catch((err) =>
+          console.error("Failed to send bid placed email to seller:", err)
+        );
+      }
+
+      // Notify previous highest bidder if they were outbid
+      if (
+        currentHighestBid &&
+        currentHighestBid.bidder_id !== winner.bidder_id
+      ) {
+        const previousBidder = await trx("users")
+          .where("id", currentHighestBid.bidder_id)
+          .first();
+
+        if (previousBidder) {
+          EmailService.sendOutbidNotificationEmail(
+            previousBidder.email,
+            previousBidder.full_name,
+            product.name,
+            product.thumbnail,
+            newPrice,
+            productUrl
+          ).catch((err) =>
+            console.error(
+              "Failed to send outbid notification to previous bidder:",
+              err
+            )
+          );
+        }
+      }
     }
 
     const bidCount = await productRepository.getProductBidCount(productId, trx);

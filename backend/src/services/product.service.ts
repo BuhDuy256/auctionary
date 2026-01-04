@@ -1,5 +1,8 @@
 import * as productRepository from "../repositories/product.repository";
 import * as transactionRepository from "../repositories/transaction.repository";
+import * as userRepository from "../repositories/user.repository";
+import * as EmailService from "./email.service";
+import { envConfig } from "../configs/env.config";
 import {
   ProductsSearchQuery,
   CreateProduct,
@@ -184,6 +187,27 @@ export const appendProductQuestion = async (
     questionerId,
     content
   );
+
+  // Send email to seller
+  const [seller, questioner] = await Promise.all([
+    productRepository.getProductSeller(productId),
+    userRepository.findById(questionerId),
+  ]);
+
+  if (seller && questioner) {
+    // Re-fetch product to get thumbnail and name if needed, or use what we have
+    // getProductBasicInfoById returns basic info
+    const productUrl = `${envConfig.CLIENT_URL}/products/${product.id}`;
+    EmailService.sendNewQuestionEmail(
+      seller.email,
+      seller.full_name,
+      product.name,
+      product.thumbnail_url,
+      content,
+      questioner.full_name,
+      productUrl
+    ).catch((err) => console.error("Failed to send new question email:", err));
+  }
 };
 
 export const appendProductAnswer = async (
@@ -208,6 +232,30 @@ export const appendProductAnswer = async (
     answererId,
     content
   );
+
+  // Send email to questioner
+  const question = await productRepository.getProductQuestionById(questionId);
+
+  if (question) {
+    const questioner = await userRepository.findById(question.user_id);
+    // Determine answerer name (Seller)
+    const answerer = await userRepository.findById(answererId);
+
+    if (questioner && answerer) {
+      const productUrl = `${envConfig.CLIENT_URL}/products/${product.id}`;
+      EmailService.sendSellerAnsweredEmail(
+        questioner.email,
+        questioner.full_name,
+        product.name,
+        product.thumbnail_url,
+        question.question,
+        content,
+        productUrl
+      ).catch((err) =>
+        console.error("Failed to send seller answered email:", err)
+      );
+    }
+  }
 };
 
 // Product Detail Page

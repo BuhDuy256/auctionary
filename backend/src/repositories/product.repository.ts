@@ -698,3 +698,15 @@ export const updateProductAuctionState = async (
 ): Promise<void> => {
   await (trx || db)("products").where({ id: productId }).update(data);
 };
+
+export const getProductSeller = async (productId: number) => {
+  return await db("products")
+    .join("users", "products.seller_id", "users.id")
+    .where("products.id", productId)
+    .select("users.email", "users.full_name")
+    .first();
+};
+
+export const getProductQuestionById = async (questionId: number) => {
+  return await db("product_comments").where("id", questionId).first();
+};

@@ -1,4 +1,6 @@
 import * as adminRepository from "../repositories/admin.repository";
+import * as EmailService from "./email.service";
+import { envConfig } from "../configs/env.config";
 import {
   mapUserToAdminListItem,
   mapUpgradeRequestToListItem,
