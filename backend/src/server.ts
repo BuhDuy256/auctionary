@@ -26,6 +26,8 @@ import homeRouter from "./api/routes/home.route";
 import transactionRouter from "./api/routes/transaction.route";
 import mailRouter from "./api/routes/mail.route";
 
+import { restoreJobs } from "./services/cron.service";
+
 const app: Application = express();
 const PORT: number = envConfig.PORT;
 
@@ -68,6 +70,9 @@ app.get("/healthz", (_req, res) => {
 // Error Handling
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+// Restore cron jobs
+restoreJobs();
 
 // App Listen
 app.listen(PORT, () => {

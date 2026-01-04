@@ -2,6 +2,7 @@ import * as productRepository from "../repositories/product.repository";
 import * as transactionRepository from "../repositories/transaction.repository";
 import * as userRepository from "../repositories/user.repository";
 import * as EmailService from "./email.service";
+import { scheduleAuctionEnd } from "./cron.service";
 import { envConfig } from "../configs/env.config";
 import {
   ProductsSearchQuery,
@@ -135,6 +136,8 @@ export const createProduct = async (
     image_urls: uploadedUrls,
     slug: finalProductSlug,
   } as any);
+
+  scheduleAuctionEnd(product.id, new Date(data.endTime));
 
   return {
     productId: product.id,
@@ -488,6 +491,7 @@ export const setProductEndTime = async (
   const newEndTime = new Date(Date.now() + totalSeconds * 1000);
 
   await productRepository.updateProductEndTime(productId, newEndTime);
+  scheduleAuctionEnd(productId, newEndTime);
 };
 
 export const updateProductConfig = async (

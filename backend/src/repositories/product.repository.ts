@@ -719,3 +719,11 @@ export const updateProductEndTime = async (
     .where({ id: productId })
     .update({ end_time: newEndTime });
 };
+
+export const updateProductStatus = async (
+  productId: number,
+  status: string,
+  trx?: Knex.Transaction
+): Promise<void> => {
+  await (trx || db)("products").where({ id: productId }).update({ status });
+};
