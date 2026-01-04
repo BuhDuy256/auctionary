@@ -13,6 +13,7 @@ import { getSellerAnsweredTemplate } from "../mails/seller-answered.template";
 import { getSellerUpgradeApprovedTemplate } from "../mails/seller-upgrade-approved.template";
 import { getPasswordResetTemplate } from "../mails/password-reset.template";
 import { getTransactionCancelledTemplate } from "../mails/transaction-cancelled.template";
+import { getWelcomeTemplate } from "../mails/welcome.template";
 
 const transporter = nodemailer.createTransport({
   host: envConfig.EMAIL_HOST,
@@ -55,23 +56,16 @@ export const sendWelcomeEmail = async (
   email: string,
   userName: string
 ): Promise<void> => {
+  const htmlContent = getWelcomeTemplate({
+    userName: userName,
+    homeUrl: envConfig.CLIENT_URL,
+  });
+
   const mailOptions = {
     from: envConfig.EMAIL_FROM,
     to: email,
-    subject: "Welcome to Our Platform!",
-    html: `
-      <!DOCTYPE html>
-      <html>
-      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #667eea;">Welcome ${userName}! 🎉</h1>
-          <p>Your email has been successfully verified!</p>
-          <p>You can now enjoy all features of our platform.</p>
-          <p>Thank you for joining us!</p>
-        </div>
-      </body>
-      </html>
-    `,
+    subject: "Welcome to Auctionary! 🎉",
+    html: htmlContent,
   };
 
   await transporter.sendMail(mailOptions);

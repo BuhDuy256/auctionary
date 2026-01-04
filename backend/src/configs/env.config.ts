@@ -6,6 +6,7 @@ dotenv.config();
 const envSchema = z.object({
   NODE_ENV: z.string().min(1, "NODE_ENV is required"),
   PORT: z.string().default("3000").transform(Number),
+  CLIENT_URL: z.string().default("http://localhost:5173"),
 
   // Database
   SUPABASE_HOST: z.string().min(1, "SUPABASE_HOST is required"),

@@ -170,4 +170,9 @@ router.post("/transaction-cancelled", async (req, res) => {
     .json({ message: "Transaction cancelled email sent successfully" });
 });
 
+router.post("/welcome", async (req, res) => {
+  await emailService.sendWelcomeEmail(req.body.email, req.body.userName);
+  res.status(200).json({ message: "Welcome email sent successfully" });
+});
+
 export default router;
