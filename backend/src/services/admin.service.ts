@@ -262,3 +262,84 @@ export const getAdminOverview = async (): Promise<AdminOverviewResponse> => {
     systemStatus,
   };
 };
+
+/**
+ * Reset user password (admin only)
+ * Generates a new secure password, invalidates all tokens, and sends email notification
+ * @param userId - User ID to reset password for
+ * @returns Password reset response with temporary password
+ */
+export const adminResetUserPassword = async (
+  userId: number
+): Promise<
+  import("../api/dtos/responses/admin.type").PasswordResetResponse
+> => {
+  // Import dependencies
+  const { findById, updateUserPassword } = await import(
+    "../repositories/user.repository"
+  );
+  const { deleteUserTokens } = await import("../repositories/token.repository");
+  const { generateSecurePassword } = await import("../utils/password.util");
+  const { hashPassword } = await import("../utils/hash.util");
+  const { getPasswordResetAdminTemplate } = await import(
+    "../mails/password-reset-admin.template"
+  );
+
+  // Validate user exists
+  const user = await findById(userId);
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  // Validate user status (only active or suspended users)
+  if (user.status !== "active" && user.status !== "suspended") {
+    throw new BadRequestError(
+      `Cannot reset password for users with status: ${user.status}. Only active or suspended users are allowed.`
+    );
+  }
+
+  // Generate secure random password
+  const temporaryPassword = generateSecurePassword();
+
+  // Hash the password
+  const hashedPassword = await hashPassword(temporaryPassword);
+
+  // Update user password
+  await updateUserPassword(userId, hashedPassword);
+
+  // Invalidate all refresh tokens (log out from all devices)
+  await deleteUserTokens(userId);
+
+  // Send email notification
+  const emailTemplate = getPasswordResetAdminTemplate({
+    userName: user.full_name,
+    temporaryPassword,
+  });
+
+  // Use transporter directly for custom email
+  const nodemailer = await import("nodemailer");
+  const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST,
+    port: Number(process.env.EMAIL_PORT),
+    secure: false,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM,
+    to: user.email,
+    subject: "🔐 Your Password Has Been Reset by Administrator",
+    html: emailTemplate,
+  });
+
+  // Return response with temporary password
+  return {
+    userId: user.id,
+    email: user.email,
+    resetAt: new Date().toISOString(),
+    temporaryPassword,
+  };
+};

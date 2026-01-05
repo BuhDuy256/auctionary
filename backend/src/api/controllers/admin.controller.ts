@@ -147,3 +147,24 @@ export const getAdminOverview = async (
     next(error);
   }
 };
+
+/**
+ * Reset user password (admin only)
+ * POST /admin/users/:id/reset-password
+ */
+export const resetUserPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { id } = req.params as unknown as { id: number };
+    const data = await adminService.adminResetUserPassword(id);
+    res
+      .status(200)
+      .message("Password reset successfully. Notification email sent to user.")
+      .json(data);
+  } catch (error) {
+    next(error);
+  }
+};

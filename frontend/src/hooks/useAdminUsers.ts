@@ -43,11 +43,25 @@ export const useAdminUsers = () => {
     }
   };
 
+  const handleResetPassword = async (userId: number) => {
+    try {
+      const response = await adminService.resetUserPassword(userId);
+      return response; // Return the response containing temporary password
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to reset password";
+      toast.error(errorMessage);
+      console.error("Failed to reset password:", err);
+      throw err; // Re-throw so the UI can handle it
+    }
+  };
+
   return {
     users,
     isLoading,
     error,
     refreshUsers: fetchUsers,
     handleSuspendUser,
+    handleResetPassword,
   };
 };

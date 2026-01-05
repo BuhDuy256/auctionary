@@ -6,6 +6,7 @@ import type {
   SuspendUserResponse,
   AdminProductListResponse,
   AdminOverviewResponse,
+  PasswordResetResponse,
 } from "../types/admin";
 
 /**
@@ -56,6 +57,15 @@ export const suspendUser = async (
   userId: number
 ): Promise<SuspendUserResponse> => {
   return apiClient.patch(`/admin/users/${userId}/suspend`, {}, true);
+};
+
+/**
+ * Reset user password (admin only)
+ */
+export const resetUserPassword = async (
+  userId: number
+): Promise<PasswordResetResponse> => {
+  return apiClient.post(`/admin/users/${userId}/reset-password`, {}, true);
 };
 
 /**

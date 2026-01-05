@@ -7,6 +7,7 @@ import {
   upgradeRequestActionSchema,
   suspendUserSchema,
   removeProductSchema,
+  resetUserPasswordParamSchema,
 } from "../dtos/requests/admin.schema";
 
 const router = Router();
@@ -24,6 +25,12 @@ router.patch(
   adminAuth,
   validate(suspendUserSchema, "params"),
   adminController.suspendUser
+);
+router.post(
+  "/users/:id/reset-password",
+  adminAuth,
+  validate(resetUserPasswordParamSchema, "params"),
+  adminController.resetUserPassword
 );
 
 // Upgrade request management

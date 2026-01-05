@@ -658,17 +658,16 @@ export function SellerDashboard({ onCreateAuction }: SellerDashboardProps) {
                             View Details
                           </DropdownMenuItem>
                           {/* Show View Transaction if auction ended and has winner */}
-                          {calculateTimeLeft(item.endTime) === "Ended" &&
-                            item.bidCount > 0 && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  navigate(`/transactions/${item.id}`)
-                                }
-                              >
-                                <ArrowRightLeft className="mr-2 h-4 w-4 focus:text-accent-foreground" />
-                                View Transaction
-                              </DropdownMenuItem>
-                            )}
+                          <DropdownMenuItem
+                            onClick={() => navigate(`/transactions/${item.id}`)}
+                            disabled={
+                              calculateTimeLeft(item.endTime) !== "Ended" ||
+                              item.bidCount === 0
+                            }
+                          >
+                            <ArrowRightLeft className="mr-2 h-4 w-4 focus:text-accent-foreground" />
+                            View Transaction
+                          </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
                             <Trash2 className="mr-2 h-4 w-4 text-destructive" />
                             Delete Auction

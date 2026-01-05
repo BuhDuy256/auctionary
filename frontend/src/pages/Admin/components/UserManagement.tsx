@@ -26,6 +26,14 @@ import {
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -46,6 +54,9 @@ import {
   Shield,
   Loader2,
   AlertCircle,
+  KeyRound,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useAdminUsers } from "../../../hooks/useAdminUsers";
 import { useAdminUpgradeRequests } from "../../../hooks/useAdminUpgradeRequests";
@@ -95,6 +106,7 @@ export function UserManagement() {
     isLoading: usersLoading,
     error: usersError,
     handleSuspendUser,
+    handleResetPassword,
   } = useAdminUsers();
 
   const {
@@ -105,8 +117,82 @@ export function UserManagement() {
     handleRejectRequest,
   } = useAdminUpgradeRequests();
 
+  // Password reset state
+  const [resetDialog, setResetDialog] = useState<{
+    open: boolean;
+    userId: number | null;
+    userName: string;
+    userEmail: string;
+  }>({
+    open: false,
+    userId: null,
+    userName: "",
+    userEmail: "",
+  });
+  const [isResetting, setIsResetting] = useState(false);
+  const [resetResult, setResetResult] = useState<{
+    success: boolean;
+    temporaryPassword: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+
   const handleViewUserProfile = (_userId: number) => {
     notify.error("Not implemented yet");
+  };
+
+  const handleResetPasswordClick = (
+    userId: number,
+    userName: string,
+    userEmail: string
+  ) => {
+    setResetDialog({
+      open: true,
+      userId,
+      userName,
+      userEmail,
+    });
+    setResetResult(null);
+    setCopied(false);
+  };
+
+  const handleConfirmReset = async () => {
+    if (!resetDialog.userId) return;
+
+    try {
+      setIsResetting(true);
+      const response = await handleResetPassword(resetDialog.userId);
+      setResetResult({
+        success: true,
+        temporaryPassword: response.temporaryPassword,
+      });
+      notify.success(`Password reset successfully for ${resetDialog.userName}`);
+    } catch (error) {
+      setResetResult({
+        success: false,
+        temporaryPassword: "",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const handleCloseResetDialog = () => {
+    setResetDialog({
+      open: false,
+      userId: null,
+      userName: "",
+      userEmail: "",
+    });
+    setResetResult(null);
+    setCopied(false);
+  };
+
+  const handleCopyPassword = () => {
+    if (resetResult?.temporaryPassword) {
+      navigator.clipboard.writeText(resetResult.temporaryPassword);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   // Filter users - optimized to cache toLowerCase results
@@ -457,6 +543,23 @@ export function UserManagement() {
                                   <Eye className="h-4 w-4 mr-2 group-focus:text-accent-foreground" />
                                   View Profile
                                 </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="group"
+                                  onClick={() =>
+                                    handleResetPasswordClick(
+                                      user.id,
+                                      user.fullName,
+                                      user.email
+                                    )
+                                  }
+                                  disabled={
+                                    user.status !== "active" &&
+                                    user.status !== "suspended"
+                                  }
+                                >
+                                  <KeyRound className="h-4 w-4 mr-2 group-focus:text-accent-foreground" />
+                                  Reset Password
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 {user.status !== "suspended" && (
                                   <DropdownMenuItem
@@ -659,6 +762,123 @@ export function UserManagement() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Password Reset Dialog */}
+      <Dialog open={resetDialog.open} onOpenChange={handleCloseResetDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset User Password</DialogTitle>
+            <DialogDescription>
+              {!resetResult ? (
+                <>
+                  You are about to reset the password for{" "}
+                  <strong>{resetDialog.userName}</strong> (
+                  {resetDialog.userEmail}).
+                </>
+              ) : resetResult.success ? (
+                "Password reset successful!"
+              ) : (
+                "Password reset failed"
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          {!resetResult ? (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground">⚠️ Warning:</strong> This
+                  action will:
+                </p>
+                <ul className="text-sm text-muted-foreground list-disc list-inside mt-2 space-y-1">
+                  <li>Generate a new random secure password</li>
+                  <li>Log out the user from all devices</li>
+                  <li>
+                    Send an email notification with the temporary password
+                  </li>
+                </ul>
+              </div>
+            </div>
+          ) : resetResult.success ? (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/30">
+                <p className="text-sm text-muted-foreground mb-3">
+                  The temporary password has been generated and emailed to the
+                  user:
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 p-3 bg-secondary rounded border border-border font-mono text-sm select-all">
+                    {resetResult.temporaryPassword}
+                  </code>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleCopyPassword}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-4 w-4 mr-1" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-4 w-4 mr-1" />
+                        Copy
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  The user has been logged out from all devices and will need to
+                  use this password to log in.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-4">
+              <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/30">
+                <p className="text-sm text-destructive">
+                  Failed to reset password. Please try again or contact support
+                  if the issue persists.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            {!resetResult ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={handleCloseResetDialog}
+                  disabled={isResetting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleConfirmReset}
+                  disabled={isResetting}
+                >
+                  {isResetting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    <>
+                      <KeyRound className="mr-2 h-4 w-4" />
+                      Confirm Reset
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <Button onClick={handleCloseResetDialog}>Close</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

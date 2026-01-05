@@ -315,3 +315,19 @@ export const getUserWonAuctionsById = async (userId: number) => {
       "products.thumbnail_url"
     );
 };
+
+/**
+ * Update user password (admin password reset)
+ * @param userId - User ID
+ * @param hashedPassword - New hashed password
+ */
+export const updateUserPassword = async (
+  userId: number,
+  hashedPassword: string
+): Promise<void> => {
+  await db("users").where({ id: userId }).update({
+    password: hashedPassword,
+    password_updated_at: db.fn.now(),
+    updated_at: db.fn.now(),
+  });
+};

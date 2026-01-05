@@ -122,3 +122,11 @@ export interface AdminOverviewResponse {
   pendingApprovals: AdminOverviewPendingApprovals;
   systemStatus: AdminOverviewSystemStatus;
 }
+
+// Password reset response type
+export interface PasswordResetResponse {
+  userId: number;
+  email: string;
+  resetAt: string; // ISO 8601 format
+  temporaryPassword: string;
+}
