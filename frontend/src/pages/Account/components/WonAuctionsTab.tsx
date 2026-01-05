@@ -11,6 +11,7 @@ import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
 import { CheckCircle2, Clock, Package, XCircle } from "lucide-react";
 import { useMyWonAuctions } from "../../../hooks/useMyWonAuctions";
+import { useOtherUserWonAuctions } from "../../../hooks/useOtherUserWonAuctions";
 import { useNavigate } from "react-router-dom";
 import { ImageWithFallback } from "../../../components/ImageWithFallback";
 
@@ -47,9 +48,26 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-export const WonAuctionsTab = () => {
+interface WonAuctionsTabProps {
+  userId?: number;
+}
+
+export const WonAuctionsTab = ({ userId }: WonAuctionsTabProps = {}) => {
   const navigate = useNavigate();
-  const { wonAuctions, isLoading } = useMyWonAuctions();
+
+  // Use different hooks based on whether viewing own or other user's auctions
+  const ownAuctions = useMyWonAuctions();
+  const otherAuctions = useOtherUserWonAuctions(userId!);
+
+  const { wonAuctions, isLoading } = userId
+    ? {
+        wonAuctions: otherAuctions.auctions,
+        isLoading: otherAuctions.isLoading,
+      }
+    : {
+        wonAuctions: ownAuctions.wonAuctions,
+        isLoading: ownAuctions.isLoading,
+      };
 
   if (isLoading) return <div>Loading won auctions...</div>;
 

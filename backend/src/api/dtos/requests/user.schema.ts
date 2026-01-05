@@ -29,7 +29,12 @@ export const getRatingsQuerySchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional().default(20),
 });
 
+export const getUserByIdParamSchema = z.object({
+  id: z.coerce.number().int().positive(),
+});
+
 export type ChangePasswordSchema = z.infer<typeof changePasswordSchema>;
 export type UpdateProfileSchema = z.infer<typeof updateProfileSchema>;
 export type UpdateEmailSchema = z.infer<typeof updateEmailSchema>;
 export type GetRatingsQuerySchema = z.infer<typeof getRatingsQuerySchema>;
+export type GetUserByIdParamSchema = z.infer<typeof getUserByIdParamSchema>;

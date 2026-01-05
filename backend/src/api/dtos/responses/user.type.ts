@@ -87,3 +87,25 @@ export interface RatingsResponse {
   total: number;
   summary: RatingSummary;
 }
+
+// Public user profile (for viewing other users)
+export interface PublicUserProfile {
+  user: {
+    id: number;
+    fullName: string;
+    // email: EXCLUDED for privacy
+    // address: EXCLUDED for privacy
+    roles: string[]; // e.g., ["bidder"], ["seller"]
+    status: "pending_verification" | "active" | "pending_upgrade" | "suspended";
+    createdAt: string; // ISO date
+    positiveReviews: number;
+    negativeReviews: number;
+  };
+
+  stats: {
+    rating: number; // Percentage (0-100)
+    likes: number;
+    dislikes: number;
+    auctionsWon: number;
+  };
+}

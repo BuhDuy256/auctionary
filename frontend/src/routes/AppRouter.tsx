@@ -20,6 +20,7 @@ import UIKitPage from "../pages/Dev/UIKitPage";
 import ProductListPage from "../pages/Product/ProductListPage";
 import ProductDetailPage from "../pages/Product/ProductDetailPage";
 import UserProfilePage from "../pages/Account/UserProfilePage";
+import OtherUserProfilePage from "../pages/Account/OtherUserProfilePage";
 import SellerDashboardPage from "../pages/Seller/SellerDashboardPage";
 import CreateAuctionPage from "../pages/Seller/CreateAuctionPage";
 import TransactionRoomPage from "../pages/Product/TransactionRoomPage";
@@ -69,6 +70,7 @@ const AppRouter = () => {
         }
       >
         <Route path="/profile" element={<UserProfilePage />} />
+        <Route path="/users/:id/profile" element={<OtherUserProfilePage />} />
         <Route path="/verify-otp" element={<VerifyOTPPage />} />
       </Route>
 

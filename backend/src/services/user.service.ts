@@ -1,5 +1,8 @@
 import * as userRepository from "../repositories/user.repository";
-import { RatingsResponse, UserStatsResponse } from "../api/dtos/responses/user.type";
+import {
+  RatingsResponse,
+  UserStatsResponse,
+} from "../api/dtos/responses/user.type";
 import { NotFoundError } from "../errors";
 import { hashPassword, comparePassword } from "../utils/hash.util";
 
@@ -132,4 +135,42 @@ export const getRatings = async (
       positivePercentage,
     },
   };
+};
+
+/**
+ * Get public user profile (for viewing other users)
+ * @param userId - User ID to fetch
+ * @returns Public user profile with stats
+ * @throws NotFoundError if user not found
+ */
+export const getPublicUserProfile = async (
+  userId: number
+): Promise<import("../api/dtos/responses/user.type").PublicUserProfile> => {
+  const { mapPublicUserProfile } = await import("../mappers/user.mapper");
+
+  const userProfile = await userRepository.getUserProfileById(userId);
+
+  if (!userProfile) {
+    throw new NotFoundError("User not found");
+  }
+
+  const auctionsWon = await userRepository.countWonAuctions(userId);
+
+  return mapPublicUserProfile(userProfile, auctionsWon);
+};
+
+/**
+ * Get won auctions for a specific user (public view)
+ * @param userId - User ID to fetch won auctions for
+ * @returns Array of won auctions
+ * @throws NotFoundError if user not found
+ */
+export const getUserWonAuctionsById = async (userId: number) => {
+  // Verify user exists first
+  const user = await userRepository.findById(userId);
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  return userRepository.getUserWonAuctionsById(userId);
 };

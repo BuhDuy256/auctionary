@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 import { Badge } from "../../../components/ui/badge";
 import { Star } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { SellerInfo } from "../../../types/product";
 
 interface SellerCardProps {
@@ -19,15 +20,21 @@ export function SellerCard({ seller }: SellerCardProps) {
   );
 
   return (
-    <div className="flex items-center gap-3">
+    <Link
+      to={`/users/${seller.id}/profile`}
+      className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary/50 transition-colors group border border-transparent hover:border-border"
+    >
       <Avatar className="h-12 w-12 border-2 border-border">
-        <AvatarFallback>
+        <AvatarFallback className="bg-accent/10 text-accent font-semibold">
           {seller.name.substring(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1">
         <div className="text-sm">
-          Sold by <span className="text-accent">{seller.name}</span>
+          Sold by{" "}
+          <span className="text-accent group-hover:underline">
+            {seller.name}
+          </span>
         </div>
         <div className="flex items-center gap-2 mt-1">
           <div className="flex items-center gap-1">
@@ -53,6 +60,6 @@ export function SellerCard({ seller }: SellerCardProps) {
           </Badge>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

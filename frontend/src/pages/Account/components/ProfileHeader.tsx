@@ -15,9 +15,14 @@ import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 interface ProfileHeaderProps {
   user: User | null;
   stats: UserStats | null;
+  isOwnProfile?: boolean;
 }
 
-export const ProfileHeader = ({ user, stats }: ProfileHeaderProps) => {
+export const ProfileHeader = ({
+  user,
+  stats,
+  isOwnProfile = true,
+}: ProfileHeaderProps) => {
   if (!user) return null;
 
   // Derive display role from roles array (e.g., show highest priority role or just the first one)
@@ -49,15 +54,20 @@ export const ProfileHeader = ({ user, stats }: ProfileHeaderProps) => {
               <div>
                 <h1 className="text-2xl mb-1">{user.fullName}</h1>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <Mail className="h-4 w-4" />
-                  <span>{user.email}</span>
-                </div>
+                {/* Only show email and address for own profile */}
+                {isOwnProfile && (
+                  <>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                      <Mail className="h-4 w-4" />
+                      <span>{user.email}</span>
+                    </div>
 
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <MapPin className="h-4 w-4" />
-                  <span>{user.address || "No address provided"}</span>
-                </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                      <MapPin className="h-4 w-4" />
+                      <span>{user.address || "No address provided"}</span>
+                    </div>
+                  </>
+                )}
 
                 <div className="flex items-center gap-2">
                   <Badge

@@ -5,6 +5,7 @@ import type {
   MyBid,
   WonAuction,
   RatingsResponse,
+  PublicUserProfile,
 } from "../types/user";
 
 export const getStats = async (): Promise<UserStatsResponse> => {
@@ -55,4 +56,24 @@ export const changePassword = async (
     },
     true
   );
+};
+
+// Public user profile services (for viewing other users)
+export const getPublicUserProfile = async (
+  userId: number
+): Promise<PublicUserProfile> => {
+  return apiClient.get(`/users/${userId}/profile`, true);
+};
+
+export const getPublicUserWonAuctions = async (
+  userId: number
+): Promise<WonAuction[]> => {
+  return apiClient.get(`/users/${userId}/won-auctions`, true);
+};
+
+export const getPublicUserRatings = async (
+  userId: number,
+  role: "buyer" | "seller" | "all" = "all"
+): Promise<RatingsResponse> => {
+  return apiClient.get(`/users/${userId}/ratings?role=${role}`, true);
 };

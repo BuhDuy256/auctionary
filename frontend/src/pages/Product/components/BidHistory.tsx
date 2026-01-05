@@ -25,7 +25,15 @@ import {
 } from "../../../components/ui/dropdown-menu";
 import { Textarea } from "../../../components/ui/textarea";
 import { Label } from "../../../components/ui/label";
-import { TrendingUp, Crown, Ban, Loader2, MoreVertical } from "lucide-react";
+import {
+  TrendingUp,
+  Crown,
+  Ban,
+  Loader2,
+  MoreVertical,
+  User,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { notify } from "../../../utils/notify";
 
 interface BidHistoryItem {
@@ -52,6 +60,7 @@ export function BidHistory({
   currentUserId,
   onRejectBidder,
 }: BidHistoryProps) {
+  const navigate = useNavigate();
   const [rejectDialog, setRejectDialog] = useState<{
     open: boolean;
     bidderId: number | null;
@@ -204,6 +213,14 @@ export function BidHistory({
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() =>
+                                  navigate(`/users/${bid.bidderId}/profile`)
+                                }
+                              >
+                                <User className="mr-2 h-4 w-4 group-focus:text-accent" />
+                                View Profile
+                              </DropdownMenuItem>
                               <DropdownMenuItem
                                 className="text-destructive group focus:text-destructive focus:bg-destructive/10"
                                 onClick={() =>

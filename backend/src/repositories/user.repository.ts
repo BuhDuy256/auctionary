@@ -267,3 +267,51 @@ export const getUserRatings = async (
 
   return results;
 };
+
+/**
+ * Get public user profile by ID (excludes sensitive info like email and address)
+ * @param userId - User ID to fetch
+ * @returns User profile with roles, or null if not found
+ */
+export const getUserProfileById = async (userId: number) => {
+  const user = await db("users")
+    .where({ id: userId })
+    .select(
+      "id",
+      "full_name",
+      "status",
+      "positive_reviews",
+      "negative_reviews",
+      "created_at"
+    )
+    .first();
+
+  if (!user) return null;
+
+  // Get user roles
+  const roles = await db("users_roles")
+    .join("roles", "users_roles.role_id", "roles.id")
+    .where({ user_id: userId })
+    .select("roles.name");
+
+  return {
+    ...user,
+    roles: roles.map((r) => r.name),
+  };
+};
+
+/**
+ * Get won auctions for a specific user (public view)
+ * @param userId - User ID to fetch won auctions for
+ * @returns Array of won auctions with product details
+ */
+export const getUserWonAuctionsById = async (userId: number) => {
+  return await db("transactions")
+    .join("products", "transactions.product_id", "products.id")
+    .where("transactions.buyer_id", userId)
+    .select(
+      "transactions.*",
+      "products.name as product_name",
+      "products.thumbnail_url"
+    );
+};

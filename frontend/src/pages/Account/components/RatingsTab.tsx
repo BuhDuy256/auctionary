@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useRatings } from "../../../hooks/useRatings";
+import { useOtherUserRatings } from "../../../hooks/useOtherUserRatings";
 import {
   Loader2,
   MessageSquare,
@@ -136,8 +137,19 @@ const RatingCard = ({ rating }: RatingCardProps) => {
   );
 };
 
-export const RatingsTab = () => {
-  const { ratings, summary, isLoading, error } = useRatings("all");
+interface RatingsTabProps {
+  userId?: number;
+}
+
+export const RatingsTab = ({ userId }: RatingsTabProps = {}) => {
+  // Use different hooks based on whether viewing own or other user's ratings
+  const ownRatings = useRatings("all");
+  const otherRatings = useOtherUserRatings(userId!, "all");
+
+  const { ratings, summary, isLoading, error } = userId
+    ? otherRatings
+    : ownRatings;
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -176,7 +188,7 @@ export const RatingsTab = () => {
       {/* Header with Summary */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl mb-1">My Ratings</h2>
+          <h2 className="text-2xl mb-1">{userId ? "Ratings" : "My Ratings"}</h2>
           <p className="text-sm text-muted-foreground">
             {ratings.length} {ratings.length === 1 ? "rating" : "ratings"}{" "}
             received

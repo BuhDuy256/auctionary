@@ -45,3 +45,51 @@ export const mapRatingToResponse = (raw: RatingRaw): RatingItem => {
     userRole: raw.user_role,
   };
 };
+
+/**
+ * Raw public user profile data from database
+ */
+interface PublicUserProfileRaw {
+  id: number;
+  full_name: string;
+  status: string;
+  positive_reviews: number;
+  negative_reviews: number;
+  created_at: string;
+  roles: string[];
+}
+
+/**
+ * Map raw public user profile from DB to API response format
+ * @param raw - Raw user profile data from database
+ * @param auctionsWon - Count of won auctions
+ * @returns PublicUserProfile in camelCase
+ */
+export const mapPublicUserProfile = (
+  raw: PublicUserProfileRaw,
+  auctionsWon: number
+): import("../api/dtos/responses/user.type").PublicUserProfile => {
+  const positive = raw.positive_reviews || 0;
+  const negative = raw.negative_reviews || 0;
+  const totalReviews = positive + negative;
+  const rating =
+    totalReviews > 0 ? Math.round((positive / totalReviews) * 100) : 0;
+
+  return {
+    user: {
+      id: raw.id,
+      fullName: raw.full_name,
+      roles: raw.roles,
+      status: raw.status as any,
+      createdAt: raw.created_at,
+      positiveReviews: positive,
+      negativeReviews: negative,
+    },
+    stats: {
+      rating,
+      likes: positive,
+      dislikes: negative,
+      auctionsWon,
+    },
+  };
+};
