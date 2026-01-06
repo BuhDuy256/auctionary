@@ -441,19 +441,54 @@ export const loginWithGoogle = async (
 
   const { email, name, picture, sub: googleId } = googlePayload;
 
-  const user = await socialRepo.findOrCreateUserFromSocial(
-    "google",
-    googleId,
-    email,
-    name || null,
-    picture || null
-  );
+  // Check if social account already exists
+  let socialAccount = await socialRepo.findSocialAccount("google", googleId);
+  let user;
+  let isFirstTimeLogin = false;
 
-  if (!user) {
-    throw new BadRequestError("Failed to create user from Google account");
+  if (socialAccount) {
+    // Existing social account - extract user
+    user = socialAccount.users;
+  } else {
+    // New social account - check if user exists by email
+    user = await userRepo.findByEmail(email);
+
+    if (!user) {
+      // Create new user
+      const newUser = {
+        email,
+        full_name: name || "New User",
+        is_verified: true,
+        status: "active",
+      };
+      user = await userRepo.createUser(newUser);
+    }
+
+    if (!user) {
+      throw new BadRequestError("Failed to create user from Google account");
+    }
+
+    // Create social account
+    await socialRepo.createSocialAccount({
+      userId: user.id,
+      provider: "google",
+      providerId: googleId,
+      email,
+      name,
+      avatarUrl: picture,
+    });
+
+    isFirstTimeLogin = true;
   }
 
   const mappedUser = mapUserToResponse(user)!;
+
+  // Send welcome email for first-time login (non-blocking)
+  if (isFirstTimeLogin) {
+    sendWelcomeEmail(mappedUser.email, mappedUser.fullName).catch((error) => {
+      console.error("Failed to send welcome email:", error);
+    });
+  }
 
   const userPayload = await createUserPayload(
     mappedUser.id,
@@ -500,19 +535,57 @@ export const loginWithFacebook = async (
 
   const { email, name, picture, sub: facebookId } = fbPayload;
 
-  const user = await socialRepo.findOrCreateUserFromSocial(
+  // Check if social account already exists
+  let socialAccount = await socialRepo.findSocialAccount(
     "facebook",
-    facebookId,
-    email,
-    name || null,
-    picture || null
+    facebookId
   );
+  let user;
+  let isFirstTimeLogin = false;
 
-  if (!user) {
-    throw new BadRequestError("Failed to create user from Facebook account");
+  if (socialAccount) {
+    // Existing social account - extract user
+    user = socialAccount.users;
+  } else {
+    // New social account - check if user exists by email
+    user = await userRepo.findByEmail(email);
+
+    if (!user) {
+      // Create new user
+      const newUser = {
+        email,
+        full_name: name || "New User",
+        is_verified: true,
+        status: "active",
+      };
+      user = await userRepo.createUser(newUser);
+    }
+
+    if (!user) {
+      throw new BadRequestError("Failed to create user from Facebook account");
+    }
+
+    // Create social account
+    await socialRepo.createSocialAccount({
+      userId: user.id,
+      provider: "facebook",
+      providerId: facebookId,
+      email,
+      name,
+      avatarUrl: picture,
+    });
+
+    isFirstTimeLogin = true;
   }
 
   const mappedUser = mapUserToResponse(user)!;
+
+  // Send welcome email for first-time login (non-blocking)
+  if (isFirstTimeLogin) {
+    sendWelcomeEmail(mappedUser.email, mappedUser.fullName).catch((error) => {
+      console.error("Failed to send welcome email:", error);
+    });
+  }
 
   const userPayload = await createUserPayload(
     mappedUser.id,

@@ -44,6 +44,7 @@ export const createSocialAccount = async (data: {
       email: data.email,
       name: data.name,
       avatar_url: data.avatarUrl,
+      created_at: db.fn.now(),
     })
     .returning("*");
   return newAccount;
