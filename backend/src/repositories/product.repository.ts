@@ -406,6 +406,7 @@ export const getProductBidInfo = async (
       "products.start_price",
       "products.current_price",
       "products.highest_bidder_id",
+      "products.seller_id",
       "products.status",
       "product_configs.allow_new_bidder"
     )

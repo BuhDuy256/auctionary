@@ -16,7 +16,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
-    "types": ["node"]
+
   },
   "include": ["src/**/*"],
   "exclude": [
