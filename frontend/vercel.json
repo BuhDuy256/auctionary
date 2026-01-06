@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/:path*",
-      "destination": "https://auctionary.onrender.com/:path*"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
