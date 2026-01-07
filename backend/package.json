@@ -22,8 +22,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.0.0",
     "@types/node": "^24.10.1",
-    "@types/nodemailer": "^7.0.3",
     "@types/node-schedule": "^2.1.8",
+    "@types/nodemailer": "^7.0.3",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -39,6 +39,7 @@
     "package.json": "^2.0.1",
     "pg": "^8.16.3",
     "postgres": "^3.4.7",
+    "resend": "^6.6.0",
     "uuid": "^13.0.0",
     "zod": "^4.1.12"
   },

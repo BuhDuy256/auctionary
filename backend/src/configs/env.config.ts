@@ -20,11 +20,12 @@ const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(1, "JWT_REFRESH_SECRET is required"),
 
   // Email
-  EMAIL_HOST: z.string().min(1, "EMAIL_HOST is required"),
+  EMAIL_HOST: z.string().optional(),
   EMAIL_PORT: z.string().default("587").transform(Number),
-  EMAIL_USER: z.string().min(1, "EMAIL_USER is required"),
-  EMAIL_PASSWORD: z.string().min(1, "EMAIL_PASSWORD is required"),
+  EMAIL_USER: z.string().optional(),
+  EMAIL_PASSWORD: z.string().optional(),
   EMAIL_FROM: z.string().email("EMAIL_FROM must be a valid email"),
+  RESEND_API_KEY: z.string().optional(),
 
   // OTP
   OTP_EXPIRY_MINUTES: z.string().default("10").transform(Number),
@@ -52,4 +53,17 @@ if (!parsedEnv.success) {
   process.exit(1);
 }
 
-export const envConfig = parsedEnv.data;
+// Transform/Fallback logic
+const data = parsedEnv.data;
+if (!data.RESEND_API_KEY && data.EMAIL_PASSWORD) {
+  data.RESEND_API_KEY = data.EMAIL_PASSWORD;
+}
+
+if (!data.RESEND_API_KEY) {
+  console.error(
+    "RESEND_API_KEY (or EMAIL_PASSWORD) is required for email service."
+  );
+  process.exit(1);
+}
+
+export const envConfig = data as typeof data & { RESEND_API_KEY: string };

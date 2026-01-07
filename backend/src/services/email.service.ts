@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { envConfig } from "../configs/env.config";
 import { getOTPTemplate } from "../mails/otp.template";
 import { getBidPlacedTemplate } from "../mails/bid-placed.template";
@@ -14,27 +14,28 @@ import { getSellerUpgradeApprovedTemplate } from "../mails/seller-upgrade-approv
 import { getPasswordResetTemplate } from "../mails/password-reset.template";
 import { getTransactionCancelledTemplate } from "../mails/transaction-cancelled.template";
 import { getWelcomeTemplate } from "../mails/welcome.template";
+import { getPasswordResetAdminTemplate } from "../mails/password-reset-admin.template";
 
-// export const transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   pool: true,
-//   maxConnections: 1,
-//   maxMessages: 10,
-//   auth: {
-//     user: envConfig.EMAIL_USER,
-//     pass: envConfig.EMAIL_PASSWORD,
-//   },
-// });
+const resend = new Resend(envConfig.RESEND_API_KEY);
 
-export const transporter = nodemailer.createTransport({
-  host: envConfig.EMAIL_HOST,
-  port: envConfig.EMAIL_PORT,
-  secure: false,
-  auth: {
-    user: envConfig.EMAIL_USER,
-    pass: envConfig.EMAIL_PASSWORD,
-  },
-});
+const sendEmail = async (to: string, subject: string, html: string) => {
+  try {
+    const { error } = await resend.emails.send({
+      from: envConfig.EMAIL_FROM,
+      to,
+      subject,
+      html,
+    });
+
+    if (error) {
+      console.error("Resend error:", error);
+      throw new Error(`Failed to send email: ${error.message}`);
+    }
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};
 
 export const sendOTPEmail = async (
   email: string,
@@ -47,20 +48,8 @@ export const sendOTPEmail = async (
     expiryMinutes: envConfig.OTP_EXPIRY_MINUTES || 15,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Verify your account - Auctionary",
-    html: htmlContent,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`OTP email sent to ${email}`);
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw new Error("Failed to send verification email");
-  }
+  await sendEmail(email, "Verify your account - Auctionary", htmlContent);
+  console.log(`OTP email sent to ${email}`);
 };
 
 export const sendWelcomeEmail = async (
@@ -72,14 +61,7 @@ export const sendWelcomeEmail = async (
     homeUrl: envConfig.CLIENT_URL,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Welcome to Auctionary! 🎉",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(email, "Welcome to Auctionary! 🎉", htmlContent);
 };
 
 export const sendBidPlacedEmail = async (
@@ -100,14 +82,7 @@ export const sendBidPlacedEmail = async (
     productUrl: productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Bid Placed Successfully - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(email, "Bid Placed Successfully - Auctionary", htmlContent);
 };
 
 export const sendBidPlacedSellerEmail = async (
@@ -128,14 +103,11 @@ export const sendBidPlacedSellerEmail = async (
     productUrl: productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "New Bid Received on Your Product - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(
+    email,
+    "New Bid Received on Your Product - Auctionary",
+    htmlContent
+  );
 };
 
 export const sendOutbidNotificationEmail = async (
@@ -154,14 +126,7 @@ export const sendOutbidNotificationEmail = async (
     productUrl: productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "You've Been Outbid - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(email, "You've Been Outbid - Auctionary", htmlContent);
 };
 
 export const sendBidderRejectedEmail = async (
@@ -178,14 +143,7 @@ export const sendBidderRejectedEmail = async (
     productUrl: productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Bid Rejection Notice - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(email, "Bid Rejection Notice - Auctionary", htmlContent);
 };
 
 export const sendAuctionEndedNoWinnerEmail = async (
@@ -206,14 +164,11 @@ export const sendAuctionEndedNoWinnerEmail = async (
     dashboardUrl: dashboardUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Auction Ended - No Bids Received - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(
+    email,
+    "Auction Ended - No Bids Received - Auctionary",
+    htmlContent
+  );
 };
 
 export const sendAuctionEndedWinnerEmail = async (
@@ -234,14 +189,11 @@ export const sendAuctionEndedWinnerEmail = async (
     productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Auction Ended - Winner Confirmed - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(
+    email,
+    "Auction Ended - Winner Confirmed - Auctionary",
+    htmlContent
+  );
 };
 
 export const sendAuctionWonEmail = async (
@@ -260,14 +212,11 @@ export const sendAuctionWonEmail = async (
     productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Congratulations! You Won the Auction - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(
+    email,
+    "Congratulations! You Won the Auction - Auctionary",
+    htmlContent
+  );
 };
 
 export const sendNewQuestionEmail = async (
@@ -288,14 +237,11 @@ export const sendNewQuestionEmail = async (
     productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "New Question About Your Product - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(
+    email,
+    "New Question About Your Product - Auctionary",
+    htmlContent
+  );
 };
 
 export const sendSellerAnsweredEmail = async (
@@ -316,14 +262,11 @@ export const sendSellerAnsweredEmail = async (
     productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Seller Has Answered a Question - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(
+    email,
+    "Seller Has Answered a Question - Auctionary",
+    htmlContent
+  );
 };
 
 export const sendSellerUpgradeApprovedEmail = async (
@@ -336,14 +279,11 @@ export const sendSellerUpgradeApprovedEmail = async (
     dashboardUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Seller Account Upgrade Approved - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(
+    email,
+    "Seller Account Upgrade Approved - Auctionary",
+    htmlContent
+  );
 };
 
 export const sendPasswordResetEmail = async (
@@ -357,14 +297,7 @@ export const sendPasswordResetEmail = async (
     expiryMinutes: envConfig.OTP_EXPIRY_MINUTES || 15,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Reset Your Password - Auctionary",
-    html: htmlContent,
-  };
-
-  await transporter.sendMail(mailOptions);
+  await sendEmail(email, "Reset Your Password - Auctionary", htmlContent);
 };
 
 export const sendTransactionCancelledEmail = async (
@@ -385,12 +318,27 @@ export const sendTransactionCancelledEmail = async (
     productUrl,
   });
 
-  const mailOptions = {
-    from: envConfig.EMAIL_FROM,
-    to: email,
-    subject: "Transaction Cancelled by Seller - Auctionary",
-    html: htmlContent,
-  };
+  await sendEmail(
+    email,
+    "Transaction Cancelled by Seller - Auctionary",
+    htmlContent
+  );
+};
 
-  await transporter.sendMail(mailOptions);
+// New function for admin password reset
+export const sendAdminPasswordResetEmail = async (
+  email: string,
+  userName: string,
+  temporaryPassword: string
+): Promise<void> => {
+  const htmlContent = getPasswordResetAdminTemplate({
+    userName: userName,
+    temporaryPassword,
+  });
+
+  await sendEmail(
+    email,
+    "🔐 Your Password Has Been Reset by Administrator",
+    htmlContent
+  );
 };

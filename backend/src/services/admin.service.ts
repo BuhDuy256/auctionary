@@ -1,5 +1,5 @@
 import * as adminRepository from "../repositories/admin.repository";
-import { transporter } from "./email.service";
+import { sendAdminPasswordResetEmail } from "./email.service";
 import {
   mapUserToAdminListItem,
   mapUpgradeRequestToListItem,
@@ -280,9 +280,6 @@ export const adminResetUserPassword = async (
   const { deleteUserTokens } = await import("../repositories/token.repository");
   const { generateSecurePassword } = await import("../utils/password.util");
   const { hashPassword } = await import("../utils/hash.util");
-  const { getPasswordResetAdminTemplate } = await import(
-    "../mails/password-reset-admin.template"
-  );
 
   // Validate user exists
   const user = await findById(userId);
@@ -310,17 +307,12 @@ export const adminResetUserPassword = async (
   await deleteUserTokens(userId);
 
   // Send email notification
-  const emailTemplate = getPasswordResetAdminTemplate({
-    userName: user.full_name,
-    temporaryPassword,
-  });
-
-  await transporter.sendMail({
-    from: process.env.EMAIL_FROM,
-    to: user.email,
-    subject: "🔐 Your Password Has Been Reset by Administrator",
-    html: emailTemplate,
-  });
+  // Send email notification
+  await sendAdminPasswordResetEmail(
+    user.email,
+    user.full_name,
+    temporaryPassword
+  );
 
   // Return response with temporary password
   return {
