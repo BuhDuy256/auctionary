@@ -242,7 +242,7 @@ export const placeBid = async (
         trx("users").where("id", product.seller_id).first(),
       ]);
 
-      const productUrl = `${envConfig.CLIENT_URL}/products/${product.id}`;
+      const productUrl = `${envConfig.CLIENT_URL}/products/${productId}`;
 
       if (bidder) {
         // Notify Bidder
