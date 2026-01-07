@@ -155,6 +155,7 @@ export const getActiveBids = async (userId: number) => {
         db.raw("?", [userId])
       );
     })
+    .where("products.status", "active")
     .select(
       "products.*",
       "products.id as product_id",
