@@ -20,8 +20,6 @@ export default function ProductListPage() {
     products,
     loading: productsLoading,
     pagination,
-    priceRange,
-    setPriceRange,
     searchQuery,
     categorySlugs,
     sortParam,
@@ -41,7 +39,6 @@ export default function ProductListPage() {
 
   const handleResetFilters = () => {
     handleClearAllFilters();
-    setPriceRange([0, 5000]);
   };
 
   return (
