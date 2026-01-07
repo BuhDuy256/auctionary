@@ -1,3 +1,4 @@
+import Bottleneck from "bottleneck";
 import { Resend } from "resend";
 import { envConfig } from "../configs/env.config";
 import { getOTPTemplate } from "../mails/otp.template";
@@ -18,23 +19,33 @@ import { getPasswordResetAdminTemplate } from "../mails/password-reset-admin.tem
 
 const resend = new Resend(envConfig.RESEND_API_KEY);
 
-const sendEmail = async (to: string, subject: string, html: string) => {
-  try {
-    const { error } = await resend.emails.send({
-      from: envConfig.EMAIL_FROM,
-      to,
-      subject,
-      html,
-    });
+// Create a rate limiter
+// Resend allows 2 requests per second.
+// minTime: 600 ensures we wait 600ms between requests, max ~1.66 req/sec
+const limiter = new Bottleneck({
+  minTime: 600,
+  maxConcurrent: 1, // Optional: Ensure we don't try to send multiple in parallel locally if we want strict seq
+});
 
-    if (error) {
-      console.error("Resend error:", error);
-      throw new Error(`Failed to send email: ${error.message}`);
+const sendEmail = async (to: string, subject: string, html: string) => {
+  return limiter.schedule(async () => {
+    try {
+      const { error } = await resend.emails.send({
+        from: envConfig.EMAIL_FROM,
+        to,
+        subject,
+        html,
+      });
+
+      if (error) {
+        console.error("Resend error:", error);
+        throw new Error(`Failed to send email: ${error.message}`);
+      }
+    } catch (error) {
+      console.error("Error sending email:", error);
+      throw error;
     }
-  } catch (error) {
-    console.error("Error sending email:", error);
-    throw error;
-  }
+  });
 };
 
 export const sendOTPEmail = async (

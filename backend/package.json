@@ -26,6 +26,7 @@
     "@types/nodemailer": "^7.0.3",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
+    "bottleneck": "^2.19.5",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
