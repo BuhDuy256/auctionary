@@ -1,4 +1,5 @@
 import * as productRepository from "../repositories/product.repository";
+import * as bidRepository from "../repositories/bid.repository";
 import * as transactionRepository from "../repositories/transaction.repository";
 import * as userRepository from "../repositories/user.repository";
 import * as EmailService from "./email.service";
@@ -167,6 +168,28 @@ export const appendProductDescription = async (
     sellerId,
     content
   );
+
+  // Notify all bidders
+  const bidders = await bidRepository.getUniqueBiddersByProductId(productId);
+  if (bidders.length > 0) {
+    const productUrl = `${envConfig.CLIENT_URL}/products/${product.id}`;
+
+    // Process in background to avoid blocking response
+    Promise.all(
+      bidders.map((bidder: any) =>
+        EmailService.sendDescriptionUpdatedEmail(
+          bidder.email,
+          bidder.full_name,
+          product.name,
+          product.thumbnail_url,
+          productUrl,
+          content
+        )
+      )
+    ).catch((err) =>
+      console.error("Failed to send description update emails:", err)
+    );
+  }
 };
 
 export const appendProductQuestion = async (

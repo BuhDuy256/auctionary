@@ -135,3 +135,14 @@ export const getBidCount = async (
     .first();
   return result ? Number(result.count) : 0;
 };
+
+export const getUniqueBiddersByProductId = async (
+  productId: number,
+  trx?: Knex.Transaction
+) => {
+  return (trx || db)("bids")
+    .join("users", "bids.bidder_id", "users.id")
+    .where("bids.product_id", productId)
+    .distinct("users.id", "users.email", "users.full_name")
+    .select();
+};

@@ -16,6 +16,7 @@ import { getPasswordResetTemplate } from "../mails/password-reset.template";
 import { getTransactionCancelledTemplate } from "../mails/transaction-cancelled.template";
 import { getWelcomeTemplate } from "../mails/welcome.template";
 import { getPasswordResetAdminTemplate } from "../mails/password-reset-admin.template";
+import { getDescriptionUpdatedTemplate } from "../mails/description-updated.template";
 
 const resend = new Resend(envConfig.RESEND_API_KEY);
 
@@ -350,6 +351,29 @@ export const sendAdminPasswordResetEmail = async (
   await sendEmail(
     email,
     "🔐 Your Password Has Been Reset by Administrator",
+    htmlContent
+  );
+};
+
+export const sendDescriptionUpdatedEmail = async (
+  email: string,
+  userName: string,
+  productName: string,
+  productImage: string,
+  productUrl: string,
+  updateContent: string
+): Promise<void> => {
+  const htmlContent = getDescriptionUpdatedTemplate({
+    userName: userName || "User",
+    productName: productName || "Product",
+    productImage,
+    productUrl,
+    updateContent: updateContent || "",
+  });
+
+  await sendEmail(
+    email,
+    "Product Description Updated - Auctionary",
     htmlContent
   );
 };
