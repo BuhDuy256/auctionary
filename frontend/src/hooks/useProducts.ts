@@ -19,13 +19,13 @@ export const useProducts = () => {
   const searchQuery = searchParams.get("q") || "";
   const categorySlugs = searchParams.getAll("category");
   const currentPage = parseInt(searchParams.get("page") || "1");
-  const sortParam = searchParams.get("sort") || "endTime:asc";
+  const sortParam = searchParams.get("sort") || "endTime:desc";
 
   // Ensure sort param exists
   useEffect(() => {
     if (!searchParams.has("sort")) {
       const newParams = new URLSearchParams(searchParams);
-      newParams.set("sort", "endTime:asc");
+      newParams.set("sort", "endTime:desc");
       setSearchParams(newParams, { replace: true });
     }
   }, [searchParams, setSearchParams]);
@@ -48,7 +48,7 @@ export const useProducts = () => {
           sort: sortParam,
         });
 
-        if (result.data[0].transaction) {
+        if (result.data.length > 0 && result.data[0]?.transaction) {
           console.log("Transaction data found in products:", result.data[0].transaction);
         } else {
           console.log("No transaction data in products.");

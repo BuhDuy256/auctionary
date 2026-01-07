@@ -69,7 +69,7 @@ export function ProductFilters({
             <Separator />
 
             {/* Price Range */}
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm">Price Range</h3>
                 <span className="text-xs text-accent">
@@ -90,7 +90,7 @@ export function ProductFilters({
               </div>
             </div>
 
-            <Separator />
+            <Separator /> */}
 
             <Button
               variant="outline"
