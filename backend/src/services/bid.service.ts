@@ -136,7 +136,7 @@ export const placeBid = async (
     // Fetch user's rating information
     const user = await trx("users")
       .where({ id: userId })
-      .select("positive_reviews", "negative_reviews")
+      .select("positive_reviews", "negative_reviews", "email", "full_name")
       .first();
 
     if (!user) {
@@ -298,6 +298,26 @@ export const placeBid = async (
             )
           );
         }
+      }
+
+      // Notify the current bidder if they are NOT the winner and NOT the previous highest bidder (who is already handled above)
+      if (
+        userId !== winner.bidder_id &&
+        (!currentHighestBid || userId !== currentHighestBid.bidder_id)
+      ) {
+        EmailService.sendOutbidNotificationEmail(
+          user.email,
+          user.full_name,
+          product.name,
+          product.thumbnail_url || "",
+          newPrice,
+          productUrl
+        ).catch((err) =>
+          console.error(
+            "Failed to send outbid notification to current bidder:",
+            err
+          )
+        );
       }
     }
 

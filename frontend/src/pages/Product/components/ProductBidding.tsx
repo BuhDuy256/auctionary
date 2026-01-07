@@ -218,6 +218,14 @@ export function ProductBidding({
               <CardTitle className="text-4xl text-accent mt-1">
                 ${currentPrice.toLocaleString()}
               </CardTitle>
+              {userStatus?.currentUserMaxBid && (
+                <div className="text-sm text-muted-foreground mt-2">
+                  Your Max Bid:{" "}
+                  <span className="font-medium text-foreground">
+                    ${userStatus.currentUserMaxBid.toLocaleString()}
+                  </span>
+                </div>
+              )}
             </div>
             <div className="text-right">
               <div className="text-sm text-muted-foreground">Watchers</div>
