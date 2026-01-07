@@ -148,10 +148,19 @@ export const getActiveBids = async (userId: number) => {
 
   return await db("products")
     .join(subquery, "products.id", "my_bids.product_id")
+    .leftJoin("auto_bids", function () {
+      this.on("products.id", "=", "auto_bids.product_id").andOn(
+        "auto_bids.bidder_id",
+        "=",
+        db.raw("?", [userId])
+      );
+    })
     .select(
       "products.*",
       "products.id as product_id",
-      "my_bids.my_max_bid",
+      db.raw(
+        "GREATEST(auto_bids.max_amount, my_bids.my_max_bid) as my_max_bid"
+      ),
       db.raw(
         "(SELECT MAX(amount) FROM bids WHERE product_id = products.id) as current_highest_bid"
       ),
