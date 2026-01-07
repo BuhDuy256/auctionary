@@ -29,7 +29,7 @@ import { getWelcomeTemplate } from "../mails/welcome.template";
 export const transporter = nodemailer.createTransport({
   host: envConfig.EMAIL_HOST,
   port: envConfig.EMAIL_PORT,
-  secure: true,
+  secure: false,
   auth: {
     user: envConfig.EMAIL_USER,
     pass: envConfig.EMAIL_PASSWORD,
