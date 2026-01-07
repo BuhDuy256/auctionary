@@ -54,7 +54,7 @@ export const sendOTPEmail = async (
   userName: string
 ): Promise<void> => {
   const htmlContent = getOTPTemplate({
-    userName: userName,
+    userName: userName || "User",
     otp: otp,
     expiryMinutes: envConfig.OTP_EXPIRY_MINUTES || 15,
   });
@@ -68,7 +68,7 @@ export const sendWelcomeEmail = async (
   userName: string
 ): Promise<void> => {
   const htmlContent = getWelcomeTemplate({
-    userName: userName,
+    userName: userName || "User",
     homeUrl: envConfig.CLIENT_URL,
   });
 
@@ -85,10 +85,10 @@ export const sendBidPlacedEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getBidPlacedTemplate({
-    userName: userName,
-    productName: productName,
+    userName: userName || "User",
+    productName: productName || "Product",
     productImage: productImage,
-    bidAmount: bidAmount,
+    bidAmount: bidAmount || 0,
     currentHighestBidder: currentHighestBidder,
     productUrl: productUrl,
   });
@@ -106,11 +106,11 @@ export const sendBidPlacedSellerEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getBidPlacedSellerTemplate({
-    sellerName: sellerName,
-    productName: productName,
+    sellerName: sellerName || "Seller",
+    productName: productName || "Product",
     productImage: productImage,
-    bidAmount: bidAmount,
-    bidderName: bidderName,
+    bidAmount: bidAmount || 0,
+    bidderName: bidderName || "Bidder",
     productUrl: productUrl,
   });
 
@@ -130,10 +130,10 @@ export const sendOutbidNotificationEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getOutbidNotificationTemplate({
-    userName: userName,
-    productName: productName,
+    userName: userName || "User",
+    productName: productName || "Product",
     productImage: productImage,
-    currentBidAmount: currentBidAmount,
+    currentBidAmount: currentBidAmount || 0,
     productUrl: productUrl,
   });
 
@@ -148,8 +148,8 @@ export const sendBidderRejectedEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getBidderRejectedTemplate({
-    userName: userName,
-    productName: productName,
+    userName: userName || "User",
+    productName: productName || "Product",
     productImage: productImage,
     productUrl: productUrl,
   });
@@ -167,10 +167,10 @@ export const sendAuctionEndedNoWinnerEmail = async (
   dashboardUrl: string
 ): Promise<void> => {
   const htmlContent = getAuctionEndedNoWinnerTemplate({
-    sellerName: sellerName,
-    productName: productName,
+    sellerName: sellerName || "Seller",
+    productName: productName || "Product",
     productImage: productImage,
-    startPrice: startPrice,
+    startPrice: startPrice || 0,
     endDate: endDate,
     dashboardUrl: dashboardUrl,
   });
@@ -192,11 +192,11 @@ export const sendAuctionEndedWinnerEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getAuctionEndedWinnerTemplate({
-    sellerName,
-    productName,
+    sellerName: sellerName || "Seller",
+    productName: productName || "Product",
     productImage,
-    finalBidAmount,
-    winnerName,
+    finalBidAmount: finalBidAmount || 0,
+    winnerName: winnerName || "Winner",
     productUrl,
   });
 
@@ -216,10 +216,10 @@ export const sendAuctionWonEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getAuctionWonTemplate({
-    userName,
-    productName,
+    userName: userName || "User",
+    productName: productName || "Product",
     productImage,
-    finalBidAmount,
+    finalBidAmount: finalBidAmount || 0,
     productUrl,
   });
 
@@ -240,11 +240,11 @@ export const sendNewQuestionEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getNewQuestionTemplate({
-    sellerName,
-    productName,
+    sellerName: sellerName || "Seller",
+    productName: productName || "Product",
     productImage,
-    question,
-    askedBy,
+    question: question || "",
+    askedBy: askedBy || "User",
     productUrl,
   });
 
@@ -265,11 +265,11 @@ export const sendSellerAnsweredEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getSellerAnsweredTemplate({
-    userName,
-    productName,
+    userName: userName || "User",
+    productName: productName || "Product",
     productImage,
-    question,
-    answer,
+    question: question || "",
+    answer: answer || "",
     productUrl,
   });
 
@@ -286,7 +286,7 @@ export const sendSellerUpgradeApprovedEmail = async (
   dashboardUrl: string
 ): Promise<void> => {
   const htmlContent = getSellerUpgradeApprovedTemplate({
-    userName,
+    userName: userName || "User",
     dashboardUrl,
   });
 
@@ -303,8 +303,8 @@ export const sendPasswordResetEmail = async (
   otp: string
 ): Promise<void> => {
   const htmlContent = getPasswordResetTemplate({
-    userName,
-    otp,
+    userName: userName || "User",
+    otp: otp,
     expiryMinutes: envConfig.OTP_EXPIRY_MINUTES || 15,
   });
 
@@ -321,11 +321,11 @@ export const sendTransactionCancelledEmail = async (
   productUrl: string
 ): Promise<void> => {
   const htmlContent = getTransactionCancelledTemplate({
-    userName,
-    productName,
+    userName: userName || "User",
+    productName: productName || "Product",
     productImage,
-    finalBidAmount,
-    cancellationReason,
+    finalBidAmount: finalBidAmount || 0,
+    cancellationReason: cancellationReason || "",
     productUrl,
   });
 
@@ -343,7 +343,7 @@ export const sendAdminPasswordResetEmail = async (
   temporaryPassword: string
 ): Promise<void> => {
   const htmlContent = getPasswordResetAdminTemplate({
-    userName: userName,
+    userName: userName || "User",
     temporaryPassword,
   });
 

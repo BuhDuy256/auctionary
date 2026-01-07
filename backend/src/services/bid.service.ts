@@ -105,7 +105,7 @@ export const rejectBidder = async (
         bidder.email,
         bidder.full_name,
         product.name,
-        product.thumbnail,
+        product.thumbnail_url || "",
         productUrl
       ).catch((err) => console.error("Failed to send rejection email:", err));
     }
@@ -250,7 +250,7 @@ export const placeBid = async (
           bidder.email,
           bidder.full_name,
           product.name,
-          product.thumbnail,
+          product.thumbnail_url || "",
           newPrice,
           true,
           productUrl
@@ -265,7 +265,7 @@ export const placeBid = async (
           seller.email,
           seller.full_name,
           product.name,
-          product.thumbnail,
+          product.thumbnail_url || "",
           newPrice,
           bidder?.full_name || "A bidder",
           productUrl
@@ -288,7 +288,7 @@ export const placeBid = async (
             previousBidder.email,
             previousBidder.full_name,
             product.name,
-            product.thumbnail,
+            product.thumbnail_url || "",
             newPrice,
             productUrl
           ).catch((err) =>

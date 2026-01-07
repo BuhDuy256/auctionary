@@ -79,7 +79,10 @@ export const searchProducts = async (
   }
 
   // Count with DISTINCT to avoid counting duplicates
-  const countQuery = query.clone().countDistinct("products.id as total").first();
+  const countQuery = query
+    .clone()
+    .countDistinct("products.id as total")
+    .first();
 
   // Order by status priority first: active > sold > expired
   query = query.orderByRaw(
@@ -98,12 +101,12 @@ export const searchProducts = async (
         item.field === "endTime"
           ? "products.end_time"
           : item.field === "price"
-            ? "products.current_price"
-            : item.field === "bidCount"
-              ? "products.bid_count"
-              : item.field === "createdAt"
-                ? "products.created_at"
-                : "products.created_at";
+          ? "products.current_price"
+          : item.field === "bidCount"
+          ? "products.bid_count"
+          : item.field === "createdAt"
+          ? "products.created_at"
+          : "products.created_at";
       query = query.orderBy(dbField, item.direction);
     });
   } else {
@@ -412,6 +415,8 @@ export const getProductBidInfo = async (
       "products.highest_bidder_id",
       "products.seller_id",
       "products.status",
+      "products.name",
+      "products.thumbnail_url",
       "product_configs.allow_new_bidder"
     )
     .forUpdate("products")
