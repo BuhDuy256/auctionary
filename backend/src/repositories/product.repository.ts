@@ -47,7 +47,10 @@ export const searchProducts = async (
 
   if (q) {
     const safeQ = escapeQuery(q);
-    query = query.where("products.name", "ilike", `%${safeQ}%`);
+    query = query.whereRaw(
+      "products.fts @@ plainto_tsquery('english', ?)",
+      [safeQ]
+    );
   }
 
   if (categorySlugs && categorySlugs.length > 0) {
